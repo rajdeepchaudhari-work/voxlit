@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Microphone access for the Swift helper -->
+    <key>com.apple.security.device.audio-input</key>
+    <true/>
+
+    <!-- Accessibility API for text injection via AXUIElement -->
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
+
+    <!-- Required for whisper.cpp Metal JIT compilation -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+
+    <!-- Allows loading the Swift helper binary -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+
+    <!-- Required for V8 JIT compilation (Electron/Chromium) -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+</dict>
+</plist>

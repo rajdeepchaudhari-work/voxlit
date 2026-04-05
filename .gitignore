@@ -1,0 +1,35 @@
+node_modules/
+out/
+dist/
+*.asar
+.DS_Store
+
+# Models are large binaries — never commit
+resources/models/*.bin
+resources/models/*.gguf
+
+# Pre-built binaries — built by scripts/build-native.sh and scripts/build-whisper.sh
+resources/binaries/
+resources/native/
+
+# electron-store encrypted data
+*.json.enc
+
+# Test coverage
+coverage/
+
+# Drizzle generated migrations (optional — uncomment to track)
+# src/main/db/migrations/
+
+# OS
+Thumbs.db
+
+CLAUDE.md
+NAME_RESEARCH.md
+PROJECT_PLAN.md
+BRAND_IDENTITY.md
+Frontend-design.md
+
+Glaido.app/
+.whisper-src
+
