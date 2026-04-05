@@ -1,0 +1,37 @@
+{
+  "": {
+    "dependencies": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/VoxlitHelper.d",
+    "object": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/VoxlitHelper.o",
+    "swift-dependencies": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/primary.swiftdeps"
+  },
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/AudioEngine.swift": {
+    "object": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/AudioEngine.swift.o",
+    "swiftmodule": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/AudioEngine~partial.swiftmodule",
+    "swift-dependencies": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/AudioEngine.swiftdeps",
+    "diagnostics": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/AudioEngine.dia"
+  },
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/HotkeyManager.swift": {
+    "object": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/HotkeyManager.swift.o",
+    "swiftmodule": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/HotkeyManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/HotkeyManager.swiftdeps",
+    "diagnostics": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/HotkeyManager.dia"
+  },
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/SocketProtocol.swift": {
+    "object": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/SocketProtocol.swift.o",
+    "swiftmodule": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/SocketProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/SocketProtocol.swiftdeps",
+    "diagnostics": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/SocketProtocol.dia"
+  },
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/TextInjector.swift": {
+    "object": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/TextInjector.swift.o",
+    "swiftmodule": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/TextInjector~partial.swiftmodule",
+    "swift-dependencies": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/TextInjector.swiftdeps",
+    "diagnostics": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/TextInjector.dia"
+  },
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/main.swift": {
+    "object": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/main.swift.o",
+    "swiftmodule": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/main.swiftdeps",
+    "diagnostics": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/main.dia"
+  }
+}

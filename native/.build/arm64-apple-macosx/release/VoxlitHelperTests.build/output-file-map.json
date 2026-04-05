@@ -1,0 +1,13 @@
+{
+  "": {
+    "dependencies": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/VoxlitHelperTests.d",
+    "object": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/VoxlitHelperTests.o",
+    "swift-dependencies": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/primary.swiftdeps"
+  },
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/Tests/VoxlitHelperTests/SocketProtocolTests.swift": {
+    "object": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/SocketProtocolTests.swift.o",
+    "swiftmodule": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/SocketProtocolTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/SocketProtocolTests.swiftdeps",
+    "diagnostics": "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/SocketProtocolTests.dia"
+  }
+}

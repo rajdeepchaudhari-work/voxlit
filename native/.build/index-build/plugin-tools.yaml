@@ -1,0 +1,88 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "PackageStructure": ["<PackageStructure>"]
+  "VoxlitHelper-arm64-apple-macosx-debug.module": ["<VoxlitHelper-arm64-apple-macosx-debug.module>"]
+  "VoxlitHelperPackageTests-arm64-apple-macosx-debug.module": ["<VoxlitHelperPackageTests-arm64-apple-macosx-debug.module>"]
+  "VoxlitHelperTests-arm64-apple-macosx-debug.module": ["<VoxlitHelperTests-arm64-apple-macosx-debug.module>"]
+  "main": ["<VoxlitHelper-arm64-apple-macosx-debug.module>"]
+  "test": ["<VoxlitHelper-arm64-apple-macosx-debug.module>","<VoxlitHelperTests-arm64-apple-macosx-debug.module>"]
+default: "main"
+nodes:
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/Tests/VoxlitHelperTests/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+commands:
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelper.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/AudioEngine.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/HotkeyManager.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/SocketProtocol.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/TextInjector.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/main.swift"]
+    outputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelper.build/sources"]
+    description: "Write auxiliary file /Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelper.build/sources"
+
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperPackageTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperPackageTests.derived/runner.swift"]
+    outputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperPackageTests.build/sources"]
+    description: "Write auxiliary file /Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperPackageTests.build/sources"
+
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/rajdeepchaudhari/Projects/Voxlit/native/Tests/VoxlitHelperTests/SocketProtocolTests.swift"]
+    outputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperTests.build/sources"]
+    description: "Write auxiliary file /Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperTests.build/sources"
+
+  "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Library/Developer/CommandLineTools/usr/bin/swiftc"]
+    outputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"
+
+  "<VoxlitHelper-arm64-apple-macosx-debug.module>":
+    tool: phony
+    inputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelper.swiftmodule"]
+    outputs: ["<VoxlitHelper-arm64-apple-macosx-debug.module>"]
+
+  "<VoxlitHelperPackageTests-arm64-apple-macosx-debug.module>":
+    tool: phony
+    inputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelperPackageTests.swiftmodule"]
+    outputs: ["<VoxlitHelperPackageTests-arm64-apple-macosx-debug.module>"]
+
+  "<VoxlitHelperTests-arm64-apple-macosx-debug.module>":
+    tool: phony
+    inputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelperTests.swiftmodule"]
+    outputs: ["<VoxlitHelperTests-arm64-apple-macosx-debug.module>"]
+
+  "C.VoxlitHelper-arm64-apple-macosx-debug.module":
+    tool: shell
+    inputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/AudioEngine.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/HotkeyManager.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/SocketProtocol.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/TextInjector.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/main.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelper.build/sources"]
+    outputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelper.swiftmodule"]
+    description: "Compiling Swift Module 'VoxlitHelper' (5 sources)"
+    args: ["/Library/Developer/CommandLineTools/usr/bin/swiftc","-module-name","VoxlitHelper","-emit-dependencies","-emit-module","-emit-module-path","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelper.swiftmodule","-output-file-map","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelper.build/output-file-map.json","-incremental","@/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelper.build/sources","-I","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx13.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j8","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-swift-version","5","-Xfrontend","-experimental-lazy-typecheck","-Xfrontend","-experimental-skip-all-function-bodies","-Xfrontend","-experimental-allow-module-with-compiler-errors","-Xfrontend","-empty-abi-descriptor","-I","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-L","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-plugin-path","/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing","-sdk","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-g","-Xcc","-isysroot","-Xcc","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-Xcc","-fPIC","-Xcc","-g","-package-name","native"]
+
+  "C.VoxlitHelperPackageTests-arm64-apple-macosx-debug.module":
+    tool: shell
+    inputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperPackageTests.derived/runner.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelperTests.swiftmodule","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperPackageTests.build/sources"]
+    outputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelperPackageTests.swiftmodule"]
+    description: "Compiling Swift Module 'VoxlitHelperPackageTests' (1 sources)"
+    args: ["/Library/Developer/CommandLineTools/usr/bin/swiftc","-module-name","VoxlitHelperPackageTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelperPackageTests.swiftmodule","-output-file-map","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperPackageTests.build/output-file-map.json","-parse-as-library","-incremental","@/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperPackageTests.build/sources","-I","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx13.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j8","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperPackageTests.build/include/VoxlitHelperPackageTests-Swift.h","-Xfrontend","-experimental-lazy-typecheck","-Xfrontend","-experimental-skip-all-function-bodies","-Xfrontend","-experimental-allow-module-with-compiler-errors","-Xfrontend","-empty-abi-descriptor","-I","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-L","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-plugin-path","/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing","-sdk","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-g","-Xcc","-isysroot","-Xcc","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-Xcc","-fPIC","-Xcc","-g","-package-name","native"]
+
+  "C.VoxlitHelperTests-arm64-apple-macosx-debug.module":
+    tool: shell
+    inputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/Tests/VoxlitHelperTests/SocketProtocolTests.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelper.swiftmodule","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperTests.build/sources"]
+    outputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelperTests.swiftmodule"]
+    description: "Compiling Swift Module 'VoxlitHelperTests' (1 sources)"
+    args: ["/Library/Developer/CommandLineTools/usr/bin/swiftc","-module-name","VoxlitHelperTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules/VoxlitHelperTests.swiftmodule","-output-file-map","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperTests.build/output-file-map.json","-parse-as-library","-incremental","@/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/VoxlitHelperTests.build/sources","-I","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx13.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j8","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/index-build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-swift-version","5","-Xfrontend","-experimental-lazy-typecheck","-Xfrontend","-experimental-skip-all-function-bodies","-Xfrontend","-experimental-allow-module-with-compiler-errors","-Xfrontend","-empty-abi-descriptor","-I","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-L","/Library/Developer/CommandLineTools/Library/Developer/Frameworks","-plugin-path","/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing","-sdk","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-g","-Xcc","-isysroot","-Xcc","/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk","-Xcc","-fPIC","-Xcc","-g","-package-name","native"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/","/Users/rajdeepchaudhari/Projects/Voxlit/native/Tests/VoxlitHelperTests/","/Users/rajdeepchaudhari/Projects/Voxlit/native/Package.swift","/Users/rajdeepchaudhari/Projects/Voxlit/native/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

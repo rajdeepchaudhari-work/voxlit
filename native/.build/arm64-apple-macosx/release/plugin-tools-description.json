@@ -1,0 +1,662 @@
+{
+  "builtTestProducts" : [
+    {
+      "binaryPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.xctest/Contents/MacOS/VoxlitHelperPackageTests",
+      "packagePath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native",
+      "productName" : "VoxlitHelperPackageTests"
+    }
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.VoxlitHelper-arm64-apple-macosx-release.module" : {
+      "executable" : "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "fileList" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/sources",
+      "importPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/AudioEngine.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/HotkeyManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/SocketProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/TextInjector.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/main.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/swift-version--1AB21518FC5DEDBE.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "VoxlitHelper",
+      "moduleOutputPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules/VoxlitHelper.swiftmodule",
+      "objects" : [
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/AudioEngine.swift.o",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/HotkeyManager.swift.o",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/SocketProtocol.swift.o",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/TextInjector.swift.o",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/main.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-whole-module-optimization",
+        "-num-threads",
+        "8",
+        "-serialize-diagnostics",
+        "-O",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "VoxlitHelper_main",
+        "-swift-version",
+        "5",
+        "-I",
+        "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+        "-L",
+        "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+        "-plugin-path",
+        "/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/AudioEngine.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/HotkeyManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/SocketProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/TextInjector.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules/VoxlitHelper.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/AudioEngine.swift",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/HotkeyManager.swift",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/SocketProtocol.swift",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/TextInjector.swift",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/main.swift"
+      ],
+      "tempsPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build",
+      "wholeModuleOptimization" : true
+    },
+    "C.VoxlitHelperPackageTests-arm64-apple-macosx-release.module" : {
+      "executable" : "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "fileList" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build/sources",
+      "importPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.derived/runner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/swift-version--1AB21518FC5DEDBE.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules/VoxlitHelperTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VoxlitHelperPackageTests",
+      "moduleOutputPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules/VoxlitHelperPackageTests.swiftmodule",
+      "objects" : [
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build/runner.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-whole-module-optimization",
+        "-num-threads",
+        "8",
+        "-serialize-diagnostics",
+        "-O",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build/include/VoxlitHelperPackageTests-Swift.h",
+        "-I",
+        "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+        "-L",
+        "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+        "-plugin-path",
+        "/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules/VoxlitHelperPackageTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.derived/runner.swift"
+      ],
+      "tempsPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build",
+      "wholeModuleOptimization" : true
+    },
+    "C.VoxlitHelperTests-arm64-apple-macosx-release.module" : {
+      "executable" : "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "fileList" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/sources",
+      "importPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Tests/VoxlitHelperTests/SocketProtocolTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/swift-version--1AB21518FC5DEDBE.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "VoxlitHelperTests",
+      "moduleOutputPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules/VoxlitHelperTests.swiftmodule",
+      "objects" : [
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/SocketProtocolTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-whole-module-optimization",
+        "-num-threads",
+        "8",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/index/store",
+        "-O",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "5",
+        "-I",
+        "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+        "-L",
+        "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+        "-plugin-path",
+        "/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "native"
+      ],
+      "outputFileMapPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/SocketProtocolTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules/VoxlitHelperTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/rajdeepchaudhari/Projects/Voxlit/native/Tests/VoxlitHelperTests/SocketProtocolTests.swift"
+      ],
+      "tempsPath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build",
+      "wholeModuleOptimization" : true
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "VoxlitHelper" : [
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "-module-name",
+      "VoxlitHelper",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/AudioEngine.swift",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/HotkeyManager.swift",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/SocketProtocol.swift",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/TextInjector.swift",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/main.swift",
+      "-I",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-whole-module-optimization",
+      "-num-threads",
+      "8",
+      "-serialize-diagnostics",
+      "-O",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "VoxlitHelper_main",
+      "-swift-version",
+      "5",
+      "-I",
+      "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+      "-L",
+      "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+      "-plugin-path",
+      "/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc"
+    ],
+    "VoxlitHelperPackageTests" : [
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "-module-name",
+      "VoxlitHelperPackageTests",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.derived/runner.swift",
+      "-I",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-whole-module-optimization",
+      "-num-threads",
+      "8",
+      "-serialize-diagnostics",
+      "-O",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build/include/VoxlitHelperPackageTests-Swift.h",
+      "-I",
+      "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+      "-L",
+      "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+      "-plugin-path",
+      "/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc"
+    ],
+    "VoxlitHelperTests" : [
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "-module-name",
+      "VoxlitHelperTests",
+      "-package-name",
+      "native",
+      "-c",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/Tests/VoxlitHelperTests/SocketProtocolTests.swift",
+      "-I",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-whole-module-optimization",
+      "-num-threads",
+      "8",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/index/store",
+      "-O",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "5",
+      "-I",
+      "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+      "-L",
+      "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
+      "-plugin-path",
+      "/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "native",
+      "-driver-use-frontend-path",
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "VoxlitHelper" : [
+
+    ],
+    "VoxlitHelperPackageTests" : [
+      "VoxlitHelperTests",
+      "VoxlitHelper"
+    ],
+    "VoxlitHelperTests" : [
+      "VoxlitHelper"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+    "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.derived/runner.swift" : {
+      "inputs" : [
+
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.derived/runner.swift"
+        }
+      ]
+    }
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/AudioEngine.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/HotkeyManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/SocketProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/TextInjector.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Sources/VoxlitHelper/main.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/sources"
+    },
+    "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/AudioEngine.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/HotkeyManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/SocketProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/TextInjector.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/main.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.product/Objects.LinkFileList"
+    },
+    "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.derived/runner.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build/sources"
+    },
+    "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/AudioEngine.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/HotkeyManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/SocketProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/TextInjector.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelper.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/SocketProtocolTests.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperPackageTests.product/Objects.LinkFileList"
+    },
+    "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/Tests/VoxlitHelperTests/SocketProtocolTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/VoxlitHelperTests.build/sources"
+    },
+    "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/swift-version--1AB21518FC5DEDBE.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Library/Developer/CommandLineTools/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/rajdeepchaudhari/Projects/Voxlit/native/.build/arm64-apple-macosx/release/swift-version--1AB21518FC5DEDBE.txt"
+    }
+  }
+}
