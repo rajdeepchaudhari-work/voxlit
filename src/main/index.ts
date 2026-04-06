@@ -12,10 +12,10 @@ import { registerHandlers } from './ipc/handlers'
 
 const store = new Store<VoxlitSettings>({
   defaults: {
-    hotkeyPrimary: 'Option+Space',
+    hotkeyPrimary: 'Fn',
     hotkeyMode: 'push-to-talk',
     transcriptionEngine: 'local',
-    cloudProvider: 'groq',
+    cloudProvider: 'openai',
     localModel: 'ggml-small.en',
     vadSensitivity: 0.5,
     fillerWordFilter: false,
@@ -30,7 +30,7 @@ const socketManager = new SocketManager()
 const sessionStore = new SessionStore()
 const transcriptManager = new TranscriptManager(
   sessionStore,
-  () => ({ provider: store.get('cloudProvider'), groqApiKey: store.get('groqApiKey'), openaiApiKey: store.get('openaiApiKey') }),
+  () => ({ openaiApiKey: store.get('openaiApiKey') }),
   () => store.get('localModel')
 )
 

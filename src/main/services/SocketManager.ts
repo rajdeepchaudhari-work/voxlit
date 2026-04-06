@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import * as net from 'net'
 import { spawn, ChildProcess } from 'child_process'
 import { join } from 'path'
-import { app } from 'electron'
+import { app, systemPreferences } from 'electron'
 import type { HelperStatus, PermissionsState } from '@shared/ipc-types'
 
 const SOCKET_PATH = '/tmp/voxlit.socket'
@@ -45,9 +45,16 @@ export class SocketManager extends EventEmitter {
   }
 
   checkPermissions(): PermissionsState {
-    // Actual permission checks happen inside the Swift helper.
-    // This returns a stub until the helper reports back.
-    return { microphone: 'not-determined', accessibility: 'not-determined' }
+    const micStatus = systemPreferences.getMediaAccessStatus('microphone')
+    const mic: PermissionsState['microphone'] =
+      micStatus === 'granted' ? 'granted' :
+      micStatus === 'denied' || micStatus === 'restricted' ? 'denied' :
+      'not-determined'
+
+    const accessible = systemPreferences.isTrustedAccessibilityClient(false)
+    const accessibility: PermissionsState['accessibility'] = accessible ? 'granted' : 'not-determined'
+
+    return { microphone: mic, accessibility }
   }
 
   private startSocketServer() {

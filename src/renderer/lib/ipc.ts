@@ -9,7 +9,10 @@ import type {
   Session,
   Entry,
   PermissionsState,
-  PermissionType
+  PermissionType,
+  SystemInfo,
+  ModelStatus,
+  ModelDownloadProgress
 } from '@shared/ipc-types'
 
 type Unsubscribe = () => void
@@ -29,6 +32,10 @@ declare global {
       checkPermissions: () => Promise<PermissionsState>
       requestPermission: (type: PermissionType) => Promise<void>
       injectText: (text: string) => Promise<void>
+      getSystemInfo: () => Promise<SystemInfo>
+      getModelStatus: (name: string) => Promise<ModelStatus>
+      downloadModel: (name: string) => Promise<void>
+      onModelDownloadProgress: (cb: (data: ModelDownloadProgress) => void) => Unsubscribe
     }
   }
 }

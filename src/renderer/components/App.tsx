@@ -1,33 +1,31 @@
 import { useEffect, useState } from 'react'
+import logoSrc from '../assets/logo.png'
 import { useAppStore } from '../store/useAppStore'
+import { ipc } from '../lib/ipc'
 import HistoryPanel from './HistoryPanel'
 import SettingsPanel from './SettingsPanel'
+import HomePanel from './HomePanel'
+import OnboardingWizard from './OnboardingWizard'
 
-type Tab = 'history' | 'settings'
+type View = 'home' | 'history' | 'settings'
 
-function VoxlitLogo() {
+// ─── Brand mark ───────────────────────────────────────────────────────────────
+
+export function VoxlitMark({ size = 28 }: { size?: number }) {
   return (
-    <svg width="28" height="28" viewBox="0 0 34 34" fill="none">
-      {/* Squircle */}
-      <rect x="1" y="1" width="32" height="32" rx="9" fill="#0A0A0F" stroke="url(#lg)" strokeWidth="1.2" />
-      {/* 3 bars: left short, center tall, right short */}
-      <rect x="9"  y="12" width="4" height="10" rx="2" fill="url(#lg)" />
-      <rect x="15" y="8"  width="4" height="18" rx="2" fill="url(#lg)" />
-      <rect x="21" y="12" width="4" height="10" rx="2" fill="url(#lg)" />
-      <defs>
-        <linearGradient id="lg" x1="17" y1="6" x2="17" y2="28" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#A78BFA" />
-          <stop offset="1" stopColor="#22D3EE" />
-        </linearGradient>
-      </defs>
-    </svg>
+    <img
+      src={logoSrc}
+      width={size}
+      height={size}
+      style={{ borderRadius: Math.round(size * 0.18), display: 'block', objectFit: 'cover' }}
+      draggable={false}
+    />
   )
 }
 
-function NavItem({
-  icon, label, active, onClick
-}: {
-  icon: React.ReactNode
+// ─── Nav item ─────────────────────────────────────────────────────────────────
+
+function NavItem({ label, active, onClick }: {
   label: string
   active: boolean
   onClick: () => void
@@ -36,48 +34,108 @@ function NavItem({
     <button
       onClick={onClick}
       style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        padding: '9px 14px', borderRadius: 8,
-        background: active ? 'rgba(124,58,237,0.12)' : 'transparent',
-        border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left',
-        color: active ? '#A78BFA' : '#5A5578',
-        fontSize: 13, fontWeight: active ? 600 : 400,
-        transition: 'all 120ms ease'
+        display: 'block',
+        padding: '9px 12px',
+        border: '2px solid transparent',
+        borderBottom: '2px solid #0A0A0A',
+        cursor: 'pointer',
+        width: '100%',
+        textAlign: 'left',
+        background: active ? '#665DF5' : 'transparent',
+        color: active ? '#FFFFFF' : '#0A0A0A',
+        fontSize: 11,
+        fontWeight: 700,
+        fontFamily: 'var(--font-mono)',
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        transition: 'background 0.1s, color 0.1s',
+      }}
+      onMouseEnter={(e) => {
+        if (!active) e.currentTarget.style.background = '#F5F0E8'
+      }}
+      onMouseLeave={(e) => {
+        if (!active) e.currentTarget.style.background = 'transparent'
       }}
     >
-      <span style={{ opacity: active ? 1 : 0.6 }}>{icon}</span>
       {label}
     </button>
   )
 }
 
-function HelperStatusDot({ status }: { status: string }) {
-  const color = status === 'connected' ? '#10B981' : status === 'starting' ? '#F59E0B' : '#3A3458'
-  const label = status === 'connected' ? 'Helper connected' : status === 'starting' ? 'Starting…' : 'Helper offline'
+// ─── Helper status ────────────────────────────────────────────────────────────
+
+function HelperStatus({ status, engine }: { status: string; engine: string }) {
+  const isCloud = engine === 'cloud'
+  const dot = status === 'connected' ? '#00C853' : status === 'starting' ? '#FFEB3B' : '#999'
+  const helperLabel = status === 'connected' ? 'CONNECTED' : status === 'starting' ? 'STARTING' : 'OFFLINE'
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 14px 16px' }}>
-      <div style={{ width: 6, height: 6, borderRadius: '50%', background: color, boxShadow: status === 'connected' ? '0 0 6px #10B981' : 'none' }} />
-      <span style={{ fontSize: 10, color: '#3A3458' }}>{label}</span>
+    <div style={{
+      padding: '8px 12px',
+      borderTop: '2px solid #0A0A0A',
+      display: 'flex', flexDirection: 'column', gap: 5
+    }}>
+      {isCloud ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <div style={{ width: 7, height: 7, flexShrink: 0, background: '#665DF5', border: '1.5px solid #665DF5' }} />
+          <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: '#665DF5' }}>
+            CLOUD — ONLINE
+          </span>
+        </div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <div style={{ width: 7, height: 7, background: dot, border: '1.5px solid #0A0A0A', flexShrink: 0 }} />
+            <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: '#666' }}>
+              {helperLabel}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <div style={{ width: 7, height: 7, flexShrink: 0, background: '#EDE8DE', border: '1.5px solid #0A0A0A' }} />
+            <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: '#999' }}>
+              LOCAL — OFFLINE
+            </span>
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
+// ─── App ──────────────────────────────────────────────────────────────────────
+
 export default function App() {
-  const [tab, setTab] = useState<Tab>('history')
+  const [view, setView] = useState<View>('home')
+  const [engine, setEngine] = useState<string>('local')
   const helperStatus = useAppStore((s) => s.helperStatus)
   const initIPC = useAppStore((s) => s.initIPC)
+  const onboardingStep = useAppStore((s) => s.onboardingStep)
+  const checkOnboardingStatus = useAppStore((s) => s.checkOnboardingStatus)
 
   useEffect(() => {
     const cleanup = initIPC()
+    checkOnboardingStatus()
+    ipc.getSettings().then((s) => setEngine(s.transcriptionEngine))
     return cleanup
   }, [])
+
+  useEffect(() => {
+    if (onboardingStep === null) {
+      ipc.getSettings().then((s) => setEngine(s.transcriptionEngine))
+    }
+  }, [onboardingStep])
+
+  if (onboardingStep !== null) {
+    return <OnboardingWizard />
+  }
 
   return (
     <div style={{
       display: 'flex', height: '100vh',
-      background: '#0A0A0F', color: '#F0EEFF',
-      fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
-      WebkitUserSelect: 'none', overflow: 'hidden'
+      background: 'var(--color-base)',
+      color: 'var(--color-text-primary)',
+      fontFamily: 'var(--font-sans)',
+      WebkitUserSelect: 'none',
+      overflow: 'hidden'
     }}>
       {/* Traffic-light drag region */}
       <div style={{
@@ -88,88 +146,43 @@ export default function App() {
       {/* Sidebar */}
       <div style={{
         width: 200, flexShrink: 0,
-        background: '#0D0D14',
-        borderRight: '1px solid #1A1A26',
+        background: '#FFFFFF',
+        borderRight: '3px solid #0A0A0A',
         display: 'flex', flexDirection: 'column',
-        paddingTop: 52
+        paddingTop: 44
       }}>
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px 24px' }}>
-          <VoxlitLogo />
+        {/* Logo row */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '14px 12px',
+          borderBottom: '3px solid #0A0A0A',
+        }}>
+          <VoxlitMark size={26} />
           <span style={{
-            fontFamily: "'Space Grotesk', Inter, system-ui",
-            fontSize: 17, fontWeight: 700,
-            letterSpacing: '-0.025em',
-            background: 'linear-gradient(135deg, #A78BFA 0%, #22D3EE 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            fontFamily: 'var(--font-mono)',
+            fontSize: 14, fontWeight: 700,
+            letterSpacing: '-0.01em',
+            color: '#0A0A0A'
           }}>
-            Voxlit
+            VOXLIT
           </span>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, padding: '0 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <NavItem
-            active={tab === 'history'}
-            onClick={() => setTab('history')}
-            label="History"
-            icon={
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4" />
-                <path d="M8 4.5V8l2.5 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            }
-          />
-          <NavItem
-            active={tab === 'settings'}
-            onClick={() => setTab('settings')}
-            label="Settings"
-            icon={
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4" />
-                <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-            }
-          />
+        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <NavItem active={view === 'home'}     onClick={() => setView('home')}     label="Home" />
+          <NavItem active={view === 'history'}  onClick={() => setView('history')}  label="History" />
+          <NavItem active={view === 'settings'} onClick={() => setView('settings')} label="Settings" />
         </nav>
 
-        {/* Helper status */}
-        <HelperStatusDot status={helperStatus} />
+        <HelperStatus status={helperStatus} engine={engine} />
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Header */}
-        <div style={{
-          padding: '52px 24px 16px',
-          borderBottom: '1px solid #1A1A26',
-          flexShrink: 0
-        }}>
-          <h1 style={{
-            margin: 0,
-            fontFamily: "'Space Grotesk', Inter, system-ui",
-            fontSize: 20, fontWeight: 700,
-            letterSpacing: '-0.02em', color: '#F0EEFF'
-          }}>
-            {tab === 'history' ? 'History' : 'Settings'}
-          </h1>
-          {tab === 'history' && (
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#5A5578' }}>
-              Your transcription sessions
-            </p>
-          )}
-          {tab === 'settings' && (
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#5A5578' }}>
-              Configure Voxlit to your workflow
-            </p>
-          )}
-        </div>
-
-        {/* Panel */}
-        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          {tab === 'history' ? <HistoryPanel /> : <SettingsPanel />}
-        </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--color-base)' }}>
+        {view === 'home'     && <HomePanel onNavigateHistory={() => setView('history')} />}
+        {view === 'history'  && <HistoryPanel />}
+        {view === 'settings' && <SettingsPanel />}
       </div>
     </div>
   )
