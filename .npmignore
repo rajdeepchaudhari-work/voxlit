@@ -1,0 +1,37 @@
+# Dev tooling — never ship
+.agents/
+.claude/
+.whisper-src/
+Glaido.app/
+
+# Source files (bundled by Vite into out/)
+src/
+native/
+scripts/
+build/
+tests/
+resources/models/
+
+# Config / tooling files
+*.md
+*.py
+*.sh
+*.cjs
+*.mjs
+tsconfig*.json
+vite*.ts
+vite*.js
+electron.vite.*
+postcss.config.*
+tailwind.config.*
+drizzle.config.*
+.eslintrc*
+.prettierrc*
+skills-lock.json
+playwright.config.*
+vitest.config.*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.log

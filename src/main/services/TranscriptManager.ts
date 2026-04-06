@@ -107,15 +107,52 @@ export class TranscriptManager extends EventEmitter {
     }
   }
 
+  /**
+   * Trim leading and trailing silence from float32 PCM to reduce whisper processing time.
+   * Silence = RMS of a 10ms window below threshold. Keeps 100ms padding on each side.
+   */
+  private trimSilence(pcm: Buffer, sampleRate = 16000): Buffer {
+    const THRESHOLD = 0.01       // RMS threshold
+    const WINDOW = sampleRate / 100   // 10ms window in samples
+    const PADDING = sampleRate / 10   // 100ms padding in samples
+    const samples = pcm.length / 4    // float32 = 4 bytes
+
+    function rms(start: number, len: number): number {
+      let sum = 0
+      for (let i = start; i < start + len && i < samples; i++) {
+        const v = pcm.readFloatLE(i * 4)
+        sum += v * v
+      }
+      return Math.sqrt(sum / len)
+    }
+
+    let startSample = 0
+    for (let i = 0; i < samples - WINDOW; i += WINDOW) {
+      if (rms(i, WINDOW) > THRESHOLD) { startSample = Math.max(0, i - PADDING); break }
+    }
+
+    let endSample = samples
+    for (let i = samples - WINDOW; i > startSample; i -= WINDOW) {
+      if (rms(i, WINDOW) > THRESHOLD) { endSample = Math.min(samples, i + WINDOW + PADDING); break }
+    }
+
+    return pcm.slice(startSample * 4, endSample * 4)
+  }
+
   private async transcribeLocal(pcm: Buffer, modelName = 'ggml-base.en'): Promise<string> {
     // Wait for any in-flight warmup — two whisper-cli processes using Metal simultaneously
     // causes GGML_ASSERT([rsets->data count] == 0) crash on the second process.
     await this.warmupDone
 
+    // Trim silence — reduces audio length sent to whisper, speeds up processing
+    const trimmed = this.trimSilence(pcm)
+    // If trimming left less than 0.1s of audio, nothing meaningful was said
+    if (trimmed.length < 16000 * 4 * 0.1) return ''
+
     const wavPath = join(tmpdir(), `voxlit_${Date.now()}.wav`)
 
     try {
-      writeFileSync(wavPath, this.pcmToWav(pcm))
+      writeFileSync(wavPath, this.pcmToWav(trimmed))
 
       const binaryName = process.arch === 'arm64' ? 'whisper-cli-arm64' : 'whisper-cli-x64'
       const binaryPath = app.isPackaged
@@ -128,16 +165,19 @@ export class TranscriptManager extends EventEmitter {
         : join(app.getAppPath(), 'resources/models', modelFile)
 
       const isLarge = modelName.includes('large')
-      const threads = String(Math.min(8, require('os').cpus().length))
+      const cpuCount = require('os').cpus().length
+      // On Apple Silicon use all performance cores (up to 8); on Intel cap at 4
+      const threads = String(process.arch === 'arm64' ? Math.min(8, cpuCount) : Math.min(4, cpuCount))
       const args = [
         '-m', modelPath,
         '-f', wavPath,
         '--no-prints',
+        '--no-timestamps',  // skip timestamp generation — saves ~15% processing time
         '--language', 'en',
         '-t', threads,
         ...(isLarge
           ? ['--beam-size', '5']   // large model benefits from beam search
-          : ['--beam-size', '1']), // small/base: greedy is faster with negligible accuracy loss
+          : ['--beam-size', '1', '--best-of', '1']), // greedy, no candidates — fastest path
       ]
 
       return await new Promise<string>((resolve, reject) => {

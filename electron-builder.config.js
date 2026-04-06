@@ -5,42 +5,29 @@ module.exports = {
   copyright: 'Copyright © 2026 Voxlit Contributors',
   directories: {
     buildResources: 'resources',
-    output: 'dist'
+    output: 'dist',
+    // Clean temp dir created by scripts/stage-build.js — lives outside the project
+    // root so electron-builder never bundles .whisper-src, .agents, Glaido.app, etc.
+    app: '/tmp/voxlit-clean',
   },
-  files: [
-    'out/**/*',
-    {
-      from: 'resources/icons',
-      to: 'resources/icons'
-    },
-    {
-      from: 'resources/models',
-      to: 'resources/models',
-      filter: ['ggml-base.en.bin']
-    },
-    {
-      from: 'resources/native',
-      to: 'resources/native'
-    },
-    {
-      from: 'src/main/db/migrations',
-      to: 'migrations'
-    }
+  files: ['**/*', '!**/*.map'],
+  // Files placed in Contents/Resources/ — accessible via process.resourcesPath
+  extraResources: [
+    { from: 'resources/icons', to: 'icons' },
+    { from: 'resources/native', to: 'native' },
+    { from: 'src/main/db/migrations', to: 'migrations' },
   ],
-  // Native addons and binaries must be unpacked from the asar archive
+  // Native addon must be unpacked from ASAR to be loaded at runtime
   asarUnpack: [
     'node_modules/better-sqlite3/**/*',
-    'resources/native/**/*',
-    'resources/binaries/**/*'
   ],
   mac: {
-    target: [{ target: 'dmg', arch: ['universal'] }],
+    target: [{ target: 'dmg', arch: ['arm64'] }],
     category: 'public.app-category.productivity',
-    entitlements: 'resources/entitlements.mac.plist',
-    entitlementsInherit: 'resources/entitlements.mac.plist',
-    hardenedRuntime: true,
     gatekeeperAssess: false,
-    icon: 'resources/icons/icon.icns'
+    identity: 'VoxlitDev',
+    // hardenedRuntime requires an Apple Developer ID cert — off for local dev builds
+    hardenedRuntime: false,
   },
   dmg: {
     title: 'Voxlit ${version}',

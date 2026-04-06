@@ -20,7 +20,8 @@ export const IPC = {
   GET_SYSTEM_INFO: 'voxlit:get-system-info',
   GET_MODEL_STATUS: 'voxlit:get-model-status',
   DOWNLOAD_MODEL: 'voxlit:download-model',
-  MODEL_DOWNLOAD_PROGRESS: 'voxlit:model-download-progress'
+  MODEL_DOWNLOAD_PROGRESS: 'voxlit:model-download-progress',
+  RELAUNCH: 'voxlit:relaunch'
 } as const
 
 // ─── Recording ────────────────────────────────────────────────────────────────

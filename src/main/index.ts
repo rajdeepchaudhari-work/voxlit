@@ -81,7 +81,7 @@ function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 900,
     height: 650,
-    show: process.env['NODE_ENV'] === 'development',  // show immediately in dev
+    show: true,
     backgroundColor: '#0A0A0F',
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 16, y: 16 },
@@ -110,7 +110,10 @@ function createMainWindow() {
 }
 
 function createTray() {
-  const iconPath = join(__dirname, '../../resources/icons/tray.png')
+  const iconsDir = app.isPackaged
+    ? join(process.resourcesPath, 'icons')
+    : join(__dirname, '../../resources/icons')
+  const iconPath = join(iconsDir, 'tray.png')
   const icon = nativeImage.createFromPath(iconPath)
   icon.setTemplateImage(true)   // lets macOS invert for dark/light menu bar
   tray = new Tray(icon)
@@ -235,8 +238,10 @@ app.whenReady().then(() => {
   sessionStore.init()
 
   // Set custom dock icon
-  const dockIconPath = join(__dirname, '../../resources/icons/icon.png')
-  if (app.dock) app.dock.setIcon(nativeImage.createFromPath(dockIconPath))
+  const iconsDir = app.isPackaged
+    ? join(process.resourcesPath, 'icons')
+    : join(__dirname, '../../resources/icons')
+  if (app.dock) app.dock.setIcon(nativeImage.createFromPath(join(iconsDir, 'icon.png')))
 
   createPillWindow()
   createMainWindow()

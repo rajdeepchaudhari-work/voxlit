@@ -36,6 +36,7 @@ declare global {
       getModelStatus: (name: string) => Promise<ModelStatus>
       downloadModel: (name: string) => Promise<void>
       onModelDownloadProgress: (cb: (data: ModelDownloadProgress) => void) => Unsubscribe
+      relaunch: () => Promise<void>
     }
   }
 }
