@@ -16,7 +16,11 @@ export const IPC = {
   DELETE_SESSION: 'voxlit:delete-session',
   CHECK_PERMISSIONS: 'voxlit:check-permissions',
   REQUEST_PERMISSION: 'voxlit:request-permission',
-  INJECT_TEXT: 'voxlit:inject-text'
+  INJECT_TEXT: 'voxlit:inject-text',
+  GET_SYSTEM_INFO: 'voxlit:get-system-info',
+  GET_MODEL_STATUS: 'voxlit:get-model-status',
+  DOWNLOAD_MODEL: 'voxlit:download-model',
+  MODEL_DOWNLOAD_PROGRESS: 'voxlit:model-download-progress'
 } as const
 
 // ─── Recording ────────────────────────────────────────────────────────────────
@@ -51,7 +55,7 @@ export interface HelperStatusChange {
 // ─── Settings ─────────────────────────────────────────────────────────────────
 
 export type TranscriptionEngine = 'local' | 'cloud'
-export type CloudProvider = 'groq' | 'openai'
+export type CloudProvider = 'openai'
 export type HotkeyMode = 'push-to-talk' | 'toggle'
 
 export interface VoxlitSettings {
@@ -60,13 +64,13 @@ export interface VoxlitSettings {
   transcriptionEngine: TranscriptionEngine
   cloudProvider: CloudProvider
   openaiApiKey?: string
-  groqApiKey?: string
   localModel: string          // e.g. "ggml-base.en"
   vadSensitivity: number      // 0.0 – 1.0
   fillerWordFilter: boolean
   customDictionary: string[]
   launchAtLogin: boolean
   menubarOnly: boolean
+  hasCompletedOnboarding?: boolean
 }
 
 // ─── Sessions / History ───────────────────────────────────────────────────────
@@ -89,6 +93,28 @@ export interface Entry {
   durationMs: number | null
   confidence: number | null
   engine: 'local' | 'cloud'
+}
+
+// ─── System / Models ──────────────────────────────────────────────────────────
+
+export interface SystemInfo {
+  totalRamGb: number
+  freeRamGb: number
+  freeDiskGb: number
+}
+
+export interface ModelStatus {
+  name: string
+  exists: boolean
+  sizeBytes: number
+}
+
+export interface ModelDownloadProgress {
+  model: string
+  bytesReceived: number
+  totalBytes: number
+  done: boolean
+  error?: string
 }
 
 // ─── Permissions ──────────────────────────────────────────────────────────────

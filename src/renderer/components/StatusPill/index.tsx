@@ -1,18 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../../store/useAppStore'
+import logoSrc from '../../assets/logo.png'
 
 const BAR_COUNT = 12
 
-// Voxlit pill badge — squircle with 3-bar waveform mark
+// Voxlit pill badge — real logo with state ring
 function VoxlitMark({ color }: { color: string }) {
   return (
-    <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
-      <rect x="1" y="1" width="36" height="36" rx="11" fill="#0A0A0F" stroke={color} strokeWidth="1.5" />
-      {/* 3 bars matching app icon */}
-      <rect x="10" y="14" width="4.5" height="10" rx="2.25" fill={color} />
-      <rect x="16.75" y="10" width="4.5" height="18" rx="2.25" fill={color} />
-      <rect x="23.5" y="14" width="4.5" height="10" rx="2.25" fill={color} />
-    </svg>
+    <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
+      <img
+        src={logoSrc}
+        width={36}
+        height={36}
+        style={{ borderRadius: 7, display: 'block', objectFit: 'cover' }}
+        draggable={false}
+      />
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 7,
+        border: `2.5px solid ${color}`,
+        pointerEvents: 'none'
+      }} />
+    </div>
   )
 }
 
@@ -93,10 +101,10 @@ function TranscriptFlash({ text }: { text: string | null }) {
       className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap max-w-xs overflow-hidden"
       style={{
         background: 'rgba(10,10,15,0.97)',
-        border: '1px solid rgba(46,46,74,0.9)',
+        border: '1px solid rgba(31,41,64,0.9)',
         borderRadius: 8,
         padding: '5px 12px',
-        fontFamily: "'JetBrains Mono', monospace",
+        fontFamily: "'Geist Mono', 'SF Mono', monospace",
         fontSize: 12,
         color: '#F0EEFF',
         boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
@@ -109,9 +117,9 @@ function TranscriptFlash({ text }: { text: string | null }) {
 }
 
 const STATE = {
-  listening: { color: '#22D3EE', glow: 'rgba(34,211,238,0.5)', glowOuter: 'rgba(34,211,238,0.15)' },
-  processing: { color: '#A78BFA', glow: 'rgba(167,139,250,0.5)', glowOuter: 'rgba(124,58,237,0.15)' },
-  error:      { color: '#EF4444', glow: 'rgba(239,68,68,0.5)',   glowOuter: 'rgba(239,68,68,0.1)' },
+  listening:  { color: '#FFEB3B', glow: 'rgba(255,235,59,0.6)',  glowOuter: 'rgba(255,235,59,0.2)', label: 'LISTENING' },
+  processing: { color: '#665DF5', glow: 'rgba(102,93,245,0.6)',  glowOuter: 'rgba(102,93,245,0.2)', label: 'PROCESSING' },
+  error:      { color: '#FF1744', glow: 'rgba(255,23,68,0.6)',   glowOuter: 'rgba(255,23,68,0.15)', label: 'ERROR' },
 }
 
 export default function StatusPill() {
@@ -122,7 +130,7 @@ export default function StatusPill() {
   if (recordingState === 'idle' && !lastTranscript) return null
 
   const activeState = (recordingState === 'idle' ? 'processing' : recordingState) as keyof typeof STATE
-  const { color, glow, glowOuter } = STATE[activeState] ?? STATE.listening
+  const { color, glow, glowOuter, label } = STATE[activeState] ?? STATE.listening
 
   return (
     <div
@@ -135,20 +143,17 @@ export default function StatusPill() {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 14,
-          padding: '0 16px 0 8px',
-          height: 48,
-          background: 'rgba(10, 10, 15, 0.96)',
-          border: `2px solid ${color}`,
-          borderRadius: 9999,
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          boxShadow: `0 0 0 1px ${glowOuter}, 0 0 20px ${glow}, 0 0 50px ${glowOuter}, inset 0 1px 0 rgba(255,255,255,0.04)`,
-          transition: 'border-color 200ms ease, box-shadow 200ms ease'
+          gap: 10,
+          padding: '0 14px 0 6px',
+          height: 50,
+          background: '#FFFFFF',
+          border: `3px solid #0A0A0A`,
+          boxShadow: `4px 4px 0px #0A0A0A`,
+          transition: 'box-shadow 0.1s'
         }}
       >
         {/* Logo badge */}
-        <div style={{ flexShrink: 0, filter: `drop-shadow(0 0 6px ${glow})` }}>
+        <div style={{ flexShrink: 0 }}>
           <VoxlitMark color={color} />
         </div>
 
@@ -160,6 +165,14 @@ export default function StatusPill() {
             state={recordingState as 'listening' | 'processing' | 'error'}
           />
         )}
+
+        {/* State label */}
+        <span style={{
+          fontFamily: "'Geist Mono', monospace", fontSize: 9, fontWeight: 700,
+          letterSpacing: '0.1em', color: '#0A0A0A', marginLeft: 2
+        }}>
+          {label}
+        </span>
       </div>
     </div>
   )

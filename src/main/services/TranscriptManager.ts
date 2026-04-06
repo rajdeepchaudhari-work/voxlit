@@ -25,7 +25,7 @@ export class TranscriptManager extends EventEmitter {
 
   constructor(
     private readonly sessionStore: SessionStore,
-    private readonly getCloudConfig: () => { provider: string; groqApiKey?: string; openaiApiKey?: string },
+    private readonly getCloudConfig: () => { openaiApiKey?: string },
     private readonly getDefaultModel: () => string = () => 'ggml-small.en'
   ) {
     super()
@@ -167,19 +167,14 @@ export class TranscriptManager extends EventEmitter {
   }
 
   private async transcribeCloud(pcm: Buffer): Promise<string> {
-    const { provider, groqApiKey, openaiApiKey } = this.getCloudConfig()
+    const { openaiApiKey } = this.getCloudConfig()
 
-    const isOpenAI = provider === 'openai'
-    const apiKey = isOpenAI ? openaiApiKey : groqApiKey
-    if (!apiKey) throw new Error(
-      isOpenAI
-        ? 'No OpenAI API key — add it in Settings → Transcription'
-        : 'No Groq API key — add it in Settings → Transcription'
-    )
+    if (!openaiApiKey) throw new Error('No OpenAI API key — add it in Settings → Transcription')
 
+    const apiKey = openaiApiKey
     const wav = this.pcmToWav(pcm)
     const boundary = `voxlit${Date.now()}`
-    const model = isOpenAI ? 'whisper-1' : 'whisper-large-v3-turbo'
+    const model = 'whisper-1'
 
     const fieldPart = Buffer.from(
       `--${boundary}\r\n` +
@@ -193,9 +188,9 @@ export class TranscriptManager extends EventEmitter {
     const tail = Buffer.from(`\r\n--${boundary}--\r\n`)
     const body = Buffer.concat([fieldPart, wav, tail])
 
-    const hostname = isOpenAI ? 'api.openai.com' : 'api.groq.com'
-    const path = isOpenAI ? '/v1/audio/transcriptions' : '/openai/v1/audio/transcriptions'
-    const providerName = isOpenAI ? 'OpenAI' : 'Groq'
+    const hostname = 'api.openai.com'
+    const path = '/v1/audio/transcriptions'
+    const providerName = 'OpenAI'
 
     return new Promise<string>((resolve, reject) => {
       const req = https.request(
