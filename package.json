@@ -1,6 +1,6 @@
 {
   "name": "voxlit",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Privacy-first, open-source macOS voice transcription app",
   "main": "out/main/index.js",
   "author": "Voxlit Contributors",
@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
-    "build:mac": "electron-vite build && electron-builder --mac --universal",
+    "build:mac": "electron-vite build && node scripts/stage-build.js && electron-builder --mac --arm64",
     "build:native": "./scripts/build-native.sh",
     "build:whisper": "./scripts/build-whisper.sh",
     "preview": "electron-vite preview",
@@ -26,14 +26,14 @@
     "sign:dev": "./scripts/sign-dev.sh"
   },
   "dependencies": {
-    "better-sqlite3": "^12.8.0",
+    "better-sqlite3": "^12.8.0"
+  },
+  "devDependencies": {
     "drizzle-orm": "^0.45.0",
     "electron-store": "^8.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "zustand": "^5.0.0"
-  },
-  "devDependencies": {
+    "zustand": "^5.0.0",
     "@electron/rebuild": "^4.0.3",
     "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^20.17.0",

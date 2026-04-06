@@ -1,4 +1,4 @@
-import { ipcMain, systemPreferences, shell, BrowserWindow } from 'electron'
+import { ipcMain, systemPreferences, shell, BrowserWindow, app } from 'electron'
 import { IPC } from '@shared/ipc-types'
 import { join } from 'path'
 import { existsSync, statSync, createWriteStream, mkdirSync } from 'fs'
@@ -145,5 +145,10 @@ export function registerHandlers(deps: {
 
   ipcMain.handle(IPC.INJECT_TEXT, (_, text: string) => {
     socketManager.sendInject(text)
+  })
+
+  ipcMain.handle(IPC.RELAUNCH, () => {
+    app.relaunch()
+    app.exit(0)
   })
 }

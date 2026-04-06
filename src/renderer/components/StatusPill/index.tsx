@@ -1,6 +1,39 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import logoSrc from '../../assets/logo.png'
+import soundStartUrl from '../../assets/sound-start.wav'
+import soundEndUrl from '../../assets/sound-end.wav'
+
+// ─── Sound effects (same approach as Glaido) ─────────────────────────────────
+
+let audioCtx: AudioContext | null = null
+const bufferCache = new Map<string, AudioBuffer>()
+
+async function getCtx(): Promise<AudioContext> {
+  if (!audioCtx) audioCtx = new AudioContext()
+  if (audioCtx.state === 'suspended') await audioCtx.resume()
+  return audioCtx
+}
+
+async function playFile(url: string) {
+  try {
+    const ctx = await getCtx()
+    let buf = bufferCache.get(url)
+    if (!buf) {
+      const res = await fetch(url)
+      const raw = await res.arrayBuffer()
+      buf = await ctx.decodeAudioData(raw)
+      bufferCache.set(url, buf)
+    }
+    const src = ctx.createBufferSource()
+    src.buffer = buf
+    src.connect(ctx.destination)
+    src.start()
+  } catch (_) {}
+}
+
+const playStartSound = () => playFile(soundStartUrl)
+const playStopSound  = () => playFile(soundEndUrl)
 
 const BAR_COUNT = 12
 
@@ -125,9 +158,16 @@ const STATE = {
 export default function StatusPill() {
   const recordingState = useAppStore((s) => s.recordingState)
   const barAmplitudes = useAppStore((s) => s.barAmplitudes)
-  const lastTranscript = useAppStore((s) => s.lastTranscript)
+  const prevStateRef = useRef(recordingState)
 
-  if (recordingState === 'idle' && !lastTranscript) return null
+  useEffect(() => {
+    const prev = prevStateRef.current
+    prevStateRef.current = recordingState
+    if (prev !== 'listening' && recordingState === 'listening') playStartSound()
+    if (prev === 'listening' && recordingState !== 'listening') playStopSound()
+  }, [recordingState])
+
+  if (recordingState === 'idle') return null
 
   const activeState = (recordingState === 'idle' ? 'processing' : recordingState) as keyof typeof STATE
   const { color, glow, glowOuter, label } = STATE[activeState] ?? STATE.listening
@@ -137,8 +177,6 @@ export default function StatusPill() {
       className="relative flex items-center justify-center w-full h-full"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
-      <TranscriptFlash text={lastTranscript?.text ?? null} />
-
       <div
         style={{
           display: 'flex',

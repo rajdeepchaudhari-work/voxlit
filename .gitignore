@@ -1,16 +1,25 @@
+# Dependencies
 node_modules/
+
+# Build output
 out/
 dist/
+staging/
+
+# Electron ASAR
 *.asar
+
+# macOS
 .DS_Store
+Thumbs.db
 
-# Models are large binaries — never commit
-resources/models/*.bin
-resources/models/*.gguf
-
-# Pre-built binaries — built by scripts/build-native.sh and scripts/build-whisper.sh
+# Models — large binaries, downloaded on demand
+resources/models/
 resources/binaries/
 resources/native/
+
+# Swift build cache
+native/.build/
 
 # electron-store encrypted data
 *.json.enc
@@ -18,21 +27,24 @@ resources/native/
 # Test coverage
 coverage/
 
-# Drizzle generated migrations (optional — uncomment to track)
-# src/main/db/migrations/
-
-# OS
-Thumbs.db
-
+# Internal dev docs
 CLAUDE.md
 NAME_RESEARCH.md
 PROJECT_PLAN.md
 BRAND_IDENTITY.md
 Frontend-design.md
+frontend-design.md
 
+# Reference app
 Glaido.app/
-.whisper-src
 
+# Whisper source (built separately via scripts/build-whisper.sh)
+.whisper-src/
+
+# Claude Code / AI agent config
 .agents/
-
 .claude/
+
+# Env
+.env
+.env.*

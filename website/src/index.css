@@ -1,0 +1,464 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Custom Properties — matches app globals.css exactly ──────── */
+:root {
+  /* Surfaces */
+  --c-base:      #FFFDF7;
+  --c-surface-1: #FFFFFF;
+  --c-surface-2: #F5F0E8;
+  --c-surface-3: #EDE8DE;
+
+  /* Borders — always thick, always near-black */
+  --c-border:        #0A0A0A;
+  --c-border-subtle: rgba(10,10,10,0.15);
+
+  /* Brand purple — matches app --color-accent */
+  --c-accent:       #665DF5;
+  --c-accent-dim:   #4F49CC;
+  --c-accent-muted: rgba(102,93,245,0.12);
+  --c-accent-text:  #665DF5;
+
+  /* Yellow punch — matches app --color-amber */
+  --c-amber:       #FFEB3B;
+  --c-amber-muted: rgba(255,235,59,0.25);
+
+  /* Text */
+  --c-text:   #0A0A0A;
+  --c-text-2: #333333;
+  --c-text-3: #666666;
+
+  /* Semantic */
+  --c-success: #00C853;
+  --c-error:   #FF1744;
+
+  /* Brutalist shadows — zero blur, hard offset, always black */
+  --shadow:        4px 4px 0px #0A0A0A;
+  --shadow-hover:  6px 6px 0px #0A0A0A;
+  --shadow-active: 2px 2px 0px #0A0A0A;
+  --shadow-accent: 4px 4px 0px #665DF5;
+  --shadow-amber:  4px 4px 0px #0A0A0A;
+
+  /* Typography — matches app font stack */
+  --font-display: 'Space Grotesk', 'Geist', -apple-system, system-ui, sans-serif;
+  --font-body:    'Inter', 'Geist', -apple-system, system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Geist Mono', 'SF Mono', Menlo, monospace;
+
+  /* Brutalist motion — snappy, mechanical */
+  --t: 0.1s;
+  --ease: cubic-bezier(0,0,1,1);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--c-base);
+    color: var(--c-text);
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--c-base);
+    color: var(--c-text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  *:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--c-amber);
+    color: var(--c-text);
+  }
+
+  /* Scrollbar — matches app */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--c-surface-2); border-left: 2px solid var(--c-border); }
+  ::-webkit-scrollbar-thumb { background: var(--c-border); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--c-accent); }
+}
+
+/* ── Brutalist Component Classes ───────────────────────────────────── */
+@layer components {
+
+  /* ── Layout ── */
+  .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── Typography ── */
+  .overline {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-text-3);
+  }
+
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--c-text);
+  }
+
+  /* Purple accent text */
+  .accent-text {
+    color: var(--c-accent);
+  }
+
+  /* Yellow underline highlight — key word emphasis */
+  .highlight {
+    background: var(--c-amber);
+    padding: 0 4px;
+    display: inline;
+  }
+
+  /* ── Cards ── */
+  /* Standard white card — black border, black hard shadow */
+  .brut-card {
+    border: 3px solid var(--c-border);
+    background: var(--c-surface-1);
+    box-shadow: var(--shadow);
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .brut-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+  .brut-card:active {
+    box-shadow: var(--shadow-active);
+    transform: translate(2px, 2px);
+  }
+
+  /* Purple-accented card */
+  .brut-card-accent {
+    border: 3px solid var(--c-border);
+    background: var(--c-amber-muted);
+    box-shadow: var(--shadow);
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .brut-card-accent:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+
+  /* Yellow-filled hero card */
+  .brut-card-yellow {
+    border: 3px solid var(--c-border);
+    background: var(--c-amber);
+    box-shadow: var(--shadow);
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .brut-card-yellow:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+
+  /* Purple-filled card */
+  .brut-card-purple {
+    border: 3px solid var(--c-border);
+    background: var(--c-accent);
+    box-shadow: var(--shadow);
+    color: #FFFFFF;
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .brut-card-purple:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+
+  /* ── Buttons ── */
+  /* Primary — black bg, white text, hard shadow — matches app pattern */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #FFFFFF;
+    background: var(--c-text);
+    border: 3px solid var(--c-text);
+    border-radius: 0;
+    box-shadow: var(--shadow-accent);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease), background var(--t) var(--ease);
+  }
+  .btn-primary:hover {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+  .btn-primary:active {
+    box-shadow: var(--shadow-active);
+    transform: translate(2px, 2px);
+  }
+
+  /* Ghost — white bg, black border, hover inverts */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-text);
+    background: var(--c-surface-1);
+    border: 3px solid var(--c-border);
+    border-radius: 0;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background var(--t) var(--ease), color var(--t) var(--ease), box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .btn-ghost:hover {
+    background: var(--c-text);
+    color: #FFFFFF;
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+  .btn-ghost:active {
+    box-shadow: var(--shadow-active);
+    transform: translate(2px, 2px);
+  }
+
+  /* Yellow CTA button — matches stat card yellow */
+  .btn-yellow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-text);
+    background: var(--c-amber);
+    border: 3px solid var(--c-border);
+    border-radius: 0;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .btn-yellow:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+  .btn-yellow:active {
+    box-shadow: var(--shadow-active);
+    transform: translate(2px, 2px);
+  }
+
+  /* ── Terminal Window — stays dark contextually ── */
+  .terminal-window {
+    border: 3px solid var(--c-border);
+    background: #1A1A1A;
+    font-family: var(--font-mono);
+    box-shadow: var(--shadow);
+  }
+
+  .terminal-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-bottom: 3px solid var(--c-border);
+    background: #2A2A2A;
+  }
+
+  .terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0,0,0,0.3);
+  }
+
+  .terminal-content {
+    padding: 20px;
+    min-height: 200px;
+  }
+
+  /* ── Comparison Table ── */
+  .brut-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 3px solid var(--c-border);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    background: var(--c-surface-1);
+  }
+
+  .brut-table th {
+    padding: 12px 16px;
+    text-align: left;
+    border: 2px solid var(--c-border);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-text-3);
+    background: var(--c-surface-2);
+  }
+
+  .brut-table td {
+    padding: 12px 16px;
+    border: 2px solid var(--c-border-subtle);
+    color: var(--c-text-2);
+    vertical-align: middle;
+  }
+
+  .brut-table tr:hover td {
+    background: var(--c-surface-2);
+  }
+
+  /* Voxlit column highlight — yellow, matching stat card */
+  .brut-table .col-voxlit {
+    color: var(--c-text);
+    background: var(--c-amber-muted);
+  }
+
+  .brut-table thead .col-voxlit {
+    color: var(--c-text);
+    background: var(--c-amber);
+    border-color: var(--c-border);
+  }
+
+  /* ── Trust Pill — matches app badge style ── */
+  .trust-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border: 2px solid var(--c-border);
+    background: var(--c-surface-1);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--c-text-2);
+    white-space: nowrap;
+  }
+
+  /* ── Spec Chip ── */
+  .spec-chip {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 2px solid var(--c-border);
+    background: var(--c-surface-1);
+    transition: background var(--t) var(--ease), box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .spec-chip:hover {
+    background: var(--c-surface-2);
+    box-shadow: var(--shadow);
+    transform: translate(-2px, -2px);
+  }
+
+  /* ── Badge — matches app session badge ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: 2px solid var(--c-border);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .badge-purple {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+    background: var(--c-accent-muted);
+  }
+
+  .badge-yellow {
+    color: var(--c-text);
+    border-color: var(--c-border);
+    background: var(--c-amber);
+  }
+
+  .badge-green {
+    color: var(--c-success);
+    border-color: var(--c-success);
+    background: rgba(0,200,83,0.1);
+  }
+}
+
+/* ── Animations ────────────────────────────────────────────────────── */
+@keyframes terminal-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes waveform {
+  0%, 100% { transform: scaleY(0.25); }
+  50% { transform: scaleY(1); }
+}
+
+@keyframes pulse-rec {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ── Utility Animations ────────────────────────────────────────────── */
+@layer utilities {
+  .animate-terminal-blink {
+    animation: terminal-blink 1s step-end infinite;
+  }
+  .animate-pulse-rec {
+    animation: pulse-rec 1200ms linear infinite;
+  }
+
+  /* Waveform bars — green like the app success color */
+  .waveform-bar {
+    width: 3px;
+    background: var(--c-accent);
+    transform-origin: bottom center;
+  }
+  .waveform-bar:nth-child(1) { animation: waveform 700ms linear 0ms infinite; }
+  .waveform-bar:nth-child(2) { animation: waveform 700ms linear 100ms infinite; }
+  .waveform-bar:nth-child(3) { animation: waveform 700ms linear 200ms infinite; }
+  .waveform-bar:nth-child(4) { animation: waveform 700ms linear 100ms infinite; }
+  .waveform-bar:nth-child(5) { animation: waveform 700ms linear 0ms infinite; }
+}
+
+/* ── Subtle dot pattern — for section backgrounds ─────────────────── */
+.bg-dot-grid {
+  background-image: radial-gradient(circle, rgba(10,10,10,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}

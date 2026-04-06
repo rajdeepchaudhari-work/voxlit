@@ -79,5 +79,7 @@ contextBridge.exposeInMainWorld('voxlit', {
     const listener = (_: Electron.IpcRendererEvent, data: ModelDownloadProgress) => cb(data)
     ipcRenderer.on(IPC.MODEL_DOWNLOAD_PROGRESS, listener)
     return () => ipcRenderer.removeListener(IPC.MODEL_DOWNLOAD_PROGRESS, listener)
-  }
+  },
+
+  relaunch: (): Promise<void> => ipcRenderer.invoke(IPC.RELAUNCH)
 })
