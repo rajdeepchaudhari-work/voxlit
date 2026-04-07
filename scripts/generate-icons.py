@@ -1,41 +1,13 @@
 #!/usr/bin/env python3
 """
-Generate Voxlit app icons from SVG source.
-Requires: pip3 install cairosvg
+Generate Voxlit app icons from logo.png source.
+Requires: pip3 install cairosvg Pillow
 """
 
 import os
 import subprocess
 import cairosvg
-
-# ─── SVG source ───────────────────────────────────────────────────────────────
-# 1024x1024 master — dark squircle + white V lettermark on #665DF5 bg
-
-SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <!-- Background: #665DF5 squircle -->
-  <rect x="0" y="0" width="1024" height="1024" rx="224" fill="#665DF5"/>
-
-  <!-- Inner subtle gradient overlay -->
-  <rect x="0" y="0" width="1024" height="1024" rx="224"
-        fill="url(#topLight)" opacity="0.18"/>
-
-  <defs>
-    <linearGradient id="topLight" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="white"/>
-      <stop offset="100%" stop-color="black"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Bold V lettermark — white, rounded strokes -->
-  <polyline
-    points="200,270 512,760 824,270"
-    fill="none"
-    stroke="white"
-    stroke-width="142"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-</svg>"""
+from PIL import Image
 
 # ─── Tray icon SVG (monochrome, template for macOS menu bar) ──────────────────
 TRAY_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
@@ -64,24 +36,52 @@ OUTPUT_DIR = os.path.join(os.path.dirname(__file__), '..', 'resources', 'icons')
 ICONSET_DIR = os.path.join(OUTPUT_DIR, 'iconset.iconset')
 os.makedirs(ICONSET_DIR, exist_ok=True)
 
+# ─── Load logo.png and add macOS-standard padding ────────────────────────────
+# macOS app icons need ~12% inset padding so content doesn't touch squircle edges.
+# Without padding the icon looks oversized compared to system apps like Notes/Calendar.
+LOGO_PATH = os.path.join(OUTPUT_DIR, 'logo.png')
+MASTER_SIZE = 1024
+PADDING_PCT = 0.18  # 18% padding each side = 64% content area
+
+def make_padded(size):
+    from PIL import ImageDraw
+
+    # Outer margin — transparent space around the background shape
+    OUTER_MARGIN = 0.06  # 6% transparent gap on each side
+    outer = int(size * OUTER_MARGIN)
+
+    logo = Image.open(LOGO_PATH).convert('RGBA')
+
+    bg = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(bg)
+    r = int((size - outer * 2) * 0.225)
+    draw.rounded_rectangle([outer, outer, size - outer - 1, size - outer - 1], radius=r, fill=(102, 93, 245, 255))
+
+    # Paste logo centered with inner padding (relative to the background rect)
+    pad = outer + int((size - outer * 2) * PADDING_PCT)
+    inner = size - pad * 2
+    logo_resized = logo.resize((inner, inner), Image.LANCZOS)
+    bg.paste(logo_resized, (pad, pad), logo_resized)
+    return bg
+
 # ─── Generate iconset sizes ───────────────────────────────────────────────────
 SIZES = [16, 32, 64, 128, 256, 512, 1024]
 
 for size in SIZES:
-    # 1x
+    img = make_padded(size)
     path = os.path.join(ICONSET_DIR, f'icon_{size}x{size}.png')
-    cairosvg.svg2png(bytestring=SVG.encode(), write_to=path, output_width=size, output_height=size)
+    img.save(path)
     print(f'  ✓ icon_{size}x{size}.png')
 
-    # 2x (retina) — skip 1024 (no 2x needed)
     if size <= 512:
+        img2x = make_padded(size * 2)
         path2x = os.path.join(ICONSET_DIR, f'icon_{size}x{size}@2x.png')
-        cairosvg.svg2png(bytestring=SVG.encode(), write_to=path2x, output_width=size*2, output_height=size*2)
+        img2x.save(path2x)
         print(f'  ✓ icon_{size}x{size}@2x.png')
 
 # ─── Master icon.png (1024x1024) ─────────────────────────────────────────────
 master_path = os.path.join(OUTPUT_DIR, 'icon.png')
-cairosvg.svg2png(bytestring=SVG.encode(), write_to=master_path, output_width=1024, output_height=1024)
+make_padded(MASTER_SIZE).save(master_path)
 print(f'  ✓ icon.png (1024x1024)')
 
 # ─── Tray icons ───────────────────────────────────────────────────────────────
