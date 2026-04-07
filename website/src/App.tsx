@@ -7,6 +7,7 @@ import FeatureGrid from './components/FeatureGrid'
 import ComparisonTable from './components/ComparisonTable'
 import TechSpecs from './components/TechSpecs'
 import Testimonials from './components/Testimonials'
+import FAQ from './components/FAQ'
 import DownloadCTA from './components/DownloadCTA'
 import Footer from './components/Footer'
 
@@ -23,6 +24,7 @@ export default function App() {
         <ComparisonTable />
         <TechSpecs />
         <Testimonials />
+        <FAQ />
         <DownloadCTA />
       </main>
       <Footer />
