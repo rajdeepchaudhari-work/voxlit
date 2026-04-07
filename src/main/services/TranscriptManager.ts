@@ -85,7 +85,7 @@ export class TranscriptManager extends EventEmitter {
           ? await this.transcribeLocal(pcm, modelName)
           : await this.transcribeCloud(pcm)
 
-      if (text.trim()) {
+      if (text.trim() && !this.isHallucination(text)) {
         const durationMs = Date.now() - startMs
         const entry = this.sessionStore.addEntry({ rawText: text, durationMs, engine })
         const segment: TranscriptSegment = {
@@ -105,6 +105,27 @@ export class TranscriptManager extends EventEmitter {
     } finally {
       this.processNext()
     }
+  }
+
+  /**
+   * Whisper hallucinates common phrases when given silence or low-energy audio.
+   * Filter out known phantom outputs before emitting a segment.
+   */
+  private isHallucination(text: string): boolean {
+    const t = text.trim().toLowerCase().replace(/[.,!?]/g, '')
+    const PHANTOMS = new Set([
+      'thank you', 'thanks', 'bye', 'goodbye', 'bye bye',
+      'you', 'the', 'a', 'um', 'uh', 'hmm', 'hm',
+      'thank you for watching', 'thanks for watching',
+      'please subscribe', 'like and subscribe',
+      'subtitles by', 'transcribed by',
+      'you you', 'the the',
+      'okay', 'ok', 'yes', 'no',
+    ])
+    if (PHANTOMS.has(t)) return true
+    // Single character or empty after stripping punctuation
+    if (t.length <= 1) return true
+    return false
   }
 
   /**
@@ -206,7 +227,19 @@ export class TranscriptManager extends EventEmitter {
     }
   }
 
+  private audioRms(pcm: Buffer): number {
+    const samples = pcm.length / 4
+    let sum = 0
+    for (let i = 0; i < samples; i++) {
+      const v = pcm.readFloatLE(i * 4)
+      sum += v * v
+    }
+    return Math.sqrt(sum / samples)
+  }
+
   private async transcribeCloud(pcm: Buffer): Promise<string> {
+    // Skip cloud call entirely if audio is essentially silence
+    if (this.audioRms(pcm) < 0.005) return ''
     const { openaiApiKey } = this.getCloudConfig()
 
     if (!openaiApiKey) throw new Error('No OpenAI API key — add it in Settings → Transcription')
