@@ -24,8 +24,11 @@ struct TextInjector {
         // Re-activate the target app so it's frontmost before we inject
         app.activate(options: .activateIgnoringOtherApps)
 
-        // Wait for activation to complete, then inject
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+        // Use longer delay for apps that are slow to accept focus (Terminal, Notes)
+        let bundleId = app.bundleIdentifier ?? ""
+        let delay: Double = (bundleId == "com.apple.Terminal" || bundleId == "com.apple.Notes") ? 0.35 : 0.15
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             if !tryAXInsert(text) {
                 pasteboardFallback(text)
             }
@@ -41,8 +44,33 @@ struct TextInjector {
               let element = focusedElement else { return false }
 
         let axElement = element as! AXUIElement
-        let result = AXUIElementSetAttributeValue(axElement, kAXSelectedTextAttribute as CFString, text as CFTypeRef)
-        return result == .success
+
+        // Try 1: Replace selected text (works in most apps)
+        if AXUIElementSetAttributeValue(axElement, kAXSelectedTextAttribute as CFString, text as CFTypeRef) == .success {
+            return true
+        }
+
+        // Try 2: Insert via selected text range (works in Terminal, some text editors)
+        var rangeValue: AnyObject?
+        if AXUIElementCopyAttributeValue(axElement, kAXSelectedTextRangeAttribute as CFString, &rangeValue) == .success,
+           let range = rangeValue {
+            var currentValue: AnyObject?
+            if AXUIElementCopyAttributeValue(axElement, kAXValueAttribute as CFString, &currentValue) == .success,
+               let current = currentValue as? String {
+                // Get the range as CFRange
+                var cfRange = CFRange()
+                guard AXValueGetValue(range as! AXValue, .cfRange, &cfRange) else { return false }
+                var newString = current
+                let start = current.index(current.startIndex, offsetBy: min(cfRange.location, current.count))
+                let end = current.index(start, offsetBy: min(cfRange.length, current.count - cfRange.location))
+                newString.replaceSubrange(start..<end, with: text)
+                if AXUIElementSetAttributeValue(axElement, kAXValueAttribute as CFString, newString as CFTypeRef) == .success {
+                    return true
+                }
+            }
+        }
+
+        return false
     }
 
     // MARK: - Pasteboard fallback

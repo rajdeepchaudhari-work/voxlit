@@ -41,6 +41,7 @@ declare global {
       onUpdateAvailable: (cb: (info: UpdateInfo) => void) => Unsubscribe
       onUpdateDownloaded: (cb: (info: UpdateInfo) => void) => Unsubscribe
       installUpdate: () => Promise<void>
+      checkForUpdates: () => Promise<void>
     }
   }
 }

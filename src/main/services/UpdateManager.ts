@@ -43,3 +43,7 @@ export function initAutoUpdater(getMainWindow: () => BrowserWindow | null) {
 export function installUpdate() {
   autoUpdater.quitAndInstall(false, true)
 }
+
+export function checkForUpdates() {
+  return autoUpdater.checkForUpdates()
+}

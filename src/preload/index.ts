@@ -96,5 +96,6 @@ contextBridge.exposeInMainWorld('voxlit', {
     return () => ipcRenderer.removeListener(IPC.UPDATE_DOWNLOADED, listener)
   },
 
-  installUpdate: (): Promise<void> => ipcRenderer.invoke(IPC.INSTALL_UPDATE)
+  installUpdate: (): Promise<void> => ipcRenderer.invoke(IPC.INSTALL_UPDATE),
+  checkForUpdates: (): Promise<void> => ipcRenderer.invoke(IPC.CHECK_FOR_UPDATES)
 })

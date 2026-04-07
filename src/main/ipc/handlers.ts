@@ -1,5 +1,5 @@
 import { ipcMain, systemPreferences, shell, BrowserWindow, app } from 'electron'
-import { installUpdate } from '../services/UpdateManager'
+import { installUpdate, checkForUpdates } from '../services/UpdateManager'
 import { IPC } from '@shared/ipc-types'
 import { join } from 'path'
 import { existsSync, statSync, createWriteStream, mkdirSync } from 'fs'
@@ -155,5 +155,9 @@ export function registerHandlers(deps: {
 
   ipcMain.handle(IPC.INSTALL_UPDATE, () => {
     installUpdate()
+  })
+
+  ipcMain.handle(IPC.CHECK_FOR_UPDATES, () => {
+    if (app.isPackaged) checkForUpdates()?.catch(() => {})
   })
 }

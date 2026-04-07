@@ -103,6 +103,42 @@ function Slider({ value, onChange, min = 0, max = 1, step = 0.05 }: {
   )
 }
 
+function CheckForUpdatesRow() {
+  const [status, setStatus] = useState<'idle' | 'checking' | 'uptodate'>('idle')
+
+  async function handleCheck() {
+    setStatus('checking')
+    await ipc.checkForUpdates()
+    // Give the updater 4s to fire UPDATE_AVAILABLE if there's a new version
+    setTimeout(() => setStatus('uptodate'), 4000)
+  }
+
+  return (
+    <Row label="Updates" hint="Current version: 1.0.1">
+      <button
+        onClick={handleCheck}
+        disabled={status === 'checking'}
+        style={{
+          padding: '5px 14px',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: '0.06em',
+          background: status === 'uptodate' ? '#FFFFFF' : '#0A0A0A',
+          color: status === 'uptodate' ? '#666' : '#FFFFFF',
+          border: '2px solid #0A0A0A',
+          boxShadow: status !== 'checking' ? '2px 2px 0px #0A0A0A' : 'none',
+          cursor: status === 'checking' ? 'default' : 'pointer',
+          opacity: status === 'checking' ? 0.6 : 1,
+          textTransform: 'uppercase',
+        }}
+      >
+        {status === 'checking' ? 'CHECKING…' : status === 'uptodate' ? 'UP TO DATE' : 'CHECK NOW'}
+      </button>
+    </Row>
+  )
+}
+
 export default function SettingsPanel() {
   const [settings, setSettings] = useState<VoxlitSettings | null>(null)
   const [openaiKeyInput, setOpenaiKeyInput] = useState('')
@@ -347,6 +383,8 @@ export default function SettingsPanel() {
       <Row label="Menubar only" hint="Hide from Dock — only accessible from menu bar">
         <Toggle value={settings.menubarOnly} onChange={(v) => set('menubarOnly', v)} />
       </Row>
+
+      <CheckForUpdatesRow />
 
       <div style={{ height: 48 }} />
     </div>
