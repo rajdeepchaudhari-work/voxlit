@@ -26,10 +26,10 @@
     "sign:dev": "./scripts/sign-dev.sh"
   },
   "dependencies": {
-    "better-sqlite3": "^12.8.0",
-    "electron-updater": "^6.8.3"
+    "better-sqlite3": "^12.8.0"
   },
   "devDependencies": {
+    "electron-updater": "^6.8.3",
     "@electron/rebuild": "^4.0.3",
     "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^20.17.0",
