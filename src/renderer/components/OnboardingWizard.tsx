@@ -619,7 +619,8 @@ const HOTKEY_OPTIONS = [
 
 function DoneStep({ settings, onFinish }: { settings: VoxlitSettings | null; onFinish: () => void }) {
   const [hotkey, setHotkey] = useState(settings?.hotkeyPrimary ?? 'Fn')
-  const [finishing, setFinishing] = useState(false)
+  const [showRestartDialog, setShowRestartDialog] = useState(false)
+  const [restarting, setRestarting] = useState(false)
 
   async function selectHotkey(value: string) {
     setHotkey(value)
@@ -627,62 +628,90 @@ function DoneStep({ settings, onFinish }: { settings: VoxlitSettings | null; onF
   }
 
   async function handleLaunch() {
-    setFinishing(true)
     await onFinish()
-    // No restart needed — completeOnboarding() saves the flag and dismisses the wizard
+    setShowRestartDialog(true)
+  }
+
+  async function handleRestart() {
+    setRestarting(true)
+    await ipc.relaunch()
   }
 
   return (
     <div className="animate-onboarding-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 0 }}>
-      <h2 style={{
-        fontSize: 24, fontWeight: 700, letterSpacing: '-0.03em',
-        color: '#0A0A0A', fontFamily: 'var(--font-mono)', textTransform: 'uppercase'
-      }}>
-        Set Your Hotkey
-      </h2>
-      <p style={{ marginTop: 8, fontSize: 11, color: '#666', lineHeight: 1.6, fontFamily: 'var(--font-mono)', marginBottom: 20 }}>
-        Hold this key to dictate into any app.<br/>You can change it anytime in Settings.
-      </p>
+      {showRestartDialog ? (
+        <>
+          <div style={{
+            width: 52, height: 52, borderRadius: 14, marginBottom: 16,
+            background: '#E8F5E9', border: '2px solid #0A0A0A',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <span style={{ fontSize: 24 }}>🔄</span>
+          </div>
+          <h2 style={{
+            fontSize: 20, fontWeight: 700, letterSpacing: '-0.03em',
+            color: '#0A0A0A', fontFamily: 'var(--font-mono)', textTransform: 'uppercase'
+          }}>
+            Restart Required
+          </h2>
+          <p style={{ marginTop: 10, fontSize: 12, color: '#555', lineHeight: 1.7, fontFamily: 'var(--font-mono)', maxWidth: 280, marginBottom: 24 }}>
+            Voxlit needs to restart to apply your settings and connect the helper process.
+          </p>
+          <PrimaryButton onClick={handleRestart} disabled={restarting}>
+            {restarting ? 'Restarting…' : 'Restart Voxlit →'}
+          </PrimaryButton>
+        </>
+      ) : (
+        <>
+          <h2 style={{
+            fontSize: 24, fontWeight: 700, letterSpacing: '-0.03em',
+            color: '#0A0A0A', fontFamily: 'var(--font-mono)', textTransform: 'uppercase'
+          }}>
+            Set Your Hotkey
+          </h2>
+          <p style={{ marginTop: 8, fontSize: 11, color: '#666', lineHeight: 1.6, fontFamily: 'var(--font-mono)', marginBottom: 20 }}>
+            Hold this key to dictate into any app.<br/>You can change it anytime in Settings.
+          </p>
 
-      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
-        {HOTKEY_OPTIONS.map(({ value, label, desc }) => {
-          const active = hotkey === value
-          return (
-            <button
-              key={value}
-              onClick={() => selectHotkey(value)}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '10px 14px', cursor: 'pointer', textAlign: 'left',
-                background: active ? '#665DF5' : '#FFFFFF',
-                border: `2px solid #0A0A0A`,
-                boxShadow: active ? '3px 3px 0px #0A0A0A' : '2px 2px 0px #0A0A0A',
-                transition: 'transform 0.1s, box-shadow 0.1s'
-              }}
-              onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#F5F0E8' }}
-              onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = active ? '#665DF5' : '#FFFFFF' }}
-            >
-              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: active ? '#FFFFFF' : '#0A0A0A', fontWeight: 700, letterSpacing: '0.04em' }}>
-                {desc}
-              </span>
-              <kbd style={{
-                fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700,
-                background: active ? 'rgba(255,255,255,0.2)' : '#FFEB3B',
-                border: `2px solid ${active ? 'rgba(255,255,255,0.4)' : '#0A0A0A'}`,
-                padding: '3px 10px',
-                color: active ? '#FFFFFF' : '#0A0A0A',
-                letterSpacing: '0.04em'
-              }}>
-                {label}
-              </kbd>
-            </button>
-          )
-        })}
-      </div>
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
+            {HOTKEY_OPTIONS.map(({ value, label, desc }) => {
+              const active = hotkey === value
+              return (
+                <button
+                  key={value}
+                  onClick={() => selectHotkey(value)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 14px', cursor: 'pointer', textAlign: 'left',
+                    background: active ? '#665DF5' : '#FFFFFF',
+                    border: `2px solid #0A0A0A`,
+                    boxShadow: active ? '3px 3px 0px #0A0A0A' : '2px 2px 0px #0A0A0A',
+                    transition: 'transform 0.1s, box-shadow 0.1s'
+                  }}
+                  onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#F5F0E8' }}
+                  onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = active ? '#665DF5' : '#FFFFFF' }}
+                >
+                  <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: active ? '#FFFFFF' : '#0A0A0A', fontWeight: 700, letterSpacing: '0.04em' }}>
+                    {desc}
+                  </span>
+                  <kbd style={{
+                    fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700,
+                    background: active ? 'rgba(255,255,255,0.2)' : '#FFEB3B',
+                    border: `2px solid ${active ? 'rgba(255,255,255,0.4)' : '#0A0A0A'}`,
+                    padding: '3px 10px',
+                    color: active ? '#FFFFFF' : '#0A0A0A',
+                    letterSpacing: '0.04em'
+                  }}>
+                    {label}
+                  </kbd>
+                </button>
+              )
+            })}
+          </div>
 
-      <PrimaryButton onClick={handleLaunch} disabled={finishing}>
-        {finishing ? 'Starting…' : "Let's go →"}
-      </PrimaryButton>
+          <PrimaryButton onClick={handleLaunch}>Done — Restart & Launch →</PrimaryButton>
+        </>
+      )}
     </div>
   )
 }
