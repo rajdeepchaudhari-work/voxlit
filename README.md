@@ -10,6 +10,14 @@
 </p>
 
 <p align="center">
+  <a href="https://voxlit.co"><strong>voxlit.co</strong></a> &nbsp;·&nbsp;
+  <a href="https://github.com/rajdeepchaudhari-work/voxlit/releases/latest">Download</a>
+</p>
+
+<p align="center">
+  <a href="https://voxlit.co">
+    <img src="https://img.shields.io/badge/website-voxlit.co-7C3AED?style=flat-square" alt="Website" />
+  </a>
   <a href="https://github.com/rajdeepchaudhari-work/voxlit/releases/latest">
     <img src="https://img.shields.io/github/v/release/rajdeepchaudhari-work/voxlit?style=flat-square&color=7C3AED&label=Download" alt="Latest Release" />
   </a>
