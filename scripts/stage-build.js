@@ -85,5 +85,14 @@ for (const pkg of ['better-sqlite3', 'bindings', 'file-uri-to-path']) {
   }
 }
 
+// electron-builder needs icon.icns at buildResources root (not in a subdirectory)
+const iconSrc = path.join(root, 'resources', 'icons', 'icon.icns')
+const iconDst = path.join(clean, 'resources', 'icon.icns')
+if (fs.existsSync(iconSrc)) {
+  fs.mkdirSync(path.join(clean, 'resources'), { recursive: true })
+  fs.copyFileSync(iconSrc, iconDst)
+  console.log('› resources/icon.icns')
+}
+
 console.log('✓ /tmp/voxlit-clean ready')
 console.log('  contents:', fs.readdirSync(clean).join(', '))
