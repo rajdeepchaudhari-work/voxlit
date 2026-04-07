@@ -11,9 +11,9 @@ module.exports = {
   },
   files: ['**/*', '!**/*.map'],
   extraResources: [
-    { from: 'resources/icons', to: 'icons' },
-    { from: 'resources/native', to: 'native' },
-    { from: 'src/main/db/migrations', to: 'migrations' },
+    { from: `${__dirname}/resources/icons`, to: 'icons' },
+    { from: `${__dirname}/resources/native`, to: 'native' },
+    { from: `${__dirname}/src/main/db/migrations`, to: 'migrations' },
   ],
   asarUnpack: ['node_modules/better-sqlite3/**/*'],
   mac: {
