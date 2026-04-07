@@ -21,27 +21,8 @@ struct TextInjector {
             return
         }
 
-        // Re-activate the target app so it's frontmost before we inject
-        app.activate(options: .activateIgnoringOtherApps)
-
-        let bundleId = app.bundleIdentifier ?? ""
-
-        // Apps where AX works reliably — use it to avoid clipboard side effects
-        let axApps: Set<String> = [
-            "com.apple.TextEdit",
-            "com.google.Chrome",
-            "com.apple.Safari",
-        ]
-
-        let delay: Double = 0.2
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            if axApps.contains(bundleId) && tryAXInsert(text) {
-                return
-            }
-            // All other apps: use pasteboard + Cmd+V (works universally)
-            pasteboardFallback(text)
-        }
+        // Send Cmd+V directly to the target process PID — no focus switch needed
+        pasteboardFallback(text)
     }
 
     // MARK: - AXUIElement insert at cursor
@@ -65,11 +46,12 @@ struct TextInjector {
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
 
-        Thread.sleep(forTimeInterval: 0.1)
-        simulatePaste()
+        // Small delay for clipboard to settle
+        Thread.sleep(forTimeInterval: 0.05)
+        simulatePaste(to: targetApp?.processIdentifier)
 
-        // Restore clipboard after 300ms (matches Glaido's approach)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        // Restore clipboard after 500ms
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             pasteboard.clearContents()
             if let prev = previous {
                 pasteboard.setString(prev, forType: .string)
@@ -77,14 +59,22 @@ struct TextInjector {
         }
     }
 
-    private static func simulatePaste() {
+    private static func simulatePaste(to pid: pid_t?) {
         let source = CGEventSource(stateID: .hidSystemState)
+
         let keyDown = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(0x09), keyDown: true)
         keyDown?.flags = .maskCommand
-        keyDown?.post(tap: .cghidEventTap)
 
         let keyUp = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(0x09), keyDown: false)
         keyUp?.flags = .maskCommand
-        keyUp?.post(tap: .cghidEventTap)
+
+        if let pid = pid {
+            // Send directly to target process — works even if focus hasn't fully switched
+            keyDown?.postToPid(pid)
+            keyUp?.postToPid(pid)
+        } else {
+            keyDown?.post(tap: .cghidEventTap)
+            keyUp?.post(tap: .cghidEventTap)
+        }
     }
 }
