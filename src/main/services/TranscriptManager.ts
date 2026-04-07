@@ -281,7 +281,7 @@ export class TranscriptManager extends EventEmitter {
       `--${boundary}\r\n` +
       // Prompt primes the model with context — significantly reduces hallucinations
       // and improves punctuation/capitalization on cloud whisper-1.
-      `Content-Disposition: form-data; name="prompt"\r\nDictation of spoken words.\r\n` +
+      `Content-Disposition: form-data; name="prompt"\r\n\r\nDictation of spoken words.\r\n` +
       `--${boundary}\r\n` +
       `Content-Disposition: form-data; name="file"; filename="audio.wav"\r\n` +
       `Content-Type: audio/wav\r\n\r\n`
