@@ -19,7 +19,8 @@
     <img src="https://img.shields.io/badge/website-voxlit.co-7C3AED?style=flat-square" alt="Website" />
   </a>
   <a href="https://github.com/rajdeepchaudhari-work/voxlit/releases/latest">
-    <img src="https://img.shields.io/github/v/release/rajdeepchaudhari-work/voxlit?style=flat-square&color=7C3AED&label=Download" alt="Latest Release" />
+    <img width="1012" height="762" alt="2026-04-07_1-51-26 am" src="https://github.com/user-attachments/assets/1ee635fd-aa66-4d5b-b6e2-501a364005d8" />
+
   </a>
   <img src="https://img.shields.io/badge/platform-macOS%2013%2B-black?style=flat-square" alt="macOS 13+" />
   <img src="https://img.shields.io/badge/arch-Apple%20Silicon-black?style=flat-square" alt="Apple Silicon" />
