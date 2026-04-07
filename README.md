@@ -30,6 +30,7 @@
 
 <p align="center">
   <img width="1012" height="762" alt="2026-04-07_1-51-26 am" src="https://github.com/user-attachments/assets/c5307040-22f6-4069-99ae-a1146bec3c03" />
+<img width="320" height="72" alt="2026-04-07_2-40-23 am" src="https://github.com/user-attachments/assets/0b878834-f37c-48f8-8963-4e9184840c75" />
 
 </p>
 
