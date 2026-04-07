@@ -21,8 +21,33 @@ struct TextInjector {
             return
         }
 
-        // Send Cmd+V directly to the target process PID — no focus switch needed
-        pasteboardFallback(text)
+        // Set clipboard immediately
+        let pasteboard = NSPasteboard.general
+        let previous = pasteboard.string(forType: .string)
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+
+        // Activate the target app
+        app.activate(options: .activateIgnoringOtherApps)
+
+        // Poll until it's actually frontmost, then send Cmd+V
+        let pid = app.processIdentifier
+        var attempts = 0
+        func trySend() {
+            attempts += 1
+            let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
+            if frontmost == pid || attempts >= 10 {
+                simulatePaste(to: pid)
+                // Restore clipboard after 500ms
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    pasteboard.clearContents()
+                    if let prev = previous { pasteboard.setString(prev, forType: .string) }
+                }
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { trySend() }
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { trySend() }
     }
 
     // MARK: - AXUIElement insert at cursor
