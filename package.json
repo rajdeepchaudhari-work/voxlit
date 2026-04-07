@@ -5,6 +5,10 @@
   "main": "out/main/index.js",
   "author": "Voxlit Contributors",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rajdeepchaudhari-work/voxlit.git"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
@@ -22,8 +26,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/main/db/migrate.ts",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "postinstall": "electron-rebuild -f -w better-sqlite3",
-    "sign:dev": "./scripts/sign-dev.sh"
+    "postinstall": "electron-rebuild -f -w better-sqlite3"
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0"

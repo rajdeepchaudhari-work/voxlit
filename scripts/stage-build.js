@@ -47,7 +47,7 @@ const minimalPkg = {
   main: rootPkg.main,
   author: rootPkg.author,
   license: rootPkg.license,
-  repository: { type: 'git', url: 'https://github.com/rajdeepchaudhari-work/voxlit.git' },
+  repository: rootPkg.repository,
   dependencies: {
     'better-sqlite3': rootPkg.dependencies['better-sqlite3']
   }
