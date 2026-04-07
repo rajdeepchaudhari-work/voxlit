@@ -10,10 +10,12 @@ module.exports = {
     app: '/tmp/voxlit-clean',
   },
   files: ['**/*', '!**/*.map'],
+  // extraResources are staged into /tmp/voxlit-clean/extra/ by stage-build.js
+  // and unpacked here via asar files exclusion so they land in Contents/Resources/
   extraResources: [
-    { from: `${__dirname}/resources/icons`, to: 'icons' },
-    { from: `${__dirname}/resources/native`, to: 'native' },
-    { from: `${__dirname}/src/main/db/migrations`, to: 'migrations' },
+    { from: 'extra/icons', to: 'icons' },
+    { from: 'extra/native', to: 'native' },
+    { from: 'extra/migrations', to: 'migrations' },
   ],
   asarUnpack: ['node_modules/better-sqlite3/**/*'],
   mac: {
@@ -22,6 +24,8 @@ module.exports = {
     gatekeeperAssess: false,
     identity: 'VoxlitDev',
     hardenedRuntime: false,
+    entitlements: 'resources/entitlements.mac.plist',
+    entitlementsInherit: 'resources/entitlements.mac.plist',
   },
   dmg: {
     title: 'Voxlit ${version}',

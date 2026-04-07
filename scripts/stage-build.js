@@ -85,13 +85,47 @@ for (const pkg of ['better-sqlite3', 'bindings', 'file-uri-to-path']) {
   }
 }
 
-// electron-builder needs icon.icns at buildResources root (not in a subdirectory)
+// Copy resources that electron-builder needs to bundle into the app
+// These go into staging so extraResources paths resolve correctly from directories.app
+fs.mkdirSync(path.join(clean, 'resources'), { recursive: true })
+
+// entitlements
+const entitlementsSrc = path.join(root, 'resources', 'entitlements.mac.plist')
+if (fs.existsSync(entitlementsSrc)) {
+  fs.copyFileSync(entitlementsSrc, path.join(clean, 'resources', 'entitlements.mac.plist'))
+  console.log('› resources/entitlements.mac.plist')
+}
+
+// icon.icns at buildResources root
 const iconSrc = path.join(root, 'resources', 'icons', 'icon.icns')
-const iconDst = path.join(clean, 'resources', 'icon.icns')
 if (fs.existsSync(iconSrc)) {
-  fs.mkdirSync(path.join(clean, 'resources'), { recursive: true })
-  fs.copyFileSync(iconSrc, iconDst)
+  fs.copyFileSync(iconSrc, path.join(clean, 'resources', 'icon.icns'))
   console.log('› resources/icon.icns')
+}
+
+// extra/ — these become extraResources (Contents/Resources/) in the app
+// Placed at staging root so electron-builder resolves them from directories.app
+fs.mkdirSync(path.join(clean, 'extra'), { recursive: true })
+
+// icons/ folder (tray icon, dock icon)
+const iconsDirSrc = path.join(root, 'resources', 'icons')
+if (fs.existsSync(iconsDirSrc)) {
+  cpDir(iconsDirSrc, path.join(clean, 'extra', 'icons'))
+  console.log('› extra/icons/')
+}
+
+// native/ folder (Swift helper binary)
+const nativeSrc = path.join(root, 'resources', 'native')
+if (fs.existsSync(nativeSrc)) {
+  cpDir(nativeSrc, path.join(clean, 'extra', 'native'))
+  console.log('› extra/native/')
+}
+
+// DB migrations
+const migrationsSrc = path.join(root, 'src', 'main', 'db', 'migrations')
+if (fs.existsSync(migrationsSrc)) {
+  cpDir(migrationsSrc, path.join(clean, 'extra', 'migrations'))
+  console.log('› extra/migrations/')
 }
 
 console.log('✓ /tmp/voxlit-clean ready')
