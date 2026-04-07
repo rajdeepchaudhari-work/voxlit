@@ -36,7 +36,22 @@ rmrf(clean)
 fs.mkdirSync(clean)
 
 console.log('› package.json')
-fs.copyFileSync(path.join(root, 'package.json'), path.join(clean, 'package.json'))
+// Write a minimal package.json — only what the packaged app needs at runtime.
+// Copying the full package.json causes electron-builder to npm-install all
+// devDependencies into the staging dir, bloating the DMG to 3.5GB+.
+const rootPkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
+const minimalPkg = {
+  name: rootPkg.name,
+  version: rootPkg.version,
+  description: rootPkg.description,
+  main: rootPkg.main,
+  author: rootPkg.author,
+  license: rootPkg.license,
+  dependencies: {
+    'better-sqlite3': rootPkg.dependencies['better-sqlite3']
+  }
+}
+fs.writeFileSync(path.join(clean, 'package.json'), JSON.stringify(minimalPkg, null, 2))
 
 console.log('› out/')
 cpDir(path.join(root, 'out'), path.join(clean, 'out'))
