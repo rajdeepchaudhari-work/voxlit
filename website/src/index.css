@@ -435,6 +435,44 @@
   to { transform: translateX(-50%); }
 }
 
+/* Scroll reveal */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hero stagger — fires on page load */
+@keyframes hero-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scroll Reveal ─────────────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+}
+.reveal.in-view {
+  animation: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.reveal.delay-1 { animation-delay: 0.08s; }
+.reveal.delay-2 { animation-delay: 0.16s; }
+.reveal.delay-3 { animation-delay: 0.24s; }
+.reveal.delay-4 { animation-delay: 0.32s; }
+.reveal.delay-5 { animation-delay: 0.40s; }
+.reveal.delay-6 { animation-delay: 0.48s; }
+
+/* ── Hero stagger ──────────────────────────────────────────────────── */
+.hero-stagger {
+  opacity: 0;
+  animation: hero-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.hero-stagger:nth-child(1) { animation-delay: 0.05s; }
+.hero-stagger:nth-child(2) { animation-delay: 0.15s; }
+.hero-stagger:nth-child(3) { animation-delay: 0.25s; }
+.hero-stagger:nth-child(4) { animation-delay: 0.35s; }
+.hero-stagger:nth-child(5) { animation-delay: 0.45s; }
+.hero-stagger:nth-child(6) { animation-delay: 0.55s; }
+
 /* ── Utility Animations ────────────────────────────────────────────── */
 @layer utilities {
   .animate-terminal-blink {
@@ -461,4 +499,164 @@
 .bg-dot-grid {
   background-image: radial-gradient(circle, rgba(10,10,10,0.08) 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+/* ── Responsive Grid Classes ─────────────────────────────────────────── */
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 3px solid #0A0A0A;
+  box-shadow: 6px 6px 0px #0A0A0A;
+}
+
+.how-grid > * + * {
+  border-left: 3px solid #0A0A0A;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 3px solid #0A0A0A;
+  box-shadow: 6px 6px 0px #0A0A0A;
+  background: #FFFFFF;
+}
+
+.feature-grid > * {
+  border-right: 3px solid #0A0A0A;
+  border-top: 3px solid #0A0A0A;
+}
+
+.feature-grid > *:nth-child(-n+3) {
+  border-top: none;
+}
+
+.feature-grid > *:nth-child(3n) {
+  border-right: none;
+}
+
+.techspecs-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 48px;
+  padding: 52px 0 44px;
+}
+
+/* ── Breakpoints ─────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .techspecs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 0 16px;
+  }
+
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .mobile-menu-btn {
+    display: block !important;
+  }
+
+  .how-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .how-grid > * + * {
+    border-left: none;
+    border-top: 3px solid #0A0A0A;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-grid > * {
+    border-right: none;
+    border-top: 3px solid #0A0A0A;
+  }
+
+  .feature-grid > *:first-child {
+    border-top: none;
+  }
+
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 40px 0 32px;
+  }
+
+  /* Section padding tighter on mobile */
+  section {
+    padding-top: 64px !important;
+    padding-bottom: 64px !important;
+  }
+
+  /* Section headings smaller on mobile */
+  .section-heading {
+    font-size: clamp(1.75rem, 8vw, 3rem) !important;
+  }
+
+  /* Buttons full-width on small mobile */
+  .btn-primary, .btn-ghost, .btn-yellow {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Trust pills wrap tighter */
+  .trust-pill {
+    font-size: 0.625rem;
+    padding: 4px 8px;
+  }
+
+  /* Comparison table smaller text */
+  .brut-table th,
+  .brut-table td {
+    padding: 10px 10px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 0 12px;
+  }
+
+  /* Hero padding on very small screens */
+  .hero-grid {
+    gap: 36px;
+  }
 }

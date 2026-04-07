@@ -1,3 +1,5 @@
+import { useInView } from '../hooks/useInView'
+
 const steps = [
   {
     num: '01',
@@ -23,9 +25,12 @@ const steps = [
 ]
 
 export default function HowItWorks() {
+  const { ref, inView } = useInView()
+
   return (
     <section
       id="how-it-works"
+      ref={ref as React.RefObject<HTMLElement>}
       style={{
         padding: '96px 0',
         borderBottom: '3px solid #0A0A0A',
@@ -33,23 +38,17 @@ export default function HowItWorks() {
       }}
     >
       <div className="page-container">
-        <div style={{ marginBottom: 56 }}>
+        <div className={`reveal${inView ? ' in-view' : ''}`} style={{ marginBottom: 56 }}>
           <div className="overline" style={{ marginBottom: 12 }}>How It Works</div>
           <h2 className="section-heading">Three keystrokes to text.</h2>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          border: '3px solid #0A0A0A',
-          boxShadow: '6px 6px 0px #0A0A0A',
-        }}>
-          {steps.map((step, i) => (
+        <div className={`how-grid reveal delay-2${inView ? ' in-view' : ''}`}>
+          {steps.map((step) => (
             <div
               key={step.num}
               style={{
                 padding: 36,
-                borderLeft: i > 0 ? '3px solid #0A0A0A' : 'none',
                 background: step.accent,
                 position: 'relative',
               }}
@@ -70,7 +69,6 @@ export default function HowItWorks() {
                 {step.num}
               </div>
 
-              {/* Icon box */}
               <div style={{
                 width: 48, height: 48,
                 border: '3px solid #0A0A0A',

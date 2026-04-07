@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useScrollSpy, useNavScrolled } from '../hooks/useScrollSpy'
 
 const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
-const DOWNLOAD_URL = 'https://github.com/rajdeepchaudhari-work/voxlit/releases/latest'
 
 export default function Nav() {
   const activeSection = useScrollSpy(['features', 'how-it-works', 'compare'])
@@ -86,8 +85,8 @@ export default function Nav() {
               </a>
             )
           })}
-          <a href={DOWNLOAD_URL} className="btn-primary" style={{ padding: '9px 18px', fontSize: '0.75rem', marginLeft: 8 }}>
-            Download Free
+          <a href="#download" className="btn-primary" style={{ padding: '9px 20px', fontSize: '0.75rem', marginLeft: 8 }}>
+            Download
           </a>
         </div>
 
@@ -143,18 +142,13 @@ export default function Nav() {
               {link.label}
             </a>
           ))}
-          <a href={DOWNLOAD_URL} className="btn-yellow" style={{ marginTop: 16, textAlign: 'center' }}>
-            Download Free
+          <a href="#download" className="btn-primary" style={{ marginTop: 16, textAlign: 'center' }}>
+            Download
           </a>
         </div>
       )}
 
-      <style>{`
-        @media (max-width: 768px) {
-          .desktop-nav { display: none !important; }
-          .mobile-menu-btn { display: block !important; }
-        }
-      `}</style>
+
     </nav>
   )
 }

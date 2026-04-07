@@ -15,24 +15,33 @@ export default function Hero() {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Subtle dot pattern */}
-      <div className="bg-dot-grid" style={{
+      {/* Dot pattern */}
+      <div className="bg-dot-grid" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+
+      {/* Large decorative background letter */}
+      <div style={{
         position: 'absolute',
-        inset: 0,
+        right: -40,
+        top: -20,
+        fontFamily: 'var(--font-display)',
+        fontWeight: 800,
+        fontSize: 'clamp(280px, 30vw, 480px)',
+        lineHeight: 1,
+        color: 'transparent',
+        WebkitTextStroke: '2px rgba(10,10,10,0.05)',
+        userSelect: 'none',
         pointerEvents: 'none',
-      }} />
+        letterSpacing: '-0.06em',
+      }}>V</div>
 
       <div className="page-container" style={{ position: 'relative' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 56,
-          alignItems: 'center',
-        }}>
-          {/* Left — Text */}
-          <div>
+        <div className="hero-grid">
+
+          {/* Left — Text with stagger */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+
             {/* Overline */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+            <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 20 }}>
               {['Open Source', 'macOS', 'Free Forever'].map((t, i, arr) => (
                 <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span className="overline">{t}</span>
@@ -44,7 +53,7 @@ export default function Hero() {
             </div>
 
             {/* Headline */}
-            <h1 style={{
+            <h1 className="hero-stagger" style={{
               fontFamily: 'var(--font-display)',
               fontWeight: 800,
               letterSpacing: '-0.04em',
@@ -57,7 +66,7 @@ export default function Hero() {
             </h1>
 
             {/* Subhead */}
-            <p style={{
+            <p className="hero-stagger" style={{
               fontFamily: 'var(--font-body)',
               fontSize: '1.0625rem',
               lineHeight: 1.65,
@@ -70,62 +79,56 @@ export default function Hero() {
               MIT open source, forever.
             </p>
 
-            {/* CTAs */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 28 }}>
-              <a href={DOWNLOAD_URL} className="btn-yellow">
+            {/* Homebrew */}
+            <div className="hero-stagger">
+              <BrewBlock />
+            </div>
+
+            {/* Secondary CTAs */}
+            <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 20, marginTop: 12 }}>
+              <a href={DOWNLOAD_URL} className="btn-ghost" style={{ fontSize: '0.8125rem', padding: '10px 20px' }}>
                 <DownloadIcon />
-                Download for macOS
+                Download .dmg
               </a>
-              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ fontSize: '0.8125rem', padding: '10px 20px' }}>
                 <GitHubIcon />
-                View on GitHub
+                GitHub
               </a>
             </div>
 
             {/* Trust Pills */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
               {['MIT License', 'Zero Account', '100% Offline', 'Apple Silicon'].map(pill => (
                 <span key={pill} className="trust-pill">{pill}</span>
               ))}
             </div>
           </div>
 
-          {/* Right — Terminal (stays dark, it's a terminal) */}
-          <div>
-            <div className="terminal-window">
+          {/* Right — Terminal */}
+          <div className="hero-stagger" style={{ alignSelf: 'center' }}>
+            <div className="terminal-window" style={{ boxShadow: '8px 8px 0px #0A0A0A' }}>
               <div className="terminal-titlebar">
                 <div className="terminal-dot" style={{ background: '#FF5F57' }} />
                 <div className="terminal-dot" style={{ background: '#FFBD2E' }} />
                 <div className="terminal-dot" style={{ background: '#28C840' }} />
-                <span style={{
-                  marginLeft: 8,
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.75rem',
-                  color: '#999',
-                }}>voxlit — transcription</span>
+                <span style={{ marginLeft: 8, fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#999' }}>
+                  voxlit — transcription
+                </span>
               </div>
 
               <div className="terminal-content">
-                {/* System line */}
                 <div style={{ marginBottom: 16 }}>
                   <span style={{ color: '#666', fontSize: '0.8125rem' }}>$ </span>
-                  <span style={{ color: '#AAA', fontSize: '0.8125rem' }}>
-                    voxlit --hotkey "⌃Space" --model base.en
-                  </span>
+                  <span style={{ color: '#AAA', fontSize: '0.8125rem' }}>voxlit --hotkey "⌃Space" --model base.en</span>
                 </div>
 
-                {/* Status line */}
                 <div style={{ marginBottom: 20 }}>
                   <span className="badge badge-green" style={{ marginRight: 8 }}>READY</span>
                   <span style={{ color: '#999', fontSize: '0.8125rem' }}>Model loaded in 1.2s — Metal GPU</span>
                 </div>
 
-                {/* Recording indicator */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                  <div style={{
-                    width: 8, height: 8, borderRadius: '50%',
-                    background: '#00C853',
-                  }} className="animate-pulse-rec" />
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00C853' }} className="animate-pulse-rec" />
                   <span style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: '0.6875rem',
@@ -141,22 +144,13 @@ export default function Hero() {
                   </div>
                 </div>
 
-                {/* Transcription output */}
                 <div style={{ borderLeft: '3px solid #665DF5', paddingLeft: 12, minHeight: 64 }}>
-                  <span style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.875rem',
-                    color: '#EEEEEE',
-                    lineHeight: 1.6,
-                  }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.875rem', color: '#EEEEEE', lineHeight: 1.6 }}>
                     {displayText}
                     {cursorVisible && (
                       <span className="animate-terminal-blink" style={{
-                        display: 'inline-block',
-                        width: 2, height: '1em',
-                        background: '#665DF5',
-                        marginLeft: 2,
-                        verticalAlign: 'text-bottom',
+                        display: 'inline-block', width: 2, height: '1em',
+                        background: '#665DF5', marginLeft: 2, verticalAlign: 'text-bottom',
                       }} />
                     )}
                   </span>
@@ -170,15 +164,72 @@ export default function Hero() {
               ))}
             </div>
           </div>
+
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .hero-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </section>
+  )
+}
+
+function BrewBlock() {
+  const lines = [
+    'brew tap rajdeepchaudhari-work/voxlit',
+    'brew install --cask voxlit',
+  ]
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(lines.join('\n'))
+  }
+
+  return (
+    <div style={{ border: '2px solid #0A0A0A', background: '#1A1A1A', marginBottom: 4 }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '7px 12px', borderBottom: '2px solid #333', background: '#2A2A2A',
+      }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#666' }}>
+          Install via Homebrew
+        </span>
+        <button
+          onClick={handleCopy}
+          title="Copy to clipboard"
+          style={{
+            background: 'none', border: '1px solid #444', cursor: 'pointer',
+            padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 5,
+            fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
+            letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888',
+            transition: 'border-color 0.1s, color 0.1s',
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLElement).style.borderColor = '#665DF5'
+            ;(e.currentTarget as HTMLElement).style.color = '#665DF5'
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLElement).style.borderColor = '#444'
+            ;(e.currentTarget as HTMLElement).style.color = '#888'
+          }}
+        >
+          <CopyIcon /> Copy
+        </button>
+      </div>
+      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {lines.map(line => (
+          <div key={line} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ color: '#665DF5', fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', userSelect: 'none' }}>$</span>
+            <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', color: '#E8E8E8', letterSpacing: '0.01em' }}>{line}</code>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function CopyIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+      <rect x="4" y="4" width="8" height="8" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M2 10V2h8" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
   )
 }
 

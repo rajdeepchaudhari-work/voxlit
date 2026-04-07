@@ -1,3 +1,5 @@
+import { useInView } from '../hooks/useInView'
+
 interface Feature {
   icon: React.ReactNode
   heading: string
@@ -45,9 +47,12 @@ const features: Feature[] = [
 ]
 
 export default function FeatureGrid() {
+  const { ref, inView } = useInView()
+
   return (
     <section
       id="features"
+      ref={ref as React.RefObject<HTMLElement>}
       style={{
         padding: '96px 0',
         borderBottom: '3px solid #0A0A0A',
@@ -55,28 +60,17 @@ export default function FeatureGrid() {
       }}
     >
       <div className="page-container">
-        <div style={{ marginBottom: 56 }}>
+        <div className={`reveal${inView ? ' in-view' : ''}`} style={{ marginBottom: 56 }}>
           <div className="overline" style={{ marginBottom: 12 }}>Features</div>
           <h2 className="section-heading">Built different.</h2>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          border: '3px solid #0A0A0A',
-          boxShadow: '6px 6px 0px #0A0A0A',
-          background: '#FFFFFF',
-        }}>
-          {features.map((feature, i) => {
-            const isBottom = i >= 3
-            const isRightEdge = (i + 1) % 3 === 0
-            return (
+        <div className={`feature-grid reveal delay-2${inView ? ' in-view' : ''}`}>
+          {features.map((feature) => (
               <div
                 key={feature.heading}
                 style={{
                   padding: 32,
-                  borderTop: isBottom ? '3px solid #0A0A0A' : 'none',
-                  borderRight: !isRightEdge ? '3px solid #0A0A0A' : 'none',
                   background: feature.bg ?? '#FFFFFF',
                   transition: 'background 0.1s',
                 }}
@@ -123,8 +117,7 @@ export default function FeatureGrid() {
                   {feature.body}
                 </p>
               </div>
-            )
-          })}
+          ))}
         </div>
       </div>
     </section>

@@ -1,3 +1,5 @@
+import { useInView } from '../hooks/useInView'
+
 const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
 
 const quotes = [
@@ -22,9 +24,12 @@ const quotes = [
 ]
 
 export default function Testimonials() {
+  const { ref, inView } = useInView()
+
   return (
     <section
       id="community"
+      ref={ref as React.RefObject<HTMLElement>}
       style={{
         padding: '96px 0',
         borderBottom: '3px solid #0A0A0A',
@@ -32,7 +37,7 @@ export default function Testimonials() {
       }}
     >
       <div className="page-container">
-        <div style={{ marginBottom: 48 }}>
+        <div className={`reveal${inView ? ' in-view' : ''}`} style={{ marginBottom: 48 }}>
           <div className="overline" style={{ marginBottom: 12 }}>Community</div>
           <h2 className="section-heading">Built by people who<br />got tired of paying.</h2>
         </div>
@@ -75,11 +80,7 @@ export default function Testimonials() {
         </div>
 
         {/* Quote cards */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 20,
-        }}>
+        <div className="testimonials-grid">
           {quotes.map(q => (
             <div
               key={q.handle}

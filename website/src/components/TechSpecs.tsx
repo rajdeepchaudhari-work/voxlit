@@ -55,12 +55,7 @@ export default function TechSpecs() {
           <h2 className="section-heading">Built on solid primitives.</h2>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '3fr 2fr',
-          gap: 28,
-          alignItems: 'start',
-        }}>
+        <div className="techspecs-grid">
           {/* Left — Architecture code block */}
           <div className="terminal-window">
             <div className="terminal-titlebar">

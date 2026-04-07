@@ -1,3 +1,5 @@
+import { useInView } from '../hooks/useInView'
+
 const rows = [
   { feature: 'Price', voxlit: 'Free, forever', glaido: 'Free / $20/mo', dragon: '$600 one-time', cloud: '$8–$30/mo' },
   { feature: 'Open Source', voxlit: 'MIT', glaido: 'Proprietary', dragon: 'Proprietary', cloud: 'Proprietary' },
@@ -18,9 +20,12 @@ function cellStyle(val: string): React.CSSProperties {
 }
 
 export default function ComparisonTable() {
+  const { ref, inView } = useInView()
+
   return (
     <section
       id="compare"
+      ref={ref as React.RefObject<HTMLElement>}
       style={{
         padding: '96px 0',
         borderBottom: '3px solid #0A0A0A',
@@ -28,7 +33,7 @@ export default function ComparisonTable() {
       }}
     >
       <div className="page-container">
-        <div style={{ marginBottom: 48 }}>
+        <div className={`reveal${inView ? ' in-view' : ''}`} style={{ marginBottom: 48 }}>
           <div className="overline" style={{ marginBottom: 12 }}>Comparison</div>
           <h2 className="section-heading">We compared ourselves.<br />Honestly.</h2>
           <p style={{
