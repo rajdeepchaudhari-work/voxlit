@@ -31,6 +31,26 @@ function cpDir(src, dst) {
   }
 }
 
+// Move large dev-only dirs out of project root so electron-builder can't sweep them in.
+// They are gitignored but physically present — electron-builder's file scanner finds them.
+const EVICT = [
+  { src: '.whisper-src',     tmp: '.whisper-src-evicted' },
+  { src: '.agents',          tmp: '.agents-evicted' },
+  { src: '.claude',          tmp: '.claude-evicted' },
+  { src: 'Glaido.app',       tmp: 'Glaido.app-evicted' },
+  { src: 'resources/models', tmp: 'models-evicted' },
+  { src: 'native/.build',    tmp: 'native-.build-evicted' },
+]
+for (const { src, tmp } of EVICT) {
+  const srcPath = path.join(root, src)
+  const tmpPath = path.join('/tmp', tmp)
+  if (fs.existsSync(srcPath)) {
+    if (fs.existsSync(tmpPath)) fs.rmSync(tmpPath, { recursive: true, force: true })
+    fs.renameSync(srcPath, tmpPath)
+    console.log(`› evicted ${src} → /tmp/${tmp}`)
+  }
+}
+
 console.log('› Cleaning /tmp/voxlit-clean')
 rmrf(clean)
 fs.mkdirSync(clean)

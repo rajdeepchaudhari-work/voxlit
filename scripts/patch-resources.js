@@ -66,7 +66,8 @@ try {
 
 // Rebuild the DMG
 console.log('› rebuilding DMG...')
-const dmgPath = path.join(root, 'dist/voxlit-1.0.1-arm64.dmg')
+const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
+const dmgPath = path.join(root, `dist/voxlit-${pkg.version}-arm64.dmg`)
 if (fs.existsSync(dmgPath)) fs.rmSync(dmgPath)
 
 try {
@@ -74,8 +75,27 @@ try {
     `hdiutil create -volname "Voxlit" -srcfolder "${path.join(root, 'dist/mac-arm64/voxlit.app')}" -ov -format UDZO "${dmgPath}"`,
     { stdio: 'inherit' }
   )
-  console.log('✓ DMG rebuilt at dist/voxlit-1.0.1-arm64.dmg')
+  console.log(`✓ DMG rebuilt at dist/voxlit-${pkg.version}-arm64.dmg`)
 } catch (e) {
   console.error('DMG rebuild failed:', e.message)
   process.exit(1)
+}
+
+// Restore evicted dirs back to project root
+const EVICT = [
+  { tmp: '.whisper-src-evicted',    dst: '.whisper-src' },
+  { tmp: '.agents-evicted',         dst: '.agents' },
+  { tmp: '.claude-evicted',         dst: '.claude' },
+  { tmp: 'Glaido.app-evicted',      dst: 'Glaido.app' },
+  { tmp: 'models-evicted',          dst: 'resources/models' },
+  { tmp: 'native-.build-evicted',   dst: 'native/.build' },
+]
+for (const { tmp, dst } of EVICT) {
+  const src = path.join('/tmp', tmp)
+  const dstPath = path.join(root, dst)
+  if (fs.existsSync(src) && !fs.existsSync(dstPath)) {
+    fs.mkdirSync(path.dirname(dstPath), { recursive: true })
+    fs.renameSync(src, dstPath)
+    console.log(`› restored ${dst}`)
+  }
 }
