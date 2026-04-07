@@ -275,7 +275,7 @@ export class TranscriptManager extends EventEmitter {
     if (!openaiApiKey) throw new Error('No OpenAI API key — add it in Settings → Transcription')
 
     const apiKey = openaiApiKey
-    const wav = this.pcmToWav(pcm)
+    const wav = this.pcmToWav16(pcm)   // int16 = half upload size vs float32
     const boundary = `voxlit${Date.now()}`
     const model = 'whisper-1'
 
@@ -335,7 +335,7 @@ export class TranscriptManager extends EventEmitter {
     })
   }
 
-  // Convert raw 16kHz mono float32 PCM to WAV format
+  // Convert raw 16kHz mono float32 PCM to WAV (float32) — used for local whisper-cli
   private pcmToWav(pcm: Buffer): Buffer {
     const sampleRate = 16000
     const numChannels = 1
@@ -349,7 +349,7 @@ export class TranscriptManager extends EventEmitter {
     header.writeUInt32LE(36 + dataSize, 4)
     header.write('WAVE', 8)
     header.write('fmt ', 12)
-    header.writeUInt32LE(16, 16)         // PCM chunk size
+    header.writeUInt32LE(16, 16)
     header.writeUInt16LE(3, 20)          // IEEE float format
     header.writeUInt16LE(numChannels, 22)
     header.writeUInt32LE(sampleRate, 24)
@@ -360,5 +360,43 @@ export class TranscriptManager extends EventEmitter {
     header.writeUInt32LE(dataSize, 40)
 
     return Buffer.concat([header, pcm])
+  }
+
+  // Convert float32 PCM to 16-bit int WAV — used for cloud upload.
+  // Int16 is half the size of float32 with no accuracy loss (whisper was trained on int16).
+  // 5s of audio: float32 = 320KB upload, int16 = 160KB — roughly halves API latency.
+  private pcmToWav16(pcm: Buffer): Buffer {
+    const sampleRate = 16000
+    const numChannels = 1
+    const bitsPerSample = 16
+    const sampleCount = pcm.length / 4   // float32 = 4 bytes each
+    const int16Data = Buffer.allocUnsafe(sampleCount * 2)
+
+    for (let i = 0; i < sampleCount; i++) {
+      // Clamp to [-1, 1] then scale to int16 range
+      const f = Math.max(-1, Math.min(1, pcm.readFloatLE(i * 4)))
+      int16Data.writeInt16LE(Math.round(f * 32767), i * 2)
+    }
+
+    const byteRate = (sampleRate * numChannels * bitsPerSample) / 8
+    const blockAlign = (numChannels * bitsPerSample) / 8
+    const dataSize = int16Data.length
+
+    const header = Buffer.alloc(44)
+    header.write('RIFF', 0)
+    header.writeUInt32LE(36 + dataSize, 4)
+    header.write('WAVE', 8)
+    header.write('fmt ', 12)
+    header.writeUInt32LE(16, 16)
+    header.writeUInt16LE(1, 20)          // PCM int format
+    header.writeUInt16LE(numChannels, 22)
+    header.writeUInt32LE(sampleRate, 24)
+    header.writeUInt32LE(byteRate, 28)
+    header.writeUInt16LE(blockAlign, 32)
+    header.writeUInt16LE(bitsPerSample, 34)
+    header.write('data', 36)
+    header.writeUInt32LE(dataSize, 40)
+
+    return Buffer.concat([header, int16Data])
   }
 }
