@@ -47,6 +47,7 @@ const minimalPkg = {
   main: rootPkg.main,
   author: rootPkg.author,
   license: rootPkg.license,
+  repository: { type: 'git', url: 'https://github.com/rajdeepchaudhari-work/voxlit.git' },
   dependencies: {
     'better-sqlite3': rootPkg.dependencies['better-sqlite3']
   }
@@ -67,6 +68,14 @@ for (const artifact of [
 
 const nm = path.join(clean, 'node_modules')
 fs.mkdirSync(nm)
+
+// Symlink electron so electron-builder can detect the version
+const electronSrc = path.join(root, 'node_modules', 'electron')
+const electronDst = path.join(nm, 'electron')
+if (fs.existsSync(electronSrc) && !fs.existsSync(electronDst)) {
+  fs.symlinkSync(electronSrc, electronDst)
+  console.log('› node_modules/electron (symlink)')
+}
 
 for (const pkg of ['better-sqlite3', 'bindings', 'file-uri-to-path']) {
   const src = path.join(root, 'node_modules', pkg)
