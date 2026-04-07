@@ -2,104 +2,84 @@ import Foundation
 import ApplicationServices
 import AppKit
 
-/// Injects text into the previously focused application.
-/// The focused app must be captured at hotkey-press time (before recording starts),
-/// then re-activated before injection — exactly what Glaido does via FocusedAppService.
+/// Injects text into the previously focused application using a two-tier strategy:
+///
+/// Tier 1 — AX direct inject: sets kAXSelectedTextAttribute on the captured focused
+///   element. Instant, no clipboard side-effects. Works for AppKit text fields / NSTextView.
+///
+/// Tier 2 — Unicode keystroke simulation: sends each character as a CGEvent with
+///   keyboardSetUnicodeString posted directly to the target PID. Works universally —
+///   Terminal, VS Code, Electron, Chrome, web apps. Does NOT require the app to be
+///   frontmost; postToPid delivers events straight to the process queue.
 struct TextInjector {
 
     /// Captured at Fn press time — before our helper process takes any focus
     static var targetApp: NSRunningApplication?
 
-    /// Call this when Fn is pressed to snapshot the current frontmost app
+    /// AX element that was focused in the target app at hotkey-press time.
+    private static var capturedElement: AXUIElement?
+
+    /// Call this when Fn is pressed to snapshot the frontmost app and its focused element.
+    /// Must be called BEFORE any window activation changes focus.
     static func captureFocusedApp() {
         targetApp = NSWorkspace.shared.frontmostApplication
+
+        let systemWide = AXUIElementCreateSystemWide()
+        var ref: AnyObject?
+        if AXUIElementCopyAttributeValue(systemWide, kAXFocusedUIElementAttribute as CFString, &ref) == .success,
+           let ref = ref {
+            capturedElement = (ref as! AXUIElement)
+        } else {
+            capturedElement = nil
+        }
     }
 
     static func inject(_ text: String) {
-        guard let app = targetApp else {
-            pasteboardFallback(text)
-            return
+        // Tier 1 — AX direct inject (fast, no clipboard side-effects)
+        if let element = capturedElement {
+            let result = AXUIElementSetAttributeValue(
+                element,
+                kAXSelectedTextAttribute as CFString,
+                text as CFTypeRef
+            )
+            if result == .success {
+                return
+            }
         }
 
-        // Set clipboard immediately
-        let pasteboard = NSPasteboard.general
-        let previous = pasteboard.string(forType: .string)
-        pasteboard.clearContents()
-        pasteboard.setString(text, forType: .string)
+        // Tier 2 — Unicode keystroke simulation via postToPid
+        // Each UTF-16 code unit is sent as a CGEvent directly to the target process.
+        // postToPid bypasses the frontmost-app requirement — no activation needed.
+        let pid = targetApp?.processIdentifier
+        sendKeystrokes(text, to: pid)
+    }
 
-        // Activate the target app
-        app.activate(options: .activateIgnoringOtherApps)
+    // MARK: - Private
 
-        // Poll until it's actually frontmost, then send Cmd+V
-        let pid = app.processIdentifier
-        var attempts = 0
-        func trySend() {
-            attempts += 1
-            let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier
-            if frontmost == pid || attempts >= 10 {
-                simulatePaste(to: pid)
-                // Restore clipboard after 500ms
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    pasteboard.clearContents()
-                    if let prev = previous { pasteboard.setString(prev, forType: .string) }
-                }
+    private static func sendKeystrokes(_ text: String, to pid: pid_t?) {
+        guard let source = CGEventSource(stateID: .hidSystemState) else { return }
+
+        // Use UTF-16 code units — CGEvent.keyboardSetUnicodeString expects UniChar (UInt16)
+        let units = Array(text.utf16)
+
+        for var unit in units {
+            let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true)
+            let keyUp   = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false)
+
+            keyDown?.keyboardSetUnicodeString(stringLength: 1, unicodeString: &unit)
+            keyUp?.keyboardSetUnicodeString(stringLength: 1, unicodeString: &unit)
+
+            if let pid = pid {
+                keyDown?.postToPid(pid)
+                keyUp?.postToPid(pid)
             } else {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { trySend() }
+                keyDown?.post(tap: .cghidEventTap)
+                keyUp?.post(tap: .cghidEventTap)
             }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { trySend() }
-    }
 
-    // MARK: - AXUIElement insert at cursor
-
-    private static func tryAXInsert(_ text: String) -> Bool {
-        let systemWide = AXUIElementCreateSystemWide()
-        var focusedElement: AnyObject?
-        guard AXUIElementCopyAttributeValue(systemWide, kAXFocusedUIElementAttribute as CFString, &focusedElement) == .success,
-              let element = focusedElement else { return false }
-
-        let axElement = element as! AXUIElement
-        return AXUIElementSetAttributeValue(axElement, kAXSelectedTextAttribute as CFString, text as CFTypeRef) == .success
-    }
-
-    // MARK: - Pasteboard fallback
-
-    private static func pasteboardFallback(_ text: String) {
-        let pasteboard = NSPasteboard.general
-        let previous = pasteboard.string(forType: .string)
-
-        pasteboard.clearContents()
-        pasteboard.setString(text, forType: .string)
-
-        // Small delay for clipboard to settle
-        Thread.sleep(forTimeInterval: 0.05)
-        simulatePaste(to: targetApp?.processIdentifier)
-
-        // Restore clipboard after 500ms
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            pasteboard.clearContents()
-            if let prev = previous {
-                pasteboard.setString(prev, forType: .string)
-            }
-        }
-    }
-
-    private static func simulatePaste(to pid: pid_t?) {
-        let source = CGEventSource(stateID: .hidSystemState)
-
-        let keyDown = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(0x09), keyDown: true)
-        keyDown?.flags = .maskCommand
-
-        let keyUp = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(0x09), keyDown: false)
-        keyUp?.flags = .maskCommand
-
-        if let pid = pid {
-            // Send directly to target process — works even if focus hasn't fully switched
-            keyDown?.postToPid(pid)
-            keyUp?.postToPid(pid)
-        } else {
-            keyDown?.post(tap: .cghidEventTap)
-            keyUp?.post(tap: .cghidEventTap)
+            // Tiny delay so the target app's event queue doesn't get flooded.
+            // 1ms per char = 100 chars in 100ms — imperceptible to the user.
+            usleep(1_000)
         }
     }
 }
