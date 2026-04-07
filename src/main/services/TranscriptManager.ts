@@ -23,13 +23,16 @@ export class TranscriptManager extends EventEmitter {
   // Resolves when any in-flight warmup finishes — real transcription waits on this
   private warmupDone: Promise<void> = Promise.resolve()
 
+  private warmedUp = false
+
   constructor(
     private readonly sessionStore: SessionStore,
     private readonly getCloudConfig: () => { openaiApiKey?: string },
     private readonly getDefaultModel: () => string = () => 'ggml-small.en'
   ) {
     super()
-    this.warmup()
+    // Warmup deferred to first enqueue — avoids blocking app startup
+    // and competing with window creation for CPU/GPU
   }
 
   private warmup() {
@@ -65,6 +68,11 @@ export class TranscriptManager extends EventEmitter {
   }
 
   enqueue(pcmBuffer: Buffer, engine: 'local' | 'cloud' = 'local', modelName = 'ggml-base.en') {
+    // Trigger warmup on first local enqueue — deferred from constructor
+    if (engine === 'local' && !this.warmedUp) {
+      this.warmedUp = true
+      this.warmup()
+    }
     this.queue.push({ pcm: pcmBuffer, engine, modelName })
     if (!this.processing) this.processNext()
   }

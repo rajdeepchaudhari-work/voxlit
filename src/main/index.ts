@@ -187,6 +187,8 @@ function wireServices() {
   const BAR_COUNT = 12
   // Smooth per-bar amplitudes carried across chunks for natural decay
   let barAmplitudes = new Array(BAR_COUNT).fill(0) as number[]
+  // Throttle amplitude broadcasts to 30 Hz — PCM chunks arrive 100+ times/sec
+  let amplitudeFramePending = false
 
   socketManager.on('pcm', (chunk: Buffer) => {
     if (currentState === 'listening') {
@@ -209,7 +211,15 @@ function wireServices() {
       // Smooth with previous values (0.6 new + 0.4 old) for natural motion
       barAmplitudes = raw.map((v, i) => v * 0.6 + barAmplitudes[i] * 0.4)
 
-      broadcastToAll(IPC.AMPLITUDE_UPDATE, barAmplitudes)
+      // Throttle to 30 fps — schedule one broadcast per ~33ms frame
+      if (!amplitudeFramePending) {
+        amplitudeFramePending = true
+        const snapshot = [...barAmplitudes]
+        setImmediate(() => {
+          amplitudeFramePending = false
+          broadcastToAll(IPC.AMPLITUDE_UPDATE, snapshot)
+        })
+      }
     }
   })
 

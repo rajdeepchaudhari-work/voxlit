@@ -70,7 +70,40 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     const unsubTranscript = ipc.onTranscript((segment) => {
       set({ lastTranscript: segment })
-      if (get().sessionsLoaded) get().loadSessions()
+      // Optimistic update — prepend the new entry to the current session instead of
+      // reloading all 100 sessions from DB on every transcript. Full reload only happens
+      // on mount and delete.
+      if (get().sessionsLoaded) {
+        set((state) => {
+          const sessions = [...state.sessions]
+          const idx = sessions.findIndex((s) => s.id === segment.sessionId)
+          if (idx >= 0) {
+            // Update existing session word count + entry count
+            const wordCount = segment.text.trim().split(/\s+/).length
+            sessions[idx] = {
+              ...sessions[idx],
+              entryCount: sessions[idx].entryCount + 1,
+              totalWords: sessions[idx].totalWords + wordCount,
+              endedAt: Date.now(),
+            }
+            // Move to top
+            const [updated] = sessions.splice(idx, 1)
+            sessions.unshift(updated)
+          } else {
+            // New session — prepend a stub, loadSessions will reconcile later
+            sessions.unshift({
+              id: segment.sessionId,
+              startedAt: Date.now(),
+              endedAt: Date.now(),
+              model: 'unknown',
+              entryCount: 1,
+              totalWords: segment.text.trim().split(/\s+/).length,
+            })
+          }
+          return { sessions }
+        })
+        get().loadStats()
+      }
     })
 
     const unsubHelper = ipc.onHelperStatus(({ status }) => {

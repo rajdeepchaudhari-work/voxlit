@@ -115,17 +115,26 @@ function MicrophoneStep({ perms, onRefresh, onNext, onSkip }: {
 }) {
   const status = perms.microphone
 
+  const [polling, setPolling] = useState(false)
+
+  // Auto-advance when permission flips to granted
+  useEffect(() => {
+    if (status === 'granted') onNext()
+  }, [status])
+
   async function handleGrant() {
-    await ipc.requestPermission('microphone')
-    // macOS shows the system dialog — poll until user responds
+    // Start polling BEFORE triggering the dialog — so we catch the response immediately
+    setPolling(true)
     const interval = setInterval(async () => {
       const updated = await ipc.checkPermissions()
+      onRefresh()
       if (updated.microphone !== 'not-determined') {
         clearInterval(interval)
-        onRefresh()
+        setPolling(false)
       }
-    }, 1000)
-    setTimeout(() => clearInterval(interval), 30_000)
+    }, 800)
+    setTimeout(() => { clearInterval(interval); setPolling(false) }, 30_000)
+    await ipc.requestPermission('microphone')
   }
 
   return (
@@ -145,16 +154,23 @@ function MicrophoneStep({ perms, onRefresh, onNext, onSkip }: {
         Microphone access
       </h2>
       <p style={{ marginTop: 8, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.65, maxWidth: 280 }}>
-        Voxlit needs your microphone to transcribe speech. Audio is processed locally — nothing is recorded to disk or sent anywhere.
+        Voxlit needs your microphone to transcribe speech. Audio never leaves your Mac.
       </p>
       <div style={{ marginTop: 20 }}>
         <PermBadge status={status} />
       </div>
       {status === 'not-determined' && (
-        <PrimaryButton onClick={handleGrant}>Grant microphone access</PrimaryButton>
+        <PrimaryButton onClick={handleGrant} disabled={polling}>
+          {polling ? 'Waiting for permission…' : 'Grant microphone access'}
+        </PrimaryButton>
       )}
       {status === 'denied' && (
-        <PrimaryButton onClick={() => ipc.requestPermission('microphone')}>Open System Settings</PrimaryButton>
+        <>
+          <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginBottom: 12, lineHeight: 1.6 }}>
+            Go to System Settings → Privacy & Security → Microphone and enable Voxlit.
+          </p>
+          <PrimaryButton onClick={() => ipc.requestPermission('microphone')}>Open System Settings</PrimaryButton>
+        </>
       )}
       {status === 'granted' && (
         <PrimaryButton onClick={onNext}>Continue →</PrimaryButton>
@@ -176,11 +192,26 @@ function AccessibilityStep({ perms, onRefresh, onNext, onSkip }: {
 }) {
   const status = perms.accessibility
 
+  const [polling, setPolling] = useState(false)
+
+  // Auto-advance when accessibility is granted (user toggled it in System Settings)
+  useEffect(() => {
+    if (status === 'granted') onNext()
+  }, [status])
+
   async function requestAccess() {
     await ipc.requestPermission('accessibility')
-    // Accessibility opens System Settings — poll for change
-    const interval = setInterval(onRefresh, 1500)
-    setTimeout(() => clearInterval(interval), 30_000)
+    // Poll while System Settings is open — detect when user toggles it on
+    setPolling(true)
+    const interval = setInterval(async () => {
+      onRefresh()
+      const updated = await ipc.checkPermissions()
+      if (updated.accessibility === 'granted') {
+        clearInterval(interval)
+        setPolling(false)
+      }
+    }, 1000)
+    setTimeout(() => { clearInterval(interval); setPolling(false) }, 60_000)
   }
 
   return (
@@ -199,13 +230,22 @@ function AccessibilityStep({ perms, onRefresh, onNext, onSkip }: {
         Accessibility access
       </h2>
       <p style={{ marginTop: 8, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.65, maxWidth: 280 }}>
-        Needed to inject text into other apps. Without it, transcripts still appear in history but won't be pasted automatically.
+        Needed to type transcribed text into other apps. Without it, results still appear in history.
       </p>
       <div style={{ marginTop: 20 }}>
         <PermBadge status={status} />
       </div>
       {(status === 'not-determined' || status === 'denied') && (
-        <PrimaryButton onClick={requestAccess}>Open Accessibility Settings</PrimaryButton>
+        <>
+          {polling && (
+            <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginBottom: 12, lineHeight: 1.6 }}>
+              Enable Voxlit in System Settings → Privacy & Security → Accessibility, then come back.
+            </p>
+          )}
+          <PrimaryButton onClick={requestAccess} disabled={polling}>
+            {polling ? 'Waiting — toggle Voxlit in Settings…' : 'Open Accessibility Settings'}
+          </PrimaryButton>
+        </>
       )}
       {status === 'granted' && (
         <PrimaryButton onClick={onNext}>Continue →</PrimaryButton>
@@ -579,8 +619,7 @@ const HOTKEY_OPTIONS = [
 
 function DoneStep({ settings, onFinish }: { settings: VoxlitSettings | null; onFinish: () => void }) {
   const [hotkey, setHotkey] = useState(settings?.hotkeyPrimary ?? 'Fn')
-  const [showRestartDialog, setShowRestartDialog] = useState(false)
-  const [restarting, setRestarting] = useState(false)
+  const [finishing, setFinishing] = useState(false)
 
   async function selectHotkey(value: string) {
     setHotkey(value)
@@ -588,90 +627,62 @@ function DoneStep({ settings, onFinish }: { settings: VoxlitSettings | null; onF
   }
 
   async function handleLaunch() {
+    setFinishing(true)
     await onFinish()
-    setShowRestartDialog(true)
-  }
-
-  async function handleRestart() {
-    setRestarting(true)
-    await ipc.relaunch()
+    // No restart needed — completeOnboarding() saves the flag and dismisses the wizard
   }
 
   return (
     <div className="animate-onboarding-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 0 }}>
-      {showRestartDialog ? (
-        <>
-          <div style={{
-            width: 52, height: 52, borderRadius: 14, marginBottom: 16,
-            background: '#E8F5E9', border: '2px solid #0A0A0A',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <span style={{ fontSize: 24 }}>🔄</span>
-          </div>
-          <h2 style={{
-            fontSize: 20, fontWeight: 700, letterSpacing: '-0.03em',
-            color: '#0A0A0A', fontFamily: 'var(--font-mono)', textTransform: 'uppercase'
-          }}>
-            Restart Required
-          </h2>
-          <p style={{ marginTop: 10, fontSize: 12, color: '#555', lineHeight: 1.7, fontFamily: 'var(--font-mono)', maxWidth: 280, marginBottom: 24 }}>
-            Voxlit needs to restart to apply your settings and connect the helper process.
-          </p>
-          <PrimaryButton onClick={handleRestart} disabled={restarting}>
-            {restarting ? 'Restarting…' : 'Restart Voxlit →'}
-          </PrimaryButton>
-        </>
-      ) : (
-        <>
-          <h2 style={{
-            fontSize: 24, fontWeight: 700, letterSpacing: '-0.03em',
-            color: '#0A0A0A', fontFamily: 'var(--font-mono)', textTransform: 'uppercase'
-          }}>
-            Set Your Hotkey
-          </h2>
-          <p style={{ marginTop: 8, fontSize: 11, color: '#666', lineHeight: 1.6, fontFamily: 'var(--font-mono)', marginBottom: 20 }}>
-            Hold this key to dictate into any app.<br/>You can change it anytime in Settings.
-          </p>
+      <h2 style={{
+        fontSize: 24, fontWeight: 700, letterSpacing: '-0.03em',
+        color: '#0A0A0A', fontFamily: 'var(--font-mono)', textTransform: 'uppercase'
+      }}>
+        Set Your Hotkey
+      </h2>
+      <p style={{ marginTop: 8, fontSize: 11, color: '#666', lineHeight: 1.6, fontFamily: 'var(--font-mono)', marginBottom: 20 }}>
+        Hold this key to dictate into any app.<br/>You can change it anytime in Settings.
+      </p>
 
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
-            {HOTKEY_OPTIONS.map(({ value, label, desc }) => {
-              const active = hotkey === value
-              return (
-                <button
-                  key={value}
-                  onClick={() => selectHotkey(value)}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 14px', cursor: 'pointer', textAlign: 'left',
-                    background: active ? '#665DF5' : '#FFFFFF',
-                    border: `2px solid #0A0A0A`,
-                    boxShadow: active ? '3px 3px 0px #0A0A0A' : '2px 2px 0px #0A0A0A',
-                    transition: 'transform 0.1s, box-shadow 0.1s'
-                  }}
-                  onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#F5F0E8' }}
-                  onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = active ? '#665DF5' : '#FFFFFF' }}
-                >
-                  <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: active ? '#FFFFFF' : '#0A0A0A', fontWeight: 700, letterSpacing: '0.04em' }}>
-                    {desc}
-                  </span>
-                  <kbd style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700,
-                    background: active ? 'rgba(255,255,255,0.2)' : '#FFEB3B',
-                    border: `2px solid ${active ? 'rgba(255,255,255,0.4)' : '#0A0A0A'}`,
-                    padding: '3px 10px',
-                    color: active ? '#FFFFFF' : '#0A0A0A',
-                    letterSpacing: '0.04em'
-                  }}>
-                    {label}
-                  </kbd>
-                </button>
-              )
-            })}
-          </div>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
+        {HOTKEY_OPTIONS.map(({ value, label, desc }) => {
+          const active = hotkey === value
+          return (
+            <button
+              key={value}
+              onClick={() => selectHotkey(value)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 14px', cursor: 'pointer', textAlign: 'left',
+                background: active ? '#665DF5' : '#FFFFFF',
+                border: `2px solid #0A0A0A`,
+                boxShadow: active ? '3px 3px 0px #0A0A0A' : '2px 2px 0px #0A0A0A',
+                transition: 'transform 0.1s, box-shadow 0.1s'
+              }}
+              onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = '#F5F0E8' }}
+              onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = active ? '#665DF5' : '#FFFFFF' }}
+            >
+              <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: active ? '#FFFFFF' : '#0A0A0A', fontWeight: 700, letterSpacing: '0.04em' }}>
+                {desc}
+              </span>
+              <kbd style={{
+                fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700,
+                background: active ? 'rgba(255,255,255,0.2)' : '#FFEB3B',
+                border: `2px solid ${active ? 'rgba(255,255,255,0.4)' : '#0A0A0A'}`,
+                padding: '3px 10px',
+                color: active ? '#FFFFFF' : '#0A0A0A',
+                letterSpacing: '0.04em'
+              }}>
+                {label}
+              </kbd>
+            </button>
+          )
+        })}
+      </div>
 
-          <PrimaryButton onClick={handleLaunch}>Done — Restart & Launch →</PrimaryButton>
-        </>
-      )}
+      <PrimaryButton onClick={handleLaunch} disabled={finishing}>
+        {finishing ? 'Starting…' : "Let's go →"}
+      </PrimaryButton>
     </div>
   )
 }
