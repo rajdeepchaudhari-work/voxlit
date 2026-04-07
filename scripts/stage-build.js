@@ -56,6 +56,15 @@ fs.writeFileSync(path.join(clean, 'package.json'), JSON.stringify(minimalPkg, nu
 console.log('› out/')
 cpDir(path.join(root, 'out'), path.join(clean, 'out'))
 
+// Remove build artifacts that must not end up in the ASAR
+for (const artifact of [
+  'out/tsconfig.node.tsbuildinfo',
+  'out/tsconfig.web.tsbuildinfo',
+]) {
+  const p = path.join(clean, artifact)
+  if (fs.existsSync(p)) fs.rmSync(p)
+}
+
 const nm = path.join(clean, 'node_modules')
 fs.mkdirSync(nm)
 
