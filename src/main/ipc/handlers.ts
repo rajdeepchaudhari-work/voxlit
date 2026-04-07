@@ -1,4 +1,5 @@
 import { ipcMain, systemPreferences, shell, BrowserWindow, app } from 'electron'
+import { installUpdate } from '../services/UpdateManager'
 import { IPC } from '@shared/ipc-types'
 import { join } from 'path'
 import { existsSync, statSync, createWriteStream, mkdirSync } from 'fs'
@@ -150,5 +151,9 @@ export function registerHandlers(deps: {
   ipcMain.handle(IPC.RELAUNCH, () => {
     app.relaunch()
     app.exit(0)
+  })
+
+  ipcMain.handle(IPC.INSTALL_UPDATE, () => {
+    installUpdate()
   })
 }

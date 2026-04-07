@@ -11,7 +11,8 @@ import type {
   PermissionType,
   SystemInfo,
   ModelStatus,
-  ModelDownloadProgress
+  ModelDownloadProgress,
+  UpdateInfo
 } from '@shared/ipc-types'
 
 // Full API surface for the settings/history window.
@@ -81,5 +82,19 @@ contextBridge.exposeInMainWorld('voxlit', {
     return () => ipcRenderer.removeListener(IPC.MODEL_DOWNLOAD_PROGRESS, listener)
   },
 
-  relaunch: (): Promise<void> => ipcRenderer.invoke(IPC.RELAUNCH)
+  relaunch: (): Promise<void> => ipcRenderer.invoke(IPC.RELAUNCH),
+
+  onUpdateAvailable: (cb: (info: UpdateInfo) => void) => {
+    const listener = (_: Electron.IpcRendererEvent, info: UpdateInfo) => cb(info)
+    ipcRenderer.on(IPC.UPDATE_AVAILABLE, listener)
+    return () => ipcRenderer.removeListener(IPC.UPDATE_AVAILABLE, listener)
+  },
+
+  onUpdateDownloaded: (cb: (info: UpdateInfo) => void) => {
+    const listener = (_: Electron.IpcRendererEvent, info: UpdateInfo) => cb(info)
+    ipcRenderer.on(IPC.UPDATE_DOWNLOADED, listener)
+    return () => ipcRenderer.removeListener(IPC.UPDATE_DOWNLOADED, listener)
+  },
+
+  installUpdate: (): Promise<void> => ipcRenderer.invoke(IPC.INSTALL_UPDATE)
 })

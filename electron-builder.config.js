@@ -33,6 +33,14 @@ module.exports = {
     title: 'Voxlit ${version}',
     window: { width: 540, height: 380 }
   },
+  publish: [
+    {
+      provider: 'github',
+      owner: 'rajdeepchaudhari-work',
+      repo: 'voxlit',
+      releaseType: 'release'
+    }
+  ],
   afterSign: 'scripts/notarize.js',
   extraMetadata: {
     main: 'out/main/index.js'

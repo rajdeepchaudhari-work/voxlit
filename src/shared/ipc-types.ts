@@ -21,7 +21,14 @@ export const IPC = {
   GET_MODEL_STATUS: 'voxlit:get-model-status',
   DOWNLOAD_MODEL: 'voxlit:download-model',
   MODEL_DOWNLOAD_PROGRESS: 'voxlit:model-download-progress',
-  RELAUNCH: 'voxlit:relaunch'
+  RELAUNCH: 'voxlit:relaunch',
+
+  // Auto-update
+  UPDATE_AVAILABLE: 'voxlit:update-available',
+  UPDATE_DOWNLOADED: 'voxlit:update-downloaded',
+  UPDATE_ERROR: 'voxlit:update-error',
+  INSTALL_UPDATE: 'voxlit:install-update',
+  CHECK_FOR_UPDATES: 'voxlit:check-for-updates'
 } as const
 
 // ─── Recording ────────────────────────────────────────────────────────────────
@@ -116,6 +123,14 @@ export interface ModelDownloadProgress {
   totalBytes: number
   done: boolean
   error?: string
+}
+
+// ─── Updates ─────────────────────────────────────────────────────────────────
+
+export interface UpdateInfo {
+  version: string
+  releaseName?: string
+  releaseNotes?: string
 }
 
 // ─── Permissions ──────────────────────────────────────────────────────────────

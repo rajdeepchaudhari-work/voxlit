@@ -7,6 +7,7 @@ import { SocketManager } from './services/SocketManager'
 import { SessionStore } from './services/SessionStore'
 import { TranscriptManager } from './services/TranscriptManager'
 import { registerHandlers } from './ipc/handlers'
+import { initAutoUpdater } from './services/UpdateManager'
 
 // ─── App-level singletons ─────────────────────────────────────────────────────
 
@@ -249,6 +250,8 @@ app.whenReady().then(() => {
 
   registerHandlers({ store, sessionStore, socketManager })
   wireServices()
+
+  if (app.isPackaged) initAutoUpdater(() => mainWindow)
 
   socketManager.start()
 

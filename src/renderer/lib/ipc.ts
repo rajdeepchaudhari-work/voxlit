@@ -12,7 +12,8 @@ import type {
   PermissionType,
   SystemInfo,
   ModelStatus,
-  ModelDownloadProgress
+  ModelDownloadProgress,
+  UpdateInfo
 } from '@shared/ipc-types'
 
 type Unsubscribe = () => void
@@ -37,6 +38,9 @@ declare global {
       downloadModel: (name: string) => Promise<void>
       onModelDownloadProgress: (cb: (data: ModelDownloadProgress) => void) => Unsubscribe
       relaunch: () => Promise<void>
+      onUpdateAvailable: (cb: (info: UpdateInfo) => void) => Unsubscribe
+      onUpdateDownloaded: (cb: (info: UpdateInfo) => void) => Unsubscribe
+      installUpdate: () => Promise<void>
     }
   }
 }
