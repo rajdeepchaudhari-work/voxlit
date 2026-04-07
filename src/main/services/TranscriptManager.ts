@@ -80,12 +80,13 @@ export class TranscriptManager extends EventEmitter {
     const startMs = Date.now()
 
     try {
-      const text =
+      const raw =
         engine === 'local'
           ? await this.transcribeLocal(pcm, modelName)
           : await this.transcribeCloud(pcm)
 
-      if (text.trim() && !this.isHallucination(text)) {
+      const text = this.cleanText(raw)
+      if (text && !this.isHallucination(text)) {
         const durationMs = Date.now() - startMs
         const entry = this.sessionStore.addEntry({ rawText: text, durationMs, engine })
         const segment: TranscriptSegment = {
@@ -108,23 +109,36 @@ export class TranscriptManager extends EventEmitter {
   }
 
   /**
+   * Post-process whisper output: strip artifacts, capitalize, clean whitespace.
+   */
+  private cleanText(raw: string): string {
+    return raw
+      // Strip whisper noise tokens like [BLANK_AUDIO], [Music], [Applause], (inaudible), etc.
+      .replace(/\[.*?\]/g, '')
+      .replace(/\(.*?\)/g, '')
+      // Collapse multiple spaces
+      .replace(/\s+/g, ' ')
+      .trim()
+      // Capitalize first letter
+      .replace(/^./, c => c.toUpperCase())
+  }
+
+  /**
    * Whisper hallucinates common phrases when given silence or low-energy audio.
-   * Filter out known phantom outputs before emitting a segment.
+   * Only filter clearly phantom subtitle/video outputs — not valid spoken words.
    */
   private isHallucination(text: string): boolean {
     const t = text.trim().toLowerCase().replace(/[.,!?]/g, '')
+    // True phantom outputs from whisper trained on subtitle data — never real dictation
     const PHANTOMS = new Set([
-      'thank you', 'thanks', 'bye', 'goodbye', 'bye bye',
-      'you', 'the', 'a', 'um', 'uh', 'hmm', 'hm',
       'thank you for watching', 'thanks for watching',
       'please subscribe', 'like and subscribe',
       'subtitles by', 'transcribed by',
-      'you you', 'the the',
-      'okay', 'ok', 'yes', 'no',
+      'you you', 'the the', 'i i',
     ])
     if (PHANTOMS.has(t)) return true
-    // Single character or empty after stripping punctuation
-    if (t.length <= 1) return true
+    // Strip all non-alpha to catch things like "..." or "- - -"
+    if (t.replace(/[^a-z]/g, '').length <= 1) return true
     return false
   }
 
@@ -193,12 +207,20 @@ export class TranscriptManager extends EventEmitter {
         '-m', modelPath,
         '-f', wavPath,
         '--no-prints',
-        '--no-timestamps',  // skip timestamp generation — saves ~15% processing time
+        '--no-timestamps',
         '--language', 'en',
         '-t', threads,
-        ...(isLarge
-          ? ['--beam-size', '5']   // large model benefits from beam search
-          : ['--beam-size', '1', '--best-of', '1']), // greedy, no candidates — fastest path
+        // --no-context: CRITICAL for push-to-talk dictation. Without this, whisper conditions
+        // on previous audio context and hallucinates continuations from earlier sessions.
+        '--no-context',
+        // beam-size 5 on all models — meaningfully more accurate than greedy (beam=1),
+        // adds ~100ms on base/small which is acceptable for dictation quality.
+        '--beam-size', '5',
+        // Initial prompt primes the model to expect natural spoken sentences, not subtitles.
+        '--prompt', 'Dictation of spoken words.',
+        // Suppress blank outputs and single-token noise from silence.
+        '--suppress-blank',
+        ...(!isLarge ? ['--best-of', '5'] : []),
       ]
 
       return await new Promise<string>((resolve, reject) => {
@@ -254,6 +276,12 @@ export class TranscriptManager extends EventEmitter {
       `Content-Disposition: form-data; name="model"\r\n\r\n${model}\r\n` +
       `--${boundary}\r\n` +
       `Content-Disposition: form-data; name="response_format"\r\n\r\njson\r\n` +
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="language"\r\n\r\nen\r\n` +
+      `--${boundary}\r\n` +
+      // Prompt primes the model with context — significantly reduces hallucinations
+      // and improves punctuation/capitalization on cloud whisper-1.
+      `Content-Disposition: form-data; name="prompt"\r\nDictation of spoken words.\r\n` +
       `--${boundary}\r\n` +
       `Content-Disposition: form-data; name="file"; filename="audio.wav"\r\n` +
       `Content-Type: audio/wav\r\n\r\n`
