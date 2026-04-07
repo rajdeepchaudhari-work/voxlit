@@ -44,6 +44,10 @@ Glaido.app/
 # Claude Code / AI agent config
 .agents/
 .claude/
+skills-lock.json
+
+# TypeScript build info
+*.tsbuildinfo
 
 # Env
 .env
