@@ -36,6 +36,22 @@ if (missing.length) {
   process.exit(1)
 }
 
+// Generate a CycloneDX SBOM of the production dependencies and attach to release.
+// npx with no-install ensures we don't pollute package.json — cyclonedx-npm fetches
+// at runtime if missing. SBOM lets users and security scanners audit our dep tree.
+const sbomPath = path.join(dist, `voxlit-${version}-sbom.cdx.json`)
+console.log('› Generating CycloneDX SBOM…')
+try {
+  execSync(
+    `npx --yes @cyclonedx/cyclonedx-npm --omit dev --omit optional --output-format json --output-file "${sbomPath}"`,
+    { stdio: 'pipe', cwd: path.join(__dirname, '..') }
+  )
+  assets.push(path.basename(sbomPath))
+  console.log('  ✓ SBOM generated')
+} catch (err) {
+  console.warn('  ! SBOM generation failed — continuing release without it:', err.message.split('\n')[0])
+}
+
 // Does the release already exist?
 let releaseExists = false
 try {
@@ -43,7 +59,9 @@ try {
   releaseExists = true
 } catch {}
 
-const assetPaths = assets.map(a => path.join(dist, a))
+// Assets array may include the SBOM (added above if generation succeeded).
+// Re-filter against disk state in case SBOM failed silently.
+const assetPaths = assets.filter(a => existsSync(path.join(dist, a))).map(a => path.join(dist, a))
 const dmgLabel = `Voxlit-${version}-arm64.dmg`
 
 if (releaseExists) {

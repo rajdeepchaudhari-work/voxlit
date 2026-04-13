@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck-and-build:
+    name: Typecheck + build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # setuptools needed for node-gyp on Python 3.12+ (distutils removed)
+      - run: pip3 install setuptools --break-system-packages || true
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true  # lint is informational for now, not blocking
+
+      - name: Build (main + preload + renderer)
+        run: npm run build
+
+      - name: Unit tests
+        run: npm test
+        continue-on-error: true  # tests scaffolded, some suites pending

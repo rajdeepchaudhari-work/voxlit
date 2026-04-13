@@ -7,6 +7,7 @@ import HowItWorks from './components/HowItWorks'
 import FeatureGrid from './components/FeatureGrid'
 import VoxlitCloudPush from './components/VoxlitCloudPush'
 import ComparisonTable from './components/ComparisonTable'
+import SecuritySignals from './components/SecuritySignals'
 import TechSpecs from './components/TechSpecs'
 import Testimonials from './components/Testimonials'
 import FAQ from './components/FAQ'
@@ -26,6 +27,7 @@ export default function App() {
         <VoxlitCloudPush />
         <HowItWorks />
         <ComparisonTable />
+        <SecuritySignals />
         <TechSpecs />
         <Testimonials />
         <FAQ />

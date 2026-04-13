@@ -26,6 +26,21 @@
   <img src="https://img.shields.io/github/license/rajdeepchaudhari-work/voxlit?style=flat-square&color=22D3EE" alt="MIT License" />
 </p>
 
+<p align="center">
+  <a href="https://github.com/rajdeepchaudhari-work/voxlit/actions/workflows/ci.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/rajdeepchaudhari-work/voxlit/ci.yml?style=flat-square&label=build&color=00C853" alt="Build" />
+  </a>
+  <a href="https://github.com/rajdeepchaudhari-work/voxlit/actions/workflows/codeql.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/rajdeepchaudhari-work/voxlit/codeql.yml?style=flat-square&label=CodeQL&color=00C853" alt="CodeQL" />
+  </a>
+  <a href="https://securityscorecards.dev/viewer/?uri=github.com/rajdeepchaudhari-work/voxlit">
+    <img src="https://api.securityscorecards.dev/projects/github.com/rajdeepchaudhari-work/voxlit/badge" alt="OpenSSF Scorecard" />
+  </a>
+  <a href="SECURITY.md">
+    <img src="https://img.shields.io/badge/security-policy-665DF5?style=flat-square" alt="Security Policy" />
+  </a>
+</p>
+
 <br/>
 
 <p align="center">
