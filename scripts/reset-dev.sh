@@ -5,6 +5,14 @@ set -euo pipefail
 
 echo "Resetting Voxlit dev state..."
 
+# 1. Kill any running Voxlit/Electron-Voxlit process. Without this, the running
+#    main process keeps its in-memory TCC state and the reset has no visible effect.
+#    Filter narrowly so we don't kill VS Code's Electron (also "Electron Helper").
+pkill -f "VoxlitHelper" 2>/dev/null || true
+pkill -f "node_modules/electron/dist/Electron.app" 2>/dev/null || true
+pkill -f "Voxlit.app/Contents/MacOS/Voxlit" 2>/dev/null || true
+sleep 0.3
+
 # Bundle IDs we might've used:
 #   - com.github.Electron : npm run dev (default Electron identity)
 #   - com.electron.voxlit : earlier packaged builds (legacy default)
