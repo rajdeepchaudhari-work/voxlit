@@ -190,6 +190,11 @@ export function registerHandlers(deps: {
     socketManager.setMicGainMode(mode)
   })
 
+  ipcMain.handle(IPC.SET_NOISE_SUPPRESSION, (_, enabled: boolean) => {
+    store.set('noiseSuppressionEnabled', enabled)
+    socketManager.setNoiseSuppression(enabled)
+  })
+
   ipcMain.handle(IPC.RELAUNCH, () => {
     app.relaunch()
     app.exit(0)

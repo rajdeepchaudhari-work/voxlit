@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import CoreAudio
+import AudioToolbox
 
 /// Captures microphone audio at 16kHz mono Float32 and streams PCM frames over the socket.
 /// The engine only runs while a recording session is active — this is what makes
@@ -27,6 +28,9 @@ class AudioEngine {
     private let agcAttackCoef: Float = 0.30
     /// Slow release: raise gain gradually when input is consistently quiet
     private let agcReleaseCoef: Float = 0.02
+    /// Apple's voice processing IO: built-in noise suppression + echo cancellation.
+    /// Toggled by setNoiseSuppression(); applied at engine.start() time.
+    private var noiseSuppression: Bool = true
 
     private let targetFormat = AVAudioFormat(
         commonFormat: .pcmFormatFloat32,
@@ -61,11 +65,35 @@ class AudioEngine {
         print("[AudioEngine] Gain mode: \(gainMode)")
     }
 
+    /// Enable/disable Apple's voice processing IO (noise + echo cancellation).
+    /// Takes effect on next start() — the input node has to be reconfigured.
+    func setNoiseSuppression(_ enabled: Bool) {
+        noiseSuppression = enabled
+        print("[AudioEngine] Noise suppression: \(enabled ? "on" : "off")")
+    }
+
     func start() throws {
         guard !isRunning else { return }
 
         // Rebuild engine each session so device changes take effect cleanly
         engine = AVAudioEngine()
+
+        // Toggle Apple's voice processing IO (noise suppression + echo cancellation).
+        // Must be set before reading inputFormat — it changes the AudioUnit subtype.
+        // Wrapped in try? since macOS < 10.15 and some hardware will throw.
+        do {
+            try engine.inputNode.setVoiceProcessingEnabled(noiseSuppression)
+        } catch {
+            print("[AudioEngine] setVoiceProcessingEnabled(\(noiseSuppression)) failed: \(error)")
+        }
+
+        // VPIO ships with its own AGC enabled by default — disable it so our
+        // custom AGC isn't fighting Apple's. Same for built-in muting/ducking.
+        if noiseSuppression, let au = engine.inputNode.audioUnit {
+            var off: UInt32 = 0
+            AudioUnitSetProperty(au, kAUVoiceIOProperty_VoiceProcessingEnableAGC,
+                                 kAudioUnitScope_Global, 0, &off, UInt32(MemoryLayout<UInt32>.size))
+        }
 
         // Bind the requested device to the input AudioUnit BEFORE reading inputFormat
         if let uid = preferredDeviceUID, let deviceID = AudioDevices.idForUID(uid) {

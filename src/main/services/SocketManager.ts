@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events'
 import * as net from 'net'
-import { spawn, ChildProcess } from 'child_process'
+import { spawn, ChildProcess, exec } from 'child_process'
 import { join } from 'path'
-import { app, systemPreferences } from 'electron'
+import { app, systemPreferences, clipboard } from 'electron'
 import type { HelperStatus, PermissionsState } from '@shared/ipc-types'
 
 const SOCKET_PATH = '/tmp/voxlit.socket'
@@ -50,7 +50,14 @@ export class SocketManager extends EventEmitter {
   }
 
   sendInject(text: string) {
-    this.sendJson({ type: 'inject', text })
+    if (this.socket) {
+      this.sendJson({ type: 'inject', text })
+    } else {
+      // Helper not connected (dev mode without compiled binary).
+      // Fall back to clipboard + AppleScript Cmd+V — same trick the Swift
+      // TextInjector uses, just executed from Node.
+      injectViaClipboard(text)
+    }
   }
 
   setMicDevice(uid: string) {
@@ -63,6 +70,10 @@ export class SocketManager extends EventEmitter {
 
   setMicGainMode(mode: 'off' | 'manual' | 'auto') {
     this.sendJson({ type: 'set_mic_gain_mode', mode })
+  }
+
+  setNoiseSuppression(enabled: boolean) {
+    this.sendJson({ type: 'set_noise_suppression', enabled })
   }
 
   /**
@@ -238,4 +249,22 @@ export class SocketManager extends EventEmitter {
     header[4] = MSG_TYPE_JSON
     this.socket.write(Buffer.concat([header, payload]))
   }
+}
+
+/**
+ * Inject text into the focused app without the Swift helper.
+ * Saves clipboard, writes new text, fires Cmd+V via System Events, restores clipboard.
+ * Used as a dev-mode fallback — production always goes through the Swift TextInjector.
+ */
+function injectViaClipboard(text: string) {
+  if (!text) return
+  const previous = clipboard.readText()
+  clipboard.writeText(text)
+  // System Events keystroke is the most reliable path — works in Terminal,
+  // Notion, Slack, browsers, and Electron apps. Requires Accessibility permission.
+  exec(`osascript -e 'tell application "System Events" to keystroke "v" using command down'`, (err) => {
+    if (err) console.warn('[inject-fallback] paste failed:', err.message)
+    // Restore previous clipboard after paste has been consumed
+    setTimeout(() => clipboard.writeText(previous), 800)
+  })
 }

@@ -174,6 +174,7 @@ function wireServices() {
       const mode = store.get('micGainMode') ?? 'auto'
       socketManager.setMicGainMode(mode)
       socketManager.setMicGain(store.get('micGain') ?? 2.5)
+      socketManager.setNoiseSuppression(store.get('noiseSuppressionEnabled') ?? true)
     }
   })
 

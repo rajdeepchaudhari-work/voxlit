@@ -331,6 +331,16 @@ export default function SettingsPanel() {
         </div>
       </Row>
 
+      <Row label="Noise suppression" hint="Apple's voice processing — removes background noise and echo. Engages on next recording.">
+        <Toggle
+          value={settings.noiseSuppressionEnabled ?? true}
+          onChange={(enabled) => {
+            set('noiseSuppressionEnabled', enabled)
+            ipc.setNoiseSuppression(enabled)
+          }}
+        />
+      </Row>
+
       <Row label="Hotkey mode" hint="Push-to-talk: hold. Toggle: press once to start, again to stop.">
         <Select
           value={settings.hotkeyMode}

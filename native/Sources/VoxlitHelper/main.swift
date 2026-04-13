@@ -160,6 +160,8 @@ client.onJSON = { msg in
         if let g = msg["gain"] as? Double { audioEngine.setGain(Float(g)) }
     } else if type == "set_mic_gain_mode" {
         if let mode = msg["mode"] as? String { audioEngine.setGainMode(mode) }
+    } else if type == "set_noise_suppression" {
+        if let enabled = msg["enabled"] as? Bool { audioEngine.setNoiseSuppression(enabled) }
     } else if type == "list_mic_devices" {
         let devices = AudioDevices.listInputs().map { d -> [String: Any] in
             ["uid": d.uid, "name": d.name, "isDefault": d.isDefault, "isBluetooth": d.isBluetooth]

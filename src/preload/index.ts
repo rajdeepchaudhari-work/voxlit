@@ -95,6 +95,8 @@ contextBridge.exposeInMainWorld('voxlit', {
     ipcRenderer.invoke(IPC.SET_MIC_GAIN, gain),
   setMicGainMode: (mode: 'off' | 'manual' | 'auto'): Promise<void> =>
     ipcRenderer.invoke(IPC.SET_MIC_GAIN_MODE, mode),
+  setNoiseSuppression: (enabled: boolean): Promise<void> =>
+    ipcRenderer.invoke(IPC.SET_NOISE_SUPPRESSION, enabled),
 
   onUpdateAvailable: (cb: (info: UpdateInfo) => void) => {
     const listener = (_: Electron.IpcRendererEvent, info: UpdateInfo) => cb(info)

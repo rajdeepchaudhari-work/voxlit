@@ -28,6 +28,7 @@ export const IPC = {
   SET_AUDIO_DEVICE: 'voxlit:set-audio-device',
   SET_MIC_GAIN: 'voxlit:set-mic-gain',
   SET_MIC_GAIN_MODE: 'voxlit:set-mic-gain-mode',
+  SET_NOISE_SUPPRESSION: 'voxlit:set-noise-suppression',
 
   // Auto-update
   UPDATE_AVAILABLE: 'voxlit:update-available',
@@ -98,6 +99,8 @@ export interface VoxlitSettings {
   //   manual: apply micGain× with tanh soft-limit
   //   auto:   AGC — gain adapts per buffer to hit a target peak
   micGainMode?: 'off' | 'manual' | 'auto'
+  // Apple's voice processing IO — built-in noise + echo cancellation. Default true.
+  noiseSuppressionEnabled?: boolean
 }
 
 export type MicGainMode = 'off' | 'manual' | 'auto'
