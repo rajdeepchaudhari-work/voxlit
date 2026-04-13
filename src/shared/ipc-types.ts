@@ -24,6 +24,7 @@ export const IPC = {
   RELAUNCH: 'voxlit:relaunch',
   GET_APP_VERSION: 'voxlit:get-app-version',
   IS_PACKAGED: 'voxlit:is-packaged',
+  HEALTH_CHECK: 'voxlit:health-check',
   GET_HELPER_STATUS: 'voxlit:get-helper-status',
   GET_AUDIO_DEVICES: 'voxlit:get-audio-devices',
   SET_AUDIO_DEVICE: 'voxlit:set-audio-device',
@@ -171,6 +172,23 @@ export interface UpdateInfo {
   version: string
   releaseName?: string
   releaseNotes?: string
+}
+
+// ─── Health check ─────────────────────────────────────────────────────────────
+
+export type HealthStatus = 'ok' | 'warn' | 'fail' | 'unknown'
+
+export interface SubsystemHealth {
+  name: string
+  status: HealthStatus
+  message: string
+  action?: { label: string; kind: 'open-settings' | 'open-onboarding' | 'install-helper' | 'download-model' }
+}
+
+export interface HealthSnapshot {
+  overall: HealthStatus
+  checks: SubsystemHealth[]
+  checkedAt: number
 }
 
 // ─── Permissions ──────────────────────────────────────────────────────────────

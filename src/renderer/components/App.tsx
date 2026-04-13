@@ -7,6 +7,7 @@ import SettingsPanel from './SettingsPanel'
 import HomePanel from './HomePanel'
 import OnboardingWizard from './OnboardingWizard'
 import UpdateBanner from './UpdateBanner'
+import HealthIndicator from './HealthIndicator'
 
 type View = 'home' | 'history' | 'settings'
 
@@ -182,6 +183,9 @@ export default function App() {
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--color-base)' }}>
         <UpdateBanner />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '10px 16px 0' }}>
+          <HealthIndicator />
+        </div>
         {view === 'home'     && <HomePanel onNavigateHistory={() => setView('history')} />}
         {view === 'history'  && <HistoryPanel />}
         {view === 'settings' && <SettingsPanel />}

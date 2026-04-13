@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '@shared/ipc-types'
+import type { HealthSnapshot } from '@shared/ipc-types'
 import type {
   RecordingStateChange,
   TranscriptSegment,
@@ -86,6 +87,7 @@ contextBridge.exposeInMainWorld('voxlit', {
   relaunch: (): Promise<void> => ipcRenderer.invoke(IPC.RELAUNCH),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(IPC.GET_APP_VERSION),
   isPackaged: (): Promise<boolean> => ipcRenderer.invoke(IPC.IS_PACKAGED),
+  healthCheck: (): Promise<HealthSnapshot> => ipcRenderer.invoke(IPC.HEALTH_CHECK),
   getHelperStatus: (): Promise<{ status: HelperStatus; error?: string }> =>
     ipcRenderer.invoke(IPC.GET_HELPER_STATUS),
   getAudioDevices: (): Promise<Array<{ uid: string; name: string; isDefault: boolean }>> =>

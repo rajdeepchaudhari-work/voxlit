@@ -290,6 +290,18 @@ app.whenReady().then(() => {
 
   socketManager.start()
 
+  // Run a startup health check after the helper has had a moment to connect.
+  // Logged to stdout so any subsystem failure is visible without opening DevTools.
+  setTimeout(async () => {
+    const { HealthCheck } = await import('./services/HealthCheck')
+    const health = await new HealthCheck(socketManager, store).run()
+    const symbol = (s: string) => s === 'ok' ? '✓' : s === 'warn' ? '!' : s === 'fail' ? '✗' : '?'
+    console.log(`[health] overall=${health.overall}`)
+    for (const c of health.checks) {
+      console.log(`  ${symbol(c.status)} ${c.name}: ${c.message}`)
+    }
+  }, 1500)
+
   app.on('activate', () => {
     mainWindow?.show()
   })

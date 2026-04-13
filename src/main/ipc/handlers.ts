@@ -9,6 +9,7 @@ import { exec } from 'child_process'
 import type Store from 'electron-store'
 import type { SessionStore } from '../services/SessionStore'
 import type { SocketManager } from '../services/SocketManager'
+import { HealthCheck } from '../services/HealthCheck'
 import type { VoxlitSettings, SystemInfo, ModelStatus } from '@shared/ipc-types'
 
 const MODEL_URLS: Record<string, string> = {
@@ -180,6 +181,9 @@ export function registerHandlers(deps: {
   ipcMain.handle(IPC.GET_APP_VERSION, () => app.getVersion())
 
   ipcMain.handle(IPC.IS_PACKAGED, () => app.isPackaged)
+
+  const healthCheck = new HealthCheck(socketManager, store)
+  ipcMain.handle(IPC.HEALTH_CHECK, () => healthCheck.run())
 
   ipcMain.handle(IPC.GET_HELPER_STATUS, () => socketManager.getStatus())
 

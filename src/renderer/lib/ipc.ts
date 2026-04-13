@@ -43,6 +43,7 @@ declare global {
       relaunch: () => Promise<void>
       getAppVersion: () => Promise<string>
       isPackaged: () => Promise<boolean>
+      healthCheck: () => Promise<import('@shared/ipc-types').HealthSnapshot>
       getHelperStatus: () => Promise<{ status: HelperStatus; error?: string }>
       getAudioDevices: () => Promise<AudioDevice[]>
       setAudioDevice: (uid: string) => Promise<void>
