@@ -109,7 +109,23 @@ function MicSelect({ currentUid, onChange }: { currentUid: string; onChange: (ui
 
   async function refresh() {
     setLoading(true)
-    const list = await ipc.getAudioDevices()
+    let list = await ipc.getAudioDevices()
+
+    // Fallback: Swift helper not running (dev mode / binary not compiled).
+    // Use the Web Audio API directly — works in Electron renderer with mic permission.
+    if (list.length === 0) {
+      try {
+        const all = await navigator.mediaDevices.enumerateDevices()
+        list = all
+          .filter(d => d.kind === 'audioinput' && d.deviceId !== '' && d.deviceId !== 'default' && d.deviceId !== 'communications')
+          .map(d => {
+            const label = d.label || d.deviceId
+            const bt = /airpods|bluetooth|wireless|headset/i.test(label)
+            return { uid: d.deviceId, name: label, isDefault: false, isBluetooth: bt }
+          })
+      } catch { /* permission denied — nothing to show */ }
+    }
+
     setDevices(list)
     // Auto-select the first Bluetooth device if no specific device is chosen yet
     if (!currentUid) {
