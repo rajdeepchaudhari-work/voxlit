@@ -22,17 +22,24 @@ export default function SplashScreen({ onReady }: { onReady: (state: BootState) 
 
   useEffect(() => {
     let stillMounted = true
-    // Pull current state on mount in case BOOT_PROGRESS already fired before listeners were attached
-    ipc.getBootState().then((s) => { if (stillMounted) setState(s) })
-    const off = ipc.onBootProgress((s) => {
+    let transitioned = false
+
+    // Common path for both initial poll and live updates — fire onReady once.
+    function handle(s: BootState) {
       if (!stillMounted) return
       setState(s)
-      if (s.done) {
+      if (s.done && !transitioned) {
+        transitioned = true
         // Hold the splash on screen for a beat so the user can see it completed,
         // then transition. 350ms feels intentional without being slow.
         setTimeout(() => onReady(s), 350)
       }
-    })
+    }
+
+    // Initial poll covers the case where boot completed BEFORE we mounted —
+    // in that case the BOOT_PROGRESS event already fired and we'd never get it.
+    ipc.getBootState().then(handle)
+    const off = ipc.onBootProgress(handle)
     return () => { stillMounted = false; off() }
   }, [])
 
