@@ -7,7 +7,7 @@ import { SocketManager } from './services/SocketManager'
 import { SessionStore } from './services/SessionStore'
 import { TranscriptManager } from './services/TranscriptManager'
 import { registerHandlers } from './ipc/handlers'
-import { initAutoUpdater } from './services/UpdateManager'
+import { initAutoUpdater, setSocketManagerForUpdater } from './services/UpdateManager'
 
 // ─── App-level singletons ─────────────────────────────────────────────────────
 
@@ -284,6 +284,8 @@ app.whenReady().then(async () => {
   registerHandlers({ store, sessionStore, socketManager })
   wireServices()
 
+  // Let the updater kill the helper cleanly before quitAndInstall fires
+  setSocketManagerForUpdater(socketManager)
   if (app.isPackaged) initAutoUpdater(() => mainWindow)
 
   // Boot sequence — orchestrates database init, helper spawn, health check.

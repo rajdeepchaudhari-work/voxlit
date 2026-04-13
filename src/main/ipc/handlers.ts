@@ -214,8 +214,8 @@ export function registerHandlers(deps: {
     app.exit(0)
   })
 
-  ipcMain.handle(IPC.INSTALL_UPDATE, () => {
-    installUpdate()
+  ipcMain.handle(IPC.INSTALL_UPDATE, async () => {
+    await installUpdate()
   })
 
   ipcMain.handle(IPC.CHECK_FOR_UPDATES, () => {

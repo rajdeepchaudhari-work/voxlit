@@ -1,8 +1,15 @@
 import { autoUpdater } from 'electron-updater'
 import { BrowserWindow } from 'electron'
 import { IPC } from '@shared/ipc-types'
+import type { SocketManager } from './SocketManager'
+
+let socketManagerRef: SocketManager | null = null
 
 const CHECK_INTERVAL_MS = 4 * 60 * 60 * 1000  // 4 hours
+
+export function setSocketManagerForUpdater(sm: SocketManager) {
+  socketManagerRef = sm
+}
 
 export function initAutoUpdater(getMainWindow: () => BrowserWindow | null) {
   autoUpdater.autoDownload = true
@@ -49,8 +56,16 @@ export function initAutoUpdater(getMainWindow: () => BrowserWindow | null) {
   }, 10_000)
 }
 
-export function installUpdate() {
-  autoUpdater.quitAndInstall(false, true)
+export async function installUpdate() {
+  // Kill the Swift helper FIRST and wait for its real exit. If we skip this,
+  // the helper keeps file descriptors open into the .app bundle, Squirrel.Mac
+  // can't atomically replace the install, and quitAndInstall hangs forever.
+  if (socketManagerRef) {
+    try { await socketManagerRef.stopAndWait(1500) } catch (_) {}
+  }
+  // Silent=true on macOS (no modal dialog that can hide behind the window),
+  // forceRunAfter=true so the new version launches automatically.
+  autoUpdater.quitAndInstall(true, true)
 }
 
 export function checkForUpdates() {

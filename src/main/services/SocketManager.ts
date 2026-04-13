@@ -43,10 +43,38 @@ export class SocketManager extends EventEmitter {
   stop() {
     this.socket?.destroy()
     this.server?.close()
-    this.helper?.kill()
+    // SIGKILL so the helper exits immediately — SIGTERM gave it too much time to
+    // linger, which blocked Squirrel.Mac's atomic bundle replace during updates.
+    if (this.helper?.pid) {
+      try { process.kill(this.helper.pid, 'SIGKILL') } catch (_) {}
+    }
     this.helper = null
     this.socket = null
     this.server = null
+  }
+
+  /// Async variant for paths that MUST wait for the helper to actually exit
+  /// (e.g. before autoUpdater.quitAndInstall, so file descriptors into the
+  /// .app bundle are released before Squirrel.Mac tries to replace it).
+  async stopAndWait(timeoutMs = 1500): Promise<void> {
+    const helper = this.helper
+    this.socket?.destroy()
+    this.server?.close()
+    this.socket = null
+    this.server = null
+
+    if (!helper || !helper.pid) { this.helper = null; return }
+
+    const exited = new Promise<void>((resolve) => {
+      helper.once('exit', () => resolve())
+    })
+    try { process.kill(helper.pid, 'SIGKILL') } catch (_) {}
+    this.helper = null
+
+    await Promise.race([
+      exited,
+      new Promise<void>((r) => setTimeout(r, timeoutMs)),
+    ])
   }
 
   sendInject(text: string) {
