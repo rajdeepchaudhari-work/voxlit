@@ -122,13 +122,17 @@ func installFnKeyTap(client: SocketClient) {
     CFRunLoopAddSource(CFRunLoopGetMain(), src, .commonModes)
     CGEvent.tapEnable(tap: tap, enable: true)
 
-    // Forward Fn press/release to Electron
+    // Forward Fn press/release to Electron AND start/stop the mic here.
+    // Starting the audio engine only during recording is what triggers macOS
+    // to show the orange mic indicator in the menu bar (same as Glaido).
     NotificationCenter.default.addObserver(forName: .fnDown, object: nil, queue: .main) { _ in
-        // Capture focused app NOW before anything changes focus
         TextInjector.captureFocusedApp()
+        do { try audioEngine.start() }
+        catch { print("[AudioEngine] Start failed: \(error)") }
         client.sendJSON(["type": "hotkey", "action": "start"])
     }
     NotificationCenter.default.addObserver(forName: .fnUp, object: nil, queue: .main) { _ in
+        audioEngine.stop()
         client.sendJSON(["type": "hotkey", "action": "stop"])
     }
 
@@ -145,6 +149,13 @@ client.onJSON = { msg in
     guard let type = msg["type"] as? String else { return }
     if type == "inject", let text = msg["text"] as? String {
         TextInjector.inject(text)
+    } else if type == "set_mic_device" {
+        audioEngine.setPreferredDevice(uid: msg["uid"] as? String)
+    } else if type == "list_mic_devices" {
+        let devices = AudioDevices.listInputs().map { d -> [String: Any] in
+            ["uid": d.uid, "name": d.name, "isDefault": d.isDefault]
+        }
+        client.sendJSON(["type": "mic_devices", "devices": devices])
     }
 }
 
@@ -160,11 +171,9 @@ guard connected else { print("[VoxlitHelper] Could not connect — exiting"); ex
 installFnKeyTap(client: client)
 // Note: Carbon hotkey disabled — Fn is the only trigger (push-to-talk via CGEventTap)
 
-do {
-    try audioEngine.start()
-} catch {
-    print("[AudioEngine] Failed: \(error)")
-}
+// Audio engine is now started on-demand (Fn press) rather than always-on.
+// This matches Glaido and ensures macOS shows the orange mic indicator
+// only while actually recording.
 
 print("[VoxlitHelper] Running.")
 RunLoop.main.run()

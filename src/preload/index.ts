@@ -84,6 +84,10 @@ contextBridge.exposeInMainWorld('voxlit', {
 
   relaunch: (): Promise<void> => ipcRenderer.invoke(IPC.RELAUNCH),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(IPC.GET_APP_VERSION),
+  getAudioDevices: (): Promise<Array<{ uid: string; name: string; isDefault: boolean }>> =>
+    ipcRenderer.invoke(IPC.GET_AUDIO_DEVICES),
+  setAudioDevice: (uid: string): Promise<void> =>
+    ipcRenderer.invoke(IPC.SET_AUDIO_DEVICE, uid),
 
   onUpdateAvailable: (cb: (info: UpdateInfo) => void) => {
     const listener = (_: Electron.IpcRendererEvent, info: UpdateInfo) => cb(info)

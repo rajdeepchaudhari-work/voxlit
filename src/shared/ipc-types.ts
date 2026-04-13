@@ -23,6 +23,8 @@ export const IPC = {
   MODEL_DOWNLOAD_PROGRESS: 'voxlit:model-download-progress',
   RELAUNCH: 'voxlit:relaunch',
   GET_APP_VERSION: 'voxlit:get-app-version',
+  GET_AUDIO_DEVICES: 'voxlit:get-audio-devices',
+  SET_AUDIO_DEVICE: 'voxlit:set-audio-device',
 
   // Auto-update
   UPDATE_AVAILABLE: 'voxlit:update-available',
@@ -83,6 +85,14 @@ export interface VoxlitSettings {
   // Voxlit Server (cloud with prompt engineering). Defaults filled in main.
   voxlitServerUrl?: string
   voxlitServerToken?: string
+  // Preferred input device UID (empty = system default)
+  micDeviceUid?: string
+}
+
+export interface AudioDevice {
+  uid: string
+  name: string
+  isDefault: boolean
 }
 
 // ─── Sessions / History ───────────────────────────────────────────────────────

@@ -13,7 +13,8 @@ import type {
   SystemInfo,
   ModelStatus,
   ModelDownloadProgress,
-  UpdateInfo
+  UpdateInfo,
+  AudioDevice
 } from '@shared/ipc-types'
 
 type Unsubscribe = () => void
@@ -39,6 +40,8 @@ declare global {
       onModelDownloadProgress: (cb: (data: ModelDownloadProgress) => void) => Unsubscribe
       relaunch: () => Promise<void>
       getAppVersion: () => Promise<string>
+      getAudioDevices: () => Promise<AudioDevice[]>
+      setAudioDevice: (uid: string) => Promise<void>
       onUpdateAvailable: (cb: (info: UpdateInfo) => void) => Unsubscribe
       onUpdateDownloaded: (cb: (info: UpdateInfo) => void) => Unsubscribe
       installUpdate: () => Promise<void>

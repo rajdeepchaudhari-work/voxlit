@@ -44,6 +44,29 @@ export class SocketManager extends EventEmitter {
     this.sendJson({ type: 'inject', text })
   }
 
+  setMicDevice(uid: string) {
+    this.sendJson({ type: 'set_mic_device', uid })
+  }
+
+  /**
+   * Ask the Swift helper to enumerate audio input devices.
+   * Returns a promise that resolves with the device list (or [] on timeout).
+   */
+  listMicDevices(timeoutMs = 2000): Promise<Array<{ uid: string; name: string; isDefault: boolean }>> {
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        this.removeListener('mic_devices', handler)
+        resolve([])
+      }, timeoutMs)
+      const handler = (devices: Array<{ uid: string; name: string; isDefault: boolean }>) => {
+        clearTimeout(timer)
+        resolve(devices)
+      }
+      this.once('mic_devices', handler)
+      this.sendJson({ type: 'list_mic_devices' })
+    })
+  }
+
   checkPermissions(): PermissionsState {
     const micStatus = systemPreferences.getMediaAccessStatus('microphone')
     const mic: PermissionsState['microphone'] =
@@ -185,6 +208,8 @@ export class SocketManager extends EventEmitter {
       this.emit('hotkey', msg.action)
     } else if (msg.type === 'permissions') {
       this.emit('permissions', msg.state)
+    } else if (msg.type === 'mic_devices') {
+      this.emit('mic_devices', msg.devices)
     }
   }
 

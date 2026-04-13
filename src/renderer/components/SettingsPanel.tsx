@@ -103,6 +103,46 @@ function Slider({ value, onChange, min = 0, max = 1, step = 0.05 }: {
   )
 }
 
+function MicSelect({ currentUid, onChange }: { currentUid: string; onChange: (uid: string) => void }) {
+  const [devices, setDevices] = useState<Array<{ uid: string; name: string; isDefault: boolean }>>([])
+  const [loading, setLoading] = useState(true)
+
+  async function refresh() {
+    setLoading(true)
+    const list = await ipc.getAudioDevices()
+    setDevices(list)
+    setLoading(false)
+  }
+
+  useEffect(() => { refresh() }, [])
+
+  const options = [
+    { value: '', label: '— System default —' },
+    ...devices.map((d) => ({
+      value: d.uid,
+      label: d.isDefault ? `${d.name} (default)` : d.name,
+    })),
+  ]
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <Select value={currentUid} onChange={onChange} options={options} />
+      <button
+        onClick={refresh}
+        disabled={loading}
+        title="Refresh device list"
+        style={{
+          padding: '4px 8px', fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
+          background: '#FFFFFF', border: '2px solid #0A0A0A', boxShadow: '2px 2px 0px #0A0A0A',
+          cursor: loading ? 'default' : 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase'
+        }}
+      >
+        {loading ? '…' : '↻'}
+      </button>
+    </div>
+  )
+}
+
 function CheckForUpdatesRow() {
   const [status, setStatus] = useState<'idle' | 'checking' | 'uptodate'>('idle')
   const [version, setVersion] = useState<string>('')
@@ -231,6 +271,13 @@ export default function SettingsPanel() {
         }}>
           {settings.hotkeyPrimary}
         </kbd>
+      </Row>
+
+      <Row label="Microphone" hint="Pick a specific input (e.g. AirPods) or use the system default">
+        <MicSelect
+          currentUid={settings.micDeviceUid ?? ''}
+          onChange={(uid) => { set('micDeviceUid', uid); ipc.setAudioDevice(uid) }}
+        />
       </Row>
 
       <Row label="Hotkey mode" hint="Push-to-talk: hold. Toggle: press once to start, again to stop.">

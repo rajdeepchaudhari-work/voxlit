@@ -171,6 +171,13 @@ export function registerHandlers(deps: {
 
   ipcMain.handle(IPC.GET_APP_VERSION, () => app.getVersion())
 
+  ipcMain.handle(IPC.GET_AUDIO_DEVICES, () => socketManager.listMicDevices())
+
+  ipcMain.handle(IPC.SET_AUDIO_DEVICE, (_, uid: string) => {
+    store.set('micDeviceUid', uid ?? '')
+    socketManager.setMicDevice(uid ?? '')
+  })
+
   ipcMain.handle(IPC.RELAUNCH, () => {
     app.relaunch()
     app.exit(0)

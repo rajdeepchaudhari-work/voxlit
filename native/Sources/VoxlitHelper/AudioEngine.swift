@@ -1,11 +1,15 @@
 import Foundation
 import AVFoundation
+import CoreAudio
 
 /// Captures microphone audio at 16kHz mono Float32 and streams PCM frames over the socket.
+/// The engine only runs while a recording session is active — this is what makes
+/// macOS show the orange mic indicator *during recording* (vs. always-on).
 class AudioEngine {
-    private let engine = AVAudioEngine()
+    private var engine = AVAudioEngine()
     private weak var socket: SocketWriter?
     private var isRunning = false
+    private var preferredDeviceUID: String?
 
     private let targetFormat = AVAudioFormat(
         commonFormat: .pcmFormatFloat32,
@@ -18,7 +22,37 @@ class AudioEngine {
         self.socket = socket
     }
 
+    /// Set the preferred input device by CoreAudio UID (e.g. "BuiltInMicrophoneDevice",
+    /// or AirPods UID from AVAudioDevices). Empty/nil uses system default.
+    func setPreferredDevice(uid: String?) {
+        preferredDeviceUID = (uid?.isEmpty == false) ? uid : nil
+        print("[AudioEngine] Preferred device UID: \(preferredDeviceUID ?? "(system default)")")
+    }
+
     func start() throws {
+        guard !isRunning else { return }
+
+        // Rebuild engine each session so device changes take effect cleanly
+        engine = AVAudioEngine()
+
+        // Bind the requested device to the input AudioUnit BEFORE reading inputFormat
+        if let uid = preferredDeviceUID, let deviceID = AudioDevices.idForUID(uid) {
+            if let au = engine.inputNode.audioUnit {
+                var dev = deviceID
+                let status = AudioUnitSetProperty(
+                    au,
+                    kAudioOutputUnitProperty_CurrentDevice,
+                    kAudioUnitScope_Global,
+                    0,
+                    &dev,
+                    UInt32(MemoryLayout<AudioDeviceID>.size)
+                )
+                if status != noErr {
+                    print("[AudioEngine] Failed to bind device \(uid) (status \(status)) — using default")
+                }
+            }
+        }
+
         let inputNode = engine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
 
@@ -35,35 +69,17 @@ class AudioEngine {
             self.processBuffer(buffer, converter: converter)
         }
 
-        // Handle audio interruptions (other app takes mic, headphones plug/unplug).
-        // Closure form required — AudioEngine doesn't inherit NSObject so selector form would crash.
-        NotificationCenter.default.addObserver(
-            forName: .AVAudioEngineConfigurationChange,
-            object: engine,
-            queue: .main
-        ) { [weak self] _ in
-            guard let self, self.isRunning else { return }
-            print("[AudioEngine] Configuration changed — restarting engine")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                guard let self, self.isRunning else { return }
-                do {
-                    try self.engine.start()
-                    print("[AudioEngine] Restarted after config change")
-                } catch {
-                    print("[AudioEngine] Failed to restart after config change: \(error)")
-                }
-            }
-        }
-
         try engine.start()
         isRunning = true
         print("[AudioEngine] Started — inputFormat: \(inputFormat)")
     }
 
     func stop() {
+        guard isRunning else { return }
         isRunning = false
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
+        print("[AudioEngine] Stopped")
     }
 
     private func processBuffer(_ input: AVAudioPCMBuffer, converter: AVAudioConverter) {
@@ -97,4 +113,92 @@ class AudioEngine {
 enum AudioEngineError: Error {
     case converterFailed
     case noInputDevice
+}
+
+// MARK: - CoreAudio device enumeration
+
+struct AudioDeviceInfo {
+    let uid: String
+    let name: String
+    let isDefault: Bool
+}
+
+enum AudioDevices {
+    /// Enumerate all input-capable audio devices.
+    static func listInputs() -> [AudioDeviceInfo] {
+        let defaultID = currentDefaultInputID()
+        return allDeviceIDs().compactMap { deviceID -> AudioDeviceInfo? in
+            guard hasInputStreams(deviceID) else { return nil }
+            guard let uid  = stringProperty(deviceID, kAudioDevicePropertyDeviceUID) else { return nil }
+            let name = stringProperty(deviceID, kAudioObjectPropertyName) ?? uid
+            return AudioDeviceInfo(uid: uid, name: name, isDefault: deviceID == defaultID)
+        }
+    }
+
+    /// Look up the numeric AudioDeviceID for a given UID string.
+    static func idForUID(_ uid: String) -> AudioDeviceID? {
+        for deviceID in allDeviceIDs() {
+            if stringProperty(deviceID, kAudioDevicePropertyDeviceUID) == uid {
+                return deviceID
+            }
+        }
+        return nil
+    }
+
+    // MARK: internals
+
+    private static func allDeviceIDs() -> [AudioDeviceID] {
+        var addr = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDevices,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var size: UInt32 = 0
+        guard AudioObjectGetPropertyDataSize(AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size) == noErr else {
+            return []
+        }
+        let count = Int(size) / MemoryLayout<AudioDeviceID>.size
+        var devices = [AudioDeviceID](repeating: 0, count: count)
+        guard AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size, &devices) == noErr else {
+            return []
+        }
+        return devices
+    }
+
+    private static func hasInputStreams(_ deviceID: AudioDeviceID) -> Bool {
+        var addr = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyStreams,
+            mScope: kAudioObjectPropertyScopeInput,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var size: UInt32 = 0
+        AudioObjectGetPropertyDataSize(deviceID, &addr, 0, nil, &size)
+        return size > 0
+    }
+
+    private static func currentDefaultInputID() -> AudioDeviceID {
+        var addr = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultInputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var id: AudioDeviceID = 0
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size, &id)
+        return id
+    }
+
+    private static func stringProperty(_ deviceID: AudioDeviceID, _ selector: AudioObjectPropertySelector) -> String? {
+        var addr = AudioObjectPropertyAddress(
+            mSelector: selector,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var cfString: CFString = "" as CFString
+        var size = UInt32(MemoryLayout<CFString>.size)
+        let status = withUnsafeMutablePointer(to: &cfString) {
+            AudioObjectGetPropertyData(deviceID, &addr, 0, nil, &size, $0)
+        }
+        return status == noErr ? (cfString as String) : nil
+    }
 }

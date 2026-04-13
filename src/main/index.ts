@@ -166,6 +166,11 @@ function wireServices() {
 
   socketManager.on('status', (status, error) => {
     broadcastToAll(IPC.HELPER_STATUS, { status, error })
+    // When helper connects, push saved mic preference
+    if (status === 'connected') {
+      const uid = store.get('micDeviceUid') ?? ''
+      if (uid) socketManager.setMicDevice(uid)
+    }
   })
 
   socketManager.on('hotkey', (action: string) => {
