@@ -26,6 +26,15 @@ module.exports = {
     hardenedRuntime: false,
     entitlements: 'resources/entitlements.mac.plist',
     entitlementsInherit: 'resources/entitlements.mac.plist',
+    extendInfo: {
+      // Required for AppleScript System Events calls from the Swift helper —
+      // without this key, macOS silently denies Apple Events with no prompt.
+      NSAppleEventsUsageDescription:
+        'Voxlit uses System Events to paste transcribed text into the active application.',
+      // Tell user why we need mic access
+      NSMicrophoneUsageDescription:
+        'Voxlit transcribes your speech into text when you hold the dictation hotkey.',
+    },
   },
   dmg: {
     title: 'Voxlit ${version}',
