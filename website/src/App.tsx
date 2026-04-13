@@ -2,8 +2,10 @@ import Nav from './components/Nav'
 import Hero from './components/Hero'
 import TrustBar from './components/TrustBar'
 import AppLogoStrip from './components/AppLogoStrip'
+import UseCases from './components/UseCases'
 import HowItWorks from './components/HowItWorks'
 import FeatureGrid from './components/FeatureGrid'
+import VoxlitCloudPush from './components/VoxlitCloudPush'
 import ComparisonTable from './components/ComparisonTable'
 import TechSpecs from './components/TechSpecs'
 import Testimonials from './components/Testimonials'
@@ -19,7 +21,9 @@ export default function App() {
         <Hero />
         <TrustBar />
         <AppLogoStrip />
+        <UseCases />
         <FeatureGrid />
+        <VoxlitCloudPush />
         <HowItWorks />
         <ComparisonTable />
         <TechSpecs />

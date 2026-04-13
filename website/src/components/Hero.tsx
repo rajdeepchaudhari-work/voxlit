@@ -114,12 +114,12 @@ export default function Hero() {
               fontSize: '1.0625rem',
               lineHeight: 1.65,
               color: '#333333',
-              maxWidth: 480,
+              maxWidth: 500,
               marginBottom: 36,
             }}>
-              Voxlit transcribes your voice in real-time, entirely on your Mac.
-              No internet. No account. No subscription.
-              MIT open source, forever.
+              The world's fastest Mac dictation app. Hit one hotkey, speak, and your words
+              land in any app — Slack, Cursor, Notion, Terminal. Perfect for AI prompts,
+              long emails, and the paragraphs you were never going to type.
             </p>
 
             {/* Homebrew */}
