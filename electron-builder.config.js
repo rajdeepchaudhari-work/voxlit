@@ -1,6 +1,6 @@
 /** @type {import('electron-builder').Configuration} */
 module.exports = {
-  appId: 'app.voxlit',
+  appId: 'co.voxlit.app',
   productName: 'Voxlit',
   copyright: 'Copyright © 2026 Voxlit Contributors',
   directories: {
