@@ -25,7 +25,7 @@ const store = new Store<VoxlitSettings>({
     menubarOnly: false,
     voxlitServerUrl: 'https://api.voxlit.co/v1/transcribe',
     voxlitServerToken: 'c6e9c055ca194fabb7f60b328ca8144b06cf2839252770a785b5abe1af3806d2',
-    micGain: 2.5
+    micGain: 1.0
   },
   encryptionKey: 'voxlit-store-v1'  // encrypts openaiApiKey at rest
 })

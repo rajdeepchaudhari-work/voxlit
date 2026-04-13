@@ -11,9 +11,9 @@ class AudioEngine {
     private var isRunning = false
     private var preferredDeviceUID: String?
     /// Input gain multiplier applied to captured samples before sending.
-    /// Default 2.5x compensates for low-volume speech and quiet mics.
-    /// Output is hard-clipped to [-1, 1] to prevent distortion.
-    private var inputGain: Float = 2.5
+    /// Default 1.0 = no boost. Hard clipping causes Whisper hallucinations,
+    /// so we use soft limiting (tanh) when gain > 1.0.
+    private var inputGain: Float = 1.0
 
     private let targetFormat = AVAudioFormat(
         commonFormat: .pcmFormatFloat32,
@@ -114,12 +114,13 @@ class AudioEngine {
         let frameLength = Int(output.frameLength)
         guard frameLength > 0, let channelData = output.floatChannelData?[0] else { return }
 
-        // Apply input gain with hard clipping to [-1, 1] — boosts quiet speech
-        // before sending to the cloud transcription model.
+        // Apply input gain with SOFT limiting (tanh-style) — boosts quiet
+        // speech without creating square-wave distortion that confuses Whisper.
         if inputGain != 1.0 {
             for i in 0..<frameLength {
                 let amplified = channelData[i] * inputGain
-                channelData[i] = max(-1.0, min(1.0, amplified))
+                // tanh-based soft limit: linear up to ±0.7, smoothly compresses above
+                channelData[i] = tanhf(amplified)
             }
         }
 

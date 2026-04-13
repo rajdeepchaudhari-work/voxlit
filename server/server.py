@@ -12,8 +12,10 @@ Environment (/etc/voxlit-api.env):
 """
 import os
 import re
+import struct
 import time
 import logging
+import math
 from collections import defaultdict, deque
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request, Header
 from fastapi.responses import JSONResponse
@@ -95,6 +97,39 @@ WHISPER_PHANTOMS = {
     '[music]', '[applause]', '[laughter]', '(music)', '(applause)',
 }
 
+def analyze_int16_wav(wav_bytes: bytes) -> dict:
+    """Parse 44-byte WAV header + int16 PCM body. Return duration, peak, rms."""
+    if len(wav_bytes) < 45:
+        return {'ok': False}
+    try:
+        sample_rate = struct.unpack_from('<I', wav_bytes, 24)[0]
+        bits = struct.unpack_from('<H', wav_bytes, 34)[0]
+        if bits != 16:
+            return {'ok': False, 'reason': f'expected 16-bit, got {bits}'}
+        pcm = wav_bytes[44:]
+        n = len(pcm) // 2
+        if n == 0:
+            return {'ok': False}
+        # int16 max = 32767
+        peak = 0
+        sumsq = 0.0
+        for i in range(0, n * 2, 2):
+            s = int.from_bytes(pcm[i:i+2], 'little', signed=True)
+            a = abs(s)
+            if a > peak:
+                peak = a
+            sumsq += (s / 32768.0) ** 2
+        rms = math.sqrt(sumsq / n)
+        return {
+            'ok': True,
+            'duration_s': n / sample_rate,
+            'peak_norm': peak / 32768.0,
+            'rms_norm': rms,
+        }
+    except Exception as e:
+        return {'ok': False, 'reason': str(e)}
+
+
 def is_whisper_phantom(text: str) -> bool:
     t = text.strip().lower()
     if t in WHISPER_PHANTOMS:
@@ -130,6 +165,21 @@ async def transcribe(
         return {'text': ''}   # too short, skip
     if len(audio_bytes) > 25 * 1024 * 1024:
         raise HTTPException(status_code=413, detail='File too large (max 25MB)')
+
+    # Analyze audio quality — reject silent/near-silent input before paying for Whisper
+    stats = analyze_int16_wav(audio_bytes)
+    if stats.get('ok'):
+        log.info('audio ip=%s dur=%.2fs peak=%.3f rms=%.4f bytes=%d',
+                 ip, stats['duration_s'], stats['peak_norm'], stats['rms_norm'], len(audio_bytes))
+        # RMS < 0.005 = below voice threshold (room noise level).
+        # Whisper will hallucinate on this, so skip it.
+        if stats['rms_norm'] < 0.005:
+            log.info('rejected: too quiet (rms=%.4f)', stats['rms_norm'])
+            return {'text': '', 'reason': 'too_quiet', 'rms': stats['rms_norm']}
+        # Peak < 0.05 = mic gain way too low, signal-to-noise will be terrible
+        if stats['peak_norm'] < 0.05:
+            log.info('rejected: peak too low (peak=%.3f) — increase mic gain', stats['peak_norm'])
+            return {'text': '', 'reason': 'peak_too_low', 'peak': stats['peak_norm']}
 
     async with httpx.AsyncClient(timeout=60) as client:
         # ── Transcription via whisper-1 ─────────────────────────────────────
