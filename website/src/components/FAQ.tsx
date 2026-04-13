@@ -14,7 +14,7 @@ const faqs = [
   },
   {
     q: 'How do I install Voxlit?',
-    a: 'Via Homebrew: run `brew tap rajdeepchaudhari-work/voxlit` then `brew install --cask voxlit`. Or download the .dmg from GitHub Releases.',
+    a: 'Fastest path: run `curl -fsSL https://voxlit.co/install.sh | bash` in Terminal. It downloads the latest DMG, copies Voxlit.app to /Applications, and clears the macOS quarantine flag so the app launches without the Gatekeeper prompt. Alternatives: `brew install --cask voxlit` (after `brew tap rajdeepchaudhari-work/voxlit`), or download the .dmg manually from GitHub Releases and right-click → Open the first time.',
   },
   {
     q: 'Which apps does it work with?',

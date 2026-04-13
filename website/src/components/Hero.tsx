@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTerminalAnim } from '../hooks/useTerminalAnim'
 
 const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
@@ -215,24 +216,48 @@ export default function Hero() {
 }
 
 function BrewBlock() {
-  const lines = [
+  const [tab, setTab] = useState<'curl' | 'brew'>('curl')
+
+  const curlLine = 'curl -fsSL https://voxlit.co/install.sh | bash'
+  const brewLines = [
     'brew tap rajdeepchaudhari-work/voxlit',
     'brew install --cask voxlit',
   ]
+  const lines = tab === 'curl' ? [curlLine] : brewLines
 
   const handleCopy = () => {
     navigator.clipboard.writeText(lines.join('\n'))
   }
+
+  const TabButton = ({ value, label }: { value: 'curl' | 'brew'; label: string }) => (
+    <button
+      onClick={() => setTab(value)}
+      style={{
+        background: tab === value ? '#665DF5' : 'transparent',
+        border: `1px solid ${tab === value ? '#665DF5' : '#444'}`,
+        cursor: 'pointer',
+        padding: '3px 10px',
+        fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
+        letterSpacing: '0.08em', textTransform: 'uppercase',
+        color: tab === value ? '#FFFFFF' : '#888',
+        transition: 'border-color 0.1s, color 0.1s, background 0.1s',
+      }}
+    >
+      {label}
+    </button>
+  )
 
   return (
     <div style={{ border: '2px solid #0A0A0A', background: '#1A1A1A', marginBottom: 4 }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '7px 12px', borderBottom: '2px solid #333', background: '#2A2A2A',
+        gap: 8,
       }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#666' }}>
-          Install via Homebrew
-        </span>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <TabButton value="curl" label="curl" />
+          <TabButton value="brew" label="brew" />
+        </div>
         <button
           onClick={handleCopy}
           title="Copy to clipboard"
@@ -259,7 +284,7 @@ function BrewBlock() {
         {lines.map(line => (
           <div key={line} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ color: '#665DF5', fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', userSelect: 'none' }}>$</span>
-            <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', color: '#E8E8E8', letterSpacing: '0.01em' }}>{line}</code>
+            <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', color: '#E8E8E8', letterSpacing: '0.01em', wordBreak: 'break-all' }}>{line}</code>
           </div>
         ))}
       </div>
