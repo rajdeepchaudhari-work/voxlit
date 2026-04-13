@@ -9,6 +9,7 @@ import OnboardingWizard from './OnboardingWizard'
 import UpdateBanner from './UpdateBanner'
 import HealthIndicator from './HealthIndicator'
 import SplashScreen from './SplashScreen'
+import { warmupChimes } from './StatusPill'
 
 type View = 'home' | 'history' | 'settings'
 
@@ -132,7 +133,13 @@ export default function App() {
   // Without this the user sees a flash of the home screen before the helper
   // is connected and health checks have run.
   if (!booted) {
-    return <SplashScreen onReady={() => setBooted(true)} />
+    return <SplashScreen onReady={() => {
+      // Pre-decode the start/stop chimes + spin up the AudioContext now,
+      // so the first record/stop sound doesn't play choppy while the HAL
+      // is still warming up under the recording path.
+      warmupChimes()
+      setBooted(true)
+    }} />
   }
 
   if (onboardingStep !== null) {

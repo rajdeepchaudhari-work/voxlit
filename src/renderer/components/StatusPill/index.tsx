@@ -35,6 +35,36 @@ async function playFile(url: string) {
 const playStartSound = () => playFile(soundStartUrl)
 const playStopSound  = () => playFile(soundEndUrl)
 
+/// Pre-warm the audio output graph: create the AudioContext, decode both wav
+/// files, and play one inaudible silent buffer to fully spin up the HAL.
+/// Without this the FIRST playStartSound has to do all this work on demand,
+/// stealing CPU from the buffer mix and causing choppy/glitchy playback.
+let warmedUp = false
+export async function warmupChimes() {
+  if (warmedUp) return
+  warmedUp = true
+  try {
+    const ctx = await getCtx()
+    // Decode both sound files into the cache so the next play just hands
+    // a ready buffer to the audio thread.
+    for (const url of [soundStartUrl, soundEndUrl]) {
+      if (bufferCache.has(url)) continue
+      const res = await fetch(url)
+      const raw = await res.arrayBuffer()
+      bufferCache.set(url, await ctx.decodeAudioData(raw))
+    }
+    // Play 1 frame of silence to finish HAL setup. The first audible play after
+    // this is immediate — no choppy fade-in.
+    const silent = ctx.createBuffer(1, 1, ctx.sampleRate)
+    const src = ctx.createBufferSource()
+    src.buffer = silent
+    src.connect(ctx.destination)
+    src.start()
+  } catch (_) {
+    warmedUp = false  // allow retry next time
+  }
+}
+
 const BAR_COUNT = 12
 
 // Voxlit pill badge — real logo with state ring
