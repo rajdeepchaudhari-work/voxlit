@@ -101,7 +101,11 @@ export class TranscriptManager extends EventEmitter {
       const text = this.cleanText(raw)
       if (text && !this.isHallucination(text)) {
         const durationMs = Date.now() - startMs
-        const entry = this.sessionStore.addEntry({ rawText: text, durationMs, engine })
+        const model =
+          engine === 'voxlit' ? 'voxlit-cloud' :
+          engine === 'cloud'  ? 'whisper-1'    :
+          modelName
+        const entry = this.sessionStore.addEntry({ rawText: text, durationMs, engine, model })
         const segment: TranscriptSegment = {
           text,
           sessionId: entry.sessionId,

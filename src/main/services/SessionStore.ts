@@ -26,7 +26,7 @@ export class SessionStore {
     migrate(this.db, { migrationsFolder })
   }
 
-  startSession(): string {
+  startSession(model: string = 'voxlit-cloud'): string {
     if (this.activeSessionId) {
       this.resetInactivityTimer()
       return this.activeSessionId
@@ -36,7 +36,7 @@ export class SessionStore {
     this.db.insert(sessions).values({
       id,
       startedAt: Date.now(),
-      model: 'ggml-base.en'
+      model
     }).run()
 
     this.activeSessionId = id
@@ -48,11 +48,16 @@ export class SessionStore {
     rawText: string
     durationMs?: number
     confidence?: number
-    engine?: 'local' | 'cloud'
+    engine?: 'voxlit' | 'local' | 'cloud'
+    model?: string  // actual model used (e.g. 'whisper-1', 'ggml-base.en', 'voxlit-cloud')
   }): Entry {
-    const sessionId = this.startSession()
+    const sessionId = this.startSession(params.model)
     const id = randomUUID()
     const wordCount = params.rawText.trim().split(/\s+/).length
+
+    // DB enum only allows 'local' | 'cloud' — fold 'voxlit' into 'cloud'.
+    // The actual provider is preserved in session.model ('voxlit-cloud' etc).
+    const dbEngine: 'local' | 'cloud' = params.engine === 'local' ? 'local' : 'cloud'
 
     this.db.insert(entries).values({
       id,
@@ -61,7 +66,7 @@ export class SessionStore {
       rawText: params.rawText,
       durationMs: params.durationMs ?? null,
       confidence: params.confidence ?? null,
-      engine: params.engine ?? 'local'
+      engine: dbEngine
     }).run()
 
     // Increment session counters in-place — accumulates words across entries.
@@ -85,7 +90,7 @@ export class SessionStore {
       processedText: null,
       durationMs: params.durationMs ?? null,
       confidence: params.confidence ?? null,
-      engine: params.engine ?? 'local'
+      engine: dbEngine
     }
   }
 

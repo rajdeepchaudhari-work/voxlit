@@ -66,33 +66,38 @@ function NavItem({ label, active, onClick }: {
 // ─── Helper status ────────────────────────────────────────────────────────────
 
 function HelperStatus({ status, engine }: { status: string; engine: string }) {
-  const dot = status === 'connected' ? '#00C853' : status === 'starting' ? '#FFEB3B' : '#999'
-  const helperLabel = status === 'connected' ? 'CONNECTED' : status === 'starting' ? 'STARTING' : 'OFFLINE'
+  // Single combined status: helper readiness + engine. Avoids the confusing
+  // "OFFLINE / ONLINE" two-row display where helper status and engine status
+  // appear contradictory.
+  const helperReady = status === 'connected'
+  const helperStarting = status === 'starting'
 
-  const engineInfo = engine === 'voxlit'
-    ? { color: '#665DF5', label: 'VOXLIT CLOUD — ONLINE' }
-    : engine === 'cloud'
-    ? { color: '#665DF5', label: 'OPENAI — ONLINE' }
-    : { color: '#999',    label: 'LOCAL — OFFLINE' }
+  let dotColor = '#999'
+  let textColor = '#999'
+  let label = 'OFFLINE'
+
+  if (!helperReady && !helperStarting) {
+    dotColor = '#FF1744'; textColor = '#999'; label = 'HELPER OFFLINE'
+  } else if (helperStarting) {
+    dotColor = '#FFEB3B'; textColor = '#666'; label = 'STARTING…'
+  } else if (engine === 'voxlit') {
+    dotColor = '#665DF5'; textColor = '#665DF5'; label = 'VOXLIT CLOUD — ONLINE'
+  } else if (engine === 'cloud') {
+    dotColor = '#665DF5'; textColor = '#665DF5'; label = 'OPENAI — ONLINE'
+  } else {
+    dotColor = '#00C853'; textColor = '#00C853'; label = 'LOCAL — READY'
+  }
 
   return (
     <div style={{
-      padding: '8px 12px',
+      padding: '10px 12px',
       borderTop: '2px solid #0A0A0A',
-      display: 'flex', flexDirection: 'column', gap: 5
+      display: 'flex', alignItems: 'center', gap: 7
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-        <div style={{ width: 7, height: 7, background: dot, border: '1.5px solid #0A0A0A', flexShrink: 0 }} />
-        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: '#666' }}>
-          {helperLabel}
-        </span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-        <div style={{ width: 7, height: 7, flexShrink: 0, background: engineInfo.color, border: `1.5px solid ${engineInfo.color === '#999' ? '#0A0A0A' : engineInfo.color}` }} />
-        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: engineInfo.color === '#999' ? '#999' : engineInfo.color }}>
-          {engineInfo.label}
-        </span>
-      </div>
+      <div style={{ width: 7, height: 7, background: dotColor, border: `1.5px solid ${dotColor === '#999' ? '#0A0A0A' : dotColor}`, flexShrink: 0 }} />
+      <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: textColor }}>
+        {label}
+      </span>
     </div>
   )
 }

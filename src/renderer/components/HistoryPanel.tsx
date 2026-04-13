@@ -83,7 +83,13 @@ export default function HistoryPanel() {
         const isExpanded = expandedId === session.id
         const sessionEntries = entries[session.id] ?? []
         const isDel = deleting === session.id
-        const isCloud = !session.model?.startsWith('ggml')
+        const model = session.model ?? 'unknown'
+        const isCloud = !model.startsWith('ggml')
+        const modelLabel =
+          model === 'voxlit-cloud' ? 'Cloud' :
+          model === 'whisper-1'    ? 'OpenAI' :
+          model.startsWith('ggml') ? model.replace('ggml-', '').replace('.en', '').toUpperCase() :
+          model
 
         return (
           <div key={session.id} style={{ borderBottom: '2px solid #0A0A0A' }}>
@@ -128,7 +134,7 @@ export default function HistoryPanel() {
                 border: `2px solid ${isCloud ? '#0A0A0A' : '#665DF5'}`,
                 padding: '2px 6px', flexShrink: 0
               }}>
-                {session.model ?? 'local'}
+                {modelLabel}
               </span>
 
               {/* Actions */}
