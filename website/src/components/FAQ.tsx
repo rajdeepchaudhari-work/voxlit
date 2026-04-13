@@ -18,19 +18,19 @@ const faqs = [
   },
   {
     q: 'Which apps does it work with?',
-    a: 'Any app that accepts keyboard input — Notion, Slack, VS Code, Terminal, Mail, Discord, and thousands more. Text is injected via the macOS Accessibility API.',
+    a: 'Any app that accepts keyboard input: Notion, Slack, VS Code, Terminal, Mail, Discord, and thousands more. Text is injected via the macOS Accessibility API.',
   },
   {
     q: 'How accurate is the transcription?',
-    a: 'Excellent for everyday dictation on M-series Macs. Download larger whisper.cpp models (small, medium, large) from Settings for higher accuracy — all offline, all free.',
+    a: 'Excellent for everyday dictation on M-series Macs. Download larger whisper.cpp models (small, medium, large) from Settings for higher accuracy. All offline, all free.',
   },
   {
     q: 'Is Voxlit really free forever?',
-    a: 'Yes. MIT licensed — no paid tier, no freemium gate, no future subscription. Fork it, modify it, ship it.',
+    a: 'Yes. MIT licensed. No paid tier, no freemium gate, no future subscription. Fork it, modify it, ship it.',
   },
   {
     q: 'Does cloud mode compromise my privacy?',
-    a: 'Cloud mode is opt-in. Audio goes directly to OpenAI\'s API using your own key — never through any Voxlit server. Your key is encrypted on disk.',
+    a: 'Cloud mode is opt-in. Audio goes directly to OpenAI\'s API using your own key. Never through any Voxlit server. Your key is encrypted on disk.',
   },
   {
     q: 'Why does macOS ask for permissions?',

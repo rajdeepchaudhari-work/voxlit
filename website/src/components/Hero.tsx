@@ -118,7 +118,7 @@ export default function Hero() {
               marginBottom: 36,
             }}>
               The world's fastest Mac dictation app. Hit one hotkey, speak, and your words
-              land in any app — Slack, Cursor, Notion, Terminal. Perfect for AI prompts,
+              land in any app: Slack, Cursor, Notion, Terminal. Perfect for AI prompts,
               long emails, and the paragraphs you were never going to type.
             </p>
 
@@ -155,7 +155,7 @@ export default function Hero() {
                 <div className="terminal-dot" style={{ background: '#FFBD2E' }} />
                 <div className="terminal-dot" style={{ background: '#28C840' }} />
                 <span style={{ marginLeft: 8, fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#999' }}>
-                  voxlit — transcription
+                  voxlit · transcription
                 </span>
               </div>
 
@@ -167,7 +167,7 @@ export default function Hero() {
 
                 <div style={{ marginBottom: 20 }}>
                   <span className="badge badge-green" style={{ marginRight: 8 }}>READY</span>
-                  <span style={{ color: '#999', fontSize: '0.8125rem' }}>Model loaded in 1.2s — Metal GPU</span>
+                  <span style={{ color: '#999', fontSize: '0.8125rem' }}>Model loaded in 1.2s · Metal GPU</span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>

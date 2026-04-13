@@ -55,7 +55,7 @@ export default function VoxlitCloudPush() {
           }}>
             Beta
           </span>
-          <span>Free during beta — grab it before limits kick in</span>
+          <span>Free during beta. Grab it before limits kick in</span>
         </div>
 
         <h2 className={`reveal delay-1${inView ? ' in-view' : ''}`} style={{
@@ -86,7 +86,7 @@ export default function VoxlitCloudPush() {
           marginBottom: 40,
         }}>
           Voxlit Cloud ships on by default. No API key. No credit card. No billing page to hate.
-          Download, open, press a hotkey — you're in.
+          Download, open, press a hotkey. You're in.
         </p>
 
         <div className={`reveal delay-3${inView ? ' in-view' : ''}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 48 }}>

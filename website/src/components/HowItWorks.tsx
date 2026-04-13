@@ -5,7 +5,7 @@ const steps = [
     num: '01',
     icon: <KeyboardIcon />,
     heading: 'Press your hotkey',
-    body: 'Hit Control + Space (or any hotkey you configure) from any app on your Mac. Voxlit activates instantly — no window switching, no clicking.',
+    body: 'Hit Control + Space (or any hotkey you configure) from any app on your Mac. Voxlit activates instantly. No window switching, no clicking.',
     accent: '#FFEB3B',
   },
   {
@@ -19,7 +19,7 @@ const steps = [
     num: '03',
     icon: <CursorIcon />,
     heading: 'Text appears',
-    body: 'Words are injected directly into whatever text field is focused — Notion, Slack, VS Code, Terminal, anywhere. Release the hotkey to stop.',
+    body: 'Words are injected directly into whatever text field is focused: Notion, Slack, VS Code, Terminal, anywhere. Release the hotkey to stop.',
     accent: 'rgba(102,93,245,0.12)',
   },
 ]

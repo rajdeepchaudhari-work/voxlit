@@ -11,15 +11,15 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: <CloudIcon />,
-    heading: 'Voxlit Cloud — Free Beta',
-    body: 'Zero setup. No API key. No credit card. Fire up the app and start dictating.\n\nFree for everyone during beta — download now, lock in unlimited access while it lasts.',
+    heading: 'Voxlit Cloud: Free Beta',
+    body: 'Zero setup. No API key. No credit card. Fire up the app and start dictating.\n\nFree for everyone during beta. Download now and lock in unlimited access while it lasts.',
     bg: 'rgba(102,93,245,0.1)',
     badge: 'BETA · FREE',
   },
   {
     icon: <ShieldIcon />,
     heading: 'Privacy by Architecture',
-    body: 'Pick Local mode and audio never touches a network socket. Architectural privacy — not a policy. No server to breach, no logs to subpoena, no account to compromise.',
+    body: 'Pick Local mode and audio never touches a network socket. Architectural privacy, not a policy. No server to breach, no logs to subpoena, no account to compromise.',
     bg: '#FFEB3B',
   },
   {
@@ -31,13 +31,13 @@ const features: Feature[] = [
   {
     icon: <CodeIcon />,
     heading: 'Open Source',
-    body: 'Every line MIT licensed — app, Swift helper, and the cloud server. Read it, fork it, audit it, self-host it. No proprietary SDK, no hidden endpoints.',
+    body: 'Every line MIT licensed: app, Swift helper, and the cloud server. Read it, fork it, audit it, self-host it. No proprietary SDK, no hidden endpoints.',
     bg: '#FFFFFF',
   },
   {
     icon: <AppsIcon />,
     heading: 'Works Everywhere',
-    body: 'Any app that accepts keyboard input: Notion, Slack, VS Code, Mail, Terminal, iTerm, Ghostty. One hotkey — universal paste via System Events.',
+    body: 'Any app that accepts keyboard input: Notion, Slack, VS Code, Mail, Terminal, iTerm, Ghostty. One hotkey. Universal paste via System Events.',
     bg: '#FFFFFF',
   },
   {

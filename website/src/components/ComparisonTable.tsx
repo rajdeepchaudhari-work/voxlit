@@ -44,7 +44,7 @@ export default function ComparisonTable() {
             marginTop: 16,
             lineHeight: 1.65,
           }}>
-            We didn't cherry-pick metrics. Here's the full picture — including where commercial tools have an edge.
+            We didn't cherry-pick metrics. Here's the full picture, including where commercial tools have an edge.
           </p>
         </div>
 
