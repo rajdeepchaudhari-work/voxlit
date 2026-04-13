@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import * as net from 'net'
-import { spawn, ChildProcess, exec } from 'child_process'
+import { spawn, ChildProcess, exec, execFile as execFileFn } from 'child_process'
 import { join } from 'path'
 import { app, systemPreferences, clipboard } from 'electron'
 import type { HelperStatus, PermissionsState } from '@shared/ipc-types'
@@ -50,13 +50,13 @@ export class SocketManager extends EventEmitter {
   }
 
   sendInject(text: string) {
-    if (this.socket) {
-      console.log(`[inject] -> Swift helper (${text.length} chars)`)
-      this.sendJson({ type: 'inject', text })
-    } else {
-      console.log(`[inject] -> Node fallback (${text.length} chars), no helper connected`)
-      injectViaClipboard(text)
-    }
+    // Always inject from Node — the Swift helper's TextInjector requires its
+    // own TCC permissions (separate binary identity), which get invalidated on
+    // every rebuild in dev. Electron's identity is stable, so Automation +
+    // Accessibility permissions stick. Same paste mechanism either way
+    // (clipboard + osascript Cmd+V), just with one reliable permission domain.
+    console.log(`[inject] (${text.length} chars)`)
+    injectViaClipboard(text)
   }
 
   /// Snapshot the frontmost app at recording start. Used by the Node fallback
@@ -281,19 +281,24 @@ function injectViaClipboard(text: string) {
   clipboard.writeText(text)
 
   const target = capturedAppName
-  // Activate captured app first so Cmd+V lands in the right window.
-  // If we never captured (capture wasn't called), skip activation and hope the user
-  // hasn't switched away from their target app.
-  const activate = target ? `tell application "${target.replace(/"/g, '\\"')}" to activate\ndelay 0.05\n` : ''
-  const script = activate + `tell application "System Events" to keystroke "v" using command down`
+  // Build the AppleScript: activate captured app (so keystroke lands there),
+  // settle 80ms (activation is async), then send Cmd+V.
+  // Pass each script line as its own -e to dodge shell-quoting hell with app names.
+  const args = ['-e', 'tell application "System Events" to keystroke "v" using command down']
+  if (target) {
+    args.unshift(
+      '-e', `tell application "${target.replace(/"/g, '\\"')}" to activate`,
+      '-e', 'delay 0.08',
+    )
+  }
 
-  exec(`osascript -e '${script.replace(/'/g, "'\\''")}'`, (err, _stdout, stderr) => {
+  execFileFn('osascript', args, (err, _stdout, stderr) => {
     if (err) {
-      console.warn('[inject-fallback] paste failed:', err.message)
-      if (stderr) console.warn('[inject-fallback] stderr:', stderr.trim())
-      console.warn('[inject-fallback] check System Settings > Privacy & Security > Automation — Voxlit needs to control System Events')
+      console.warn('[inject] paste failed:', err.message)
+      if (stderr) console.warn('[inject] stderr:', stderr.trim())
+      console.warn('[inject] grant Automation > System Events to Electron in System Settings > Privacy & Security')
     } else {
-      console.log(`[inject-fallback] pasted into "${target ?? 'frontmost app'}"`)
+      console.log(`[inject] pasted into "${target ?? 'frontmost app'}"`)
     }
     setTimeout(() => clipboard.writeText(previous), 800)
   })
