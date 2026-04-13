@@ -14,6 +14,19 @@ class AudioEngine {
     /// Default 1.0 = no boost. Hard clipping causes Whisper hallucinations,
     /// so we use soft limiting (tanh) when gain > 1.0.
     private var inputGain: Float = 1.0
+    /// Gain mode: "off" (no boost), "manual" (use inputGain), "auto" (AGC)
+    private var gainMode: String = "auto"
+    /// Current AGC gain — adapts each buffer to hit agcTargetPeak
+    private var currentAutoGain: Float = 2.0
+    private let agcTargetPeak: Float = 0.6
+    private let agcMinGain: Float = 1.0
+    private let agcMaxGain: Float = 5.0
+    /// Below this RMS we assume silence — hold gain steady so we don't amplify noise floor
+    private let agcNoiseGate: Float = 0.005
+    /// Fast attack: drop gain quickly when input gets too loud (avoid clipping)
+    private let agcAttackCoef: Float = 0.30
+    /// Slow release: raise gain gradually when input is consistently quiet
+    private let agcReleaseCoef: Float = 0.02
 
     private let targetFormat = AVAudioFormat(
         commonFormat: .pcmFormatFloat32,
@@ -37,6 +50,15 @@ class AudioEngine {
     func setGain(_ gain: Float) {
         inputGain = max(0.5, min(5.0, gain))
         print("[AudioEngine] Input gain: \(inputGain)x")
+    }
+
+    /// Set gain mode: "off" (pass-through), "manual" (apply inputGain), "auto" (AGC)
+    func setGainMode(_ mode: String) {
+        let valid = ["off", "manual", "auto"]
+        gainMode = valid.contains(mode) ? mode : "auto"
+        // Reset AGC to a sensible starting point when entering auto mode
+        if gainMode == "auto" { currentAutoGain = 2.0 }
+        print("[AudioEngine] Gain mode: \(gainMode)")
     }
 
     func start() throws {
@@ -114,14 +136,44 @@ class AudioEngine {
         let frameLength = Int(output.frameLength)
         guard frameLength > 0, let channelData = output.floatChannelData?[0] else { return }
 
-        // Apply input gain with SOFT limiting (tanh-style) — boosts quiet
-        // speech without creating square-wave distortion that confuses Whisper.
-        if inputGain != 1.0 {
-            for i in 0..<frameLength {
-                let amplified = channelData[i] * inputGain
-                // tanh-based soft limit: linear up to ±0.7, smoothly compresses above
-                channelData[i] = tanhf(amplified)
+        // Apply gain according to mode. tanh soft-limits the result so
+        // boosted samples don't square-wave clip (which causes Whisper hallucinations).
+        switch gainMode {
+        case "off":
+            break  // pass-through
+        case "manual":
+            if inputGain != 1.0 {
+                for i in 0..<frameLength {
+                    channelData[i] = tanhf(channelData[i] * inputGain)
+                }
             }
+        case "auto":
+            // Measure peak + RMS this buffer
+            var peak: Float = 0
+            var sumSquares: Float = 0
+            for i in 0..<frameLength {
+                let v = channelData[i]
+                let abs_v = v < 0 ? -v : v
+                if abs_v > peak { peak = abs_v }
+                sumSquares += v * v
+            }
+            let rms = sqrtf(sumSquares / Float(frameLength))
+
+            // Only adapt when there's actual signal — otherwise the gate freezes
+            // gain and we don't amplify the noise floor between sentences.
+            if rms > agcNoiseGate && peak > 0 {
+                let desired = agcTargetPeak / peak
+                let clamped = max(agcMinGain, min(agcMaxGain, desired))
+                // Asymmetric smoothing: snap down fast (avoid clip), creep up slow (avoid pumping)
+                let coef = clamped < currentAutoGain ? agcAttackCoef : agcReleaseCoef
+                currentAutoGain = currentAutoGain * (1 - coef) + clamped * coef
+            }
+
+            for i in 0..<frameLength {
+                channelData[i] = tanhf(channelData[i] * currentAutoGain)
+            }
+        default:
+            break
         }
 
         let byteCount = frameLength * MemoryLayout<Float32>.size

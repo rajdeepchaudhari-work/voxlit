@@ -301,16 +301,22 @@ export default function SettingsPanel() {
         />
       </Row>
 
-      <Row label="Mic gain boost" hint="Amplify quiet speech before transcription. Applies to all engines.">
+      <Row label="Mic gain boost" hint="Auto adapts gain per buffer to keep your voice clear. Applies to all engines.">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Toggle
-            value={settings.micGainEnabled ?? true}
-            onChange={(enabled) => {
-              set('micGainEnabled', enabled)
-              ipc.setMicGain(enabled ? (settings.micGain ?? 2.5) : 1.0)
+          <Select
+            value={settings.micGainMode ?? 'auto'}
+            onChange={(v) => {
+              const mode = v as 'off' | 'manual' | 'auto'
+              set('micGainMode', mode)
+              ipc.setMicGainMode(mode)
             }}
+            options={[
+              { value: 'auto', label: 'Auto' },
+              { value: 'manual', label: 'Manual' },
+              { value: 'off', label: 'Off' },
+            ]}
           />
-          {(settings.micGainEnabled ?? true) && (
+          {(settings.micGainMode ?? 'auto') === 'manual' && (
             <>
               <Slider
                 value={settings.micGain ?? 2.5}

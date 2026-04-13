@@ -185,6 +185,11 @@ export function registerHandlers(deps: {
     socketManager.setMicGain(gain)
   })
 
+  ipcMain.handle(IPC.SET_MIC_GAIN_MODE, (_, mode: 'off' | 'manual' | 'auto') => {
+    store.set('micGainMode', mode)
+    socketManager.setMicGainMode(mode)
+  })
+
   ipcMain.handle(IPC.RELAUNCH, () => {
     app.relaunch()
     app.exit(0)

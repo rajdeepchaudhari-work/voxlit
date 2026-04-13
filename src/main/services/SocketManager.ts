@@ -61,6 +61,10 @@ export class SocketManager extends EventEmitter {
     this.sendJson({ type: 'set_mic_gain', gain })
   }
 
+  setMicGainMode(mode: 'off' | 'manual' | 'auto') {
+    this.sendJson({ type: 'set_mic_gain_mode', mode })
+  }
+
   /**
    * Ask the Swift helper to enumerate audio input devices.
    * Returns a promise that resolves with the device list (or [] on timeout).
@@ -71,9 +75,9 @@ export class SocketManager extends EventEmitter {
         this.removeListener('mic_devices', handler)
         resolve([])
       }, timeoutMs)
-      const handler = (devices: Array<{ uid: string; name: string; isDefault: boolean }>) => {
+      const handler = (devices: Array<{ uid: string; name: string; isDefault: boolean; isBluetooth?: boolean }>) => {
         clearTimeout(timer)
-        resolve(devices)
+        resolve(devices.map(d => ({ ...d, isBluetooth: d.isBluetooth ?? false })))
       }
       this.once('mic_devices', handler)
       this.sendJson({ type: 'list_mic_devices' })

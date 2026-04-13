@@ -46,6 +46,7 @@ declare global {
       getAudioDevices: () => Promise<AudioDevice[]>
       setAudioDevice: (uid: string) => Promise<void>
       setMicGain: (gain: number) => Promise<void>
+      setMicGainMode: (mode: 'off' | 'manual' | 'auto') => Promise<void>
       onUpdateAvailable: (cb: (info: UpdateInfo) => void) => Unsubscribe
       onUpdateProgress: (cb: (p: UpdateProgress) => void) => Unsubscribe
       onUpdateDownloaded: (cb: (info: UpdateInfo) => void) => Unsubscribe
