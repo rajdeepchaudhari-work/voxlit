@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, nativeImage, shell } from 'electron'
+import { app, BrowserWindow, Tray, Menu, nativeImage, shell, ipcMain } from 'electron'
 import { join } from 'path'
 import Store from 'electron-store'
 import { IPC } from '@shared/ipc-types'
@@ -270,9 +270,7 @@ function wireServices() {
 // window close from full quit — prevents hiding window on quit).
 let isQuitting = false
 
-app.whenReady().then(() => {
-  sessionStore.init()
-
+app.whenReady().then(async () => {
   // Set custom dock icon
   const iconsDir = app.isPackaged
     ? join(process.resourcesPath, 'icons')
@@ -288,19 +286,26 @@ app.whenReady().then(() => {
 
   if (app.isPackaged) initAutoUpdater(() => mainWindow)
 
-  socketManager.start()
+  // Boot sequence — orchestrates database init, helper spawn, health check.
+  // Renderer shows a splash listening to BOOT_PROGRESS until 'done' fires.
+  const { BootSequence } = await import('./services/BootSequence')
+  const { HealthCheck } = await import('./services/HealthCheck')
+  const boot = new BootSequence(socketManager, sessionStore, new HealthCheck(socketManager, store))
 
-  // Run a startup health check after the helper has had a moment to connect.
-  // Logged to stdout so any subsystem failure is visible without opening DevTools.
-  setTimeout(async () => {
-    const { HealthCheck } = await import('./services/HealthCheck')
-    const health = await new HealthCheck(socketManager, store).run()
-    const symbol = (s: string) => s === 'ok' ? '✓' : s === 'warn' ? '!' : s === 'fail' ? '✗' : '?'
-    console.log(`[health] overall=${health.overall}`)
-    for (const c of health.checks) {
-      console.log(`  ${symbol(c.status)} ${c.name}: ${c.message}`)
-    }
-  }, 1500)
+  // Stream boot progress to all windows so the splash can react in real time
+  boot.on('progress', (state) => broadcastToAll(IPC.BOOT_PROGRESS, state))
+
+  // Renderer requests the current state on mount (handles late-mount race)
+  ipcMain.handle(IPC.GET_BOOT_STATE, () => boot.getState())
+
+  // Log a final summary to stdout for headless dev visibility
+  boot.on('done', (state) => {
+    const symbol = (s: string) => s === 'ok' ? '✓' : s === 'fail' ? '✗' : s === 'running' ? '·' : ' '
+    console.log(`[boot] complete (${state.ok ? 'ok' : 'with errors'})`)
+    for (const s of state.steps) console.log(`  ${symbol(s.status)} ${s.label}${s.detail ? ` — ${s.detail}` : ''}`)
+  })
+
+  void boot.run()
 
   app.on('activate', () => {
     mainWindow?.show()

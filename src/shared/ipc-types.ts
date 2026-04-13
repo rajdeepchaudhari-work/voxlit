@@ -25,6 +25,8 @@ export const IPC = {
   GET_APP_VERSION: 'voxlit:get-app-version',
   IS_PACKAGED: 'voxlit:is-packaged',
   HEALTH_CHECK: 'voxlit:health-check',
+  GET_BOOT_STATE: 'voxlit:get-boot-state',
+  BOOT_PROGRESS:  'voxlit:boot-progress',
   GET_HELPER_STATUS: 'voxlit:get-helper-status',
   GET_AUDIO_DEVICES: 'voxlit:get-audio-devices',
   SET_AUDIO_DEVICE: 'voxlit:set-audio-device',
@@ -172,6 +174,25 @@ export interface UpdateInfo {
   version: string
   releaseName?: string
   releaseNotes?: string
+}
+
+// ─── Boot sequence ────────────────────────────────────────────────────────────
+
+export type BootStepId = 'database' | 'helper' | 'health' | 'done'
+export type BootStepStatus = 'pending' | 'running' | 'ok' | 'fail'
+
+export interface BootStep {
+  id: BootStepId
+  label: string
+  status: BootStepStatus
+  detail?: string
+}
+
+export interface BootState {
+  steps: BootStep[]
+  done: boolean
+  ok: boolean
+  health?: HealthSnapshot
 }
 
 // ─── Health check ─────────────────────────────────────────────────────────────

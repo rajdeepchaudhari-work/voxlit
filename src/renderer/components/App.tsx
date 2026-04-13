@@ -8,6 +8,7 @@ import HomePanel from './HomePanel'
 import OnboardingWizard from './OnboardingWizard'
 import UpdateBanner from './UpdateBanner'
 import HealthIndicator from './HealthIndicator'
+import SplashScreen from './SplashScreen'
 
 type View = 'home' | 'history' | 'settings'
 
@@ -108,6 +109,7 @@ function HelperStatus({ status, engine }: { status: string; engine: string }) {
 export default function App() {
   const [view, setView] = useState<View>('home')
   const [engine, setEngine] = useState<string>('local')
+  const [booted, setBooted] = useState(false)
   const helperStatus = useAppStore((s) => s.helperStatus)
   const initIPC = useAppStore((s) => s.initIPC)
   const onboardingStep = useAppStore((s) => s.onboardingStep)
@@ -125,6 +127,13 @@ export default function App() {
       ipc.getSettings().then((s) => setEngine(s.transcriptionEngine))
     }
   }, [onboardingStep, view])
+
+  // Splash gate — block both onboarding and main UI until boot completes.
+  // Without this the user sees a flash of the home screen before the helper
+  // is connected and health checks have run.
+  if (!booted) {
+    return <SplashScreen onReady={() => setBooted(true)} />
+  }
 
   if (onboardingStep !== null) {
     return <OnboardingWizard />

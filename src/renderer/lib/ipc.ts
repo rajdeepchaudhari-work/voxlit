@@ -44,6 +44,8 @@ declare global {
       getAppVersion: () => Promise<string>
       isPackaged: () => Promise<boolean>
       healthCheck: () => Promise<import('@shared/ipc-types').HealthSnapshot>
+      getBootState: () => Promise<import('@shared/ipc-types').BootState>
+      onBootProgress: (cb: (state: import('@shared/ipc-types').BootState) => void) => Unsubscribe
       getHelperStatus: () => Promise<{ status: HelperStatus; error?: string }>
       getAudioDevices: () => Promise<AudioDevice[]>
       setAudioDevice: (uid: string) => Promise<void>
