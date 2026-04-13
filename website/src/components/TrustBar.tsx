@@ -1,11 +1,19 @@
+import { useDownloadCount } from '../hooks/useDownloadCount'
+
 const items = [
   { icon: <LockIcon />, label: 'MIT License' },
   { icon: <UserOffIcon />, label: 'Zero Account' },
   { icon: <WifiOffIcon />, label: '100% Offline' },
-  { icon: <ChipIcon />, label: 'Apple Silicon Native' },
 ]
 
+function formatCount(n: number): string {
+  if (n >= 10_000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}k`
+  return n.toLocaleString('en-US')
+}
+
 export default function TrustBar() {
+  const downloads = useDownloadCount()
+
   return (
     <div style={{
       borderBottom: '3px solid #0A0A0A',
@@ -30,6 +38,32 @@ export default function TrustBar() {
               <span className="overline" style={{ textAlign: 'center' }}>{item.label}</span>
             </div>
           ))}
+
+          {/* Live download counter */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 4,
+            padding: '20px 16px',
+            borderLeft: '2px solid #0A0A0A',
+            background: '#FFEB3B',
+          }}>
+            <span style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 800,
+              fontSize: '1.5rem',
+              letterSpacing: '-0.02em',
+              color: '#0A0A0A',
+              lineHeight: 1,
+            }}>
+              {downloads !== null ? formatCount(downloads) : '—'}
+            </span>
+            <span className="overline" style={{ textAlign: 'center' }}>
+              Downloads
+            </span>
+          </div>
         </div>
       </div>
 
@@ -73,19 +107,3 @@ function WifiOffIcon() {
   )
 }
 
-function ChipIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <rect x="5" y="5" width="10" height="10" stroke="currentColor" strokeWidth="2" />
-      <line x1="8" y1="5" x2="8" y2="2" stroke="currentColor" strokeWidth="2" />
-      <line x1="12" y1="5" x2="12" y2="2" stroke="currentColor" strokeWidth="2" />
-      <line x1="8" y1="18" x2="8" y2="15" stroke="currentColor" strokeWidth="2" />
-      <line x1="12" y1="18" x2="12" y2="15" stroke="currentColor" strokeWidth="2" />
-      <line x1="5" y1="8" x2="2" y2="8" stroke="currentColor" strokeWidth="2" />
-      <line x1="5" y1="12" x2="2" y2="12" stroke="currentColor" strokeWidth="2" />
-      <line x1="18" y1="8" x2="15" y2="8" stroke="currentColor" strokeWidth="2" />
-      <line x1="18" y1="12" x2="15" y2="12" stroke="currentColor" strokeWidth="2" />
-      <rect x="7.5" y="7.5" width="5" height="5" fill="currentColor" opacity="0.4" />
-    </svg>
-  )
-}
