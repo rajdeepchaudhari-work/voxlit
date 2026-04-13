@@ -137,46 +137,8 @@ async def transcribe(
         if not raw_text:
             return {'text': '', 'whisper_ms': whisper_ms, 'polish_ms': 0}
 
-        if raw or not needs_polish(raw_text):
-            # Whisper output is clean enough — skip GPT to avoid hallucination and save tokens
-            log.info('ok ip=%s whisper=%dms polish=skipped len=%d', ip, whisper_ms, len(raw_text))
-            return {'text': raw_text, 'whisper_ms': whisper_ms, 'polish_ms': 0, 'polished': False}
-
-        # ── Step 2: GPT-4o-mini dictation cleanup (only when needed) ────────
-        # Cap output tokens to ~1.5x input length to prevent runaway generation.
-        # Temperature 0 = deterministic, no creative rewrites.
-        max_out = max(64, min(512, int(len(raw_text) / 2)))
-
-        t1 = time.time()
-        polish_resp = await client.post(
-            'https://api.openai.com/v1/chat/completions',
-            headers={'Authorization': f'Bearer {OPENAI_API_KEY}'},
-            json={
-                'model': 'gpt-4o-mini',
-                'temperature': 0,
-                'max_tokens': max_out,
-                'messages': [
-                    {'role': 'system', 'content': DICTATION_SYSTEM_PROMPT},
-                    {'role': 'user',   'content': raw_text},
-                ],
-            },
-        )
-        polish_ms = int((time.time() - t1) * 1000)
-
-        if polish_resp.status_code >= 400:
-            log.warning('Polish failed %s: %s — falling back to raw', polish_resp.status_code, polish_resp.text[:200])
-            return {'text': raw_text, 'whisper_ms': whisper_ms, 'polish_ms': polish_ms, 'polish_failed': True}
-
-        cleaned = polish_resp.json()['choices'][0]['message']['content'].strip()
-
-        # Hallucination guard: if GPT output is >2x or <0.4x the input length,
-        # the model likely rewrote or summarized — fall back to raw Whisper output.
-        raw_words = len(raw_text.split())
-        clean_words = len(cleaned.split())
-        if raw_words > 0 and (clean_words > raw_words * 2 or clean_words < raw_words * 0.4):
-            log.warning('Polish length anomaly raw_w=%d clean_w=%d — using raw', raw_words, clean_words)
-            return {'text': raw_text, 'whisper_ms': whisper_ms, 'polish_ms': polish_ms, 'polish_rejected': True}
-
-        log.info('ok ip=%s whisper=%dms polish=%dms raw_w=%d clean_w=%d',
-                 ip, whisper_ms, polish_ms, raw_words, clean_words)
-        return {'text': cleaned, 'whisper_ms': whisper_ms, 'polish_ms': polish_ms, 'polished': True}
+        # GPT polish layer disabled — return raw Whisper output directly.
+        # The polish step was rewriting names and adding hallucinated content,
+        # so we trust Whisper's transcription as-is.
+        log.info('ok ip=%s whisper=%dms len=%d', ip, whisper_ms, len(raw_text))
+        return {'text': raw_text, 'whisper_ms': whisper_ms, 'polish_ms': 0, 'polished': False}
