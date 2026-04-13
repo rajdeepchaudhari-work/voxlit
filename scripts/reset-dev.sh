@@ -44,5 +44,11 @@ rm -rf ~/Library/Saved\ Application\ State/com.github.Electron.savedState
 rm -rf ~/Library/Logs/Voxlit
 rm -rf ~/Library/Logs/voxlit
 
+# Bounce the user-level TCC daemon so the resets above propagate immediately.
+# Without this, getMediaAccessStatus may keep returning the cached prior value
+# until the next login or until tccd notices the change on its own schedule.
+killall -USR2 tccd 2>/dev/null || true
+launchctl kickstart -k gui/$(id -u)/com.apple.tccd 2>/dev/null || true
+
 echo "Done. Next 'npm run dev' will behave like a fresh install."
 echo "Permission prompts will fire for: microphone, accessibility, automation."

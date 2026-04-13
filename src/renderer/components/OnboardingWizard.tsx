@@ -117,11 +117,6 @@ function MicrophoneStep({ perms, onRefresh, onNext, onSkip }: {
 
   const [polling, setPolling] = useState(false)
 
-  // Auto-advance when permission flips to granted
-  useEffect(() => {
-    if (status === 'granted') onNext()
-  }, [status])
-
   async function handleGrant() {
     // Start polling BEFORE triggering the dialog — so we catch the response immediately
     setPolling(true)
@@ -194,11 +189,6 @@ function AccessibilityStep({ perms, onRefresh, onNext, onSkip }: {
 
   const [polling, setPolling] = useState(false)
 
-  // Auto-advance when accessibility is granted (user toggled it in System Settings)
-  useEffect(() => {
-    if (status === 'granted') onNext()
-  }, [status])
-
   async function requestAccess() {
     await ipc.requestPermission('accessibility')
     // Poll while System Settings is open — detect when user toggles it on
@@ -267,10 +257,6 @@ function AutomationStep({ perms, onRefresh, onNext, onSkip }: {
 }) {
   const status = perms.automation
   const [polling, setPolling] = useState(false)
-
-  useEffect(() => {
-    if (status === 'granted') onNext()
-  }, [status])
 
   async function requestAccess() {
     setPolling(true)
