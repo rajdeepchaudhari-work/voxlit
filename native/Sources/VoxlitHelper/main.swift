@@ -150,12 +150,10 @@ client.onJSON = { msg in
     if type == "inject", let text = msg["text"] as? String {
         TextInjector.inject(text)
     } else if type == "set_mic_device" {
-        let uid = msg["uid"] as? String
-        audioEngine.setPreferredDevice(uid: uid)
-        // Force macOS to activate HFP profile if this is a Bluetooth device
-        if let uid = uid, !uid.isEmpty {
-            AudioDevices.setSystemDefaultInput(uid: uid)
-        }
+        // Just store the preference — the engine binds it on start() and only then
+        // forces HFP for Bluetooth. Calling setSystemDefaultInput here would put a
+        // BT headset into HFP permanently and keep the orange mic indicator lit.
+        audioEngine.setPreferredDevice(uid: msg["uid"] as? String)
     } else if type == "set_mic_gain" {
         if let g = msg["gain"] as? Double { audioEngine.setGain(Float(g)) }
     } else if type == "set_mic_gain_mode" {

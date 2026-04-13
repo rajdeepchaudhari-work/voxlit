@@ -95,6 +95,15 @@ class AudioEngine {
                                  kAudioUnitScope_Global, 0, &off, UInt32(MemoryLayout<UInt32>.size))
         }
 
+        // For Bluetooth devices, force the system default input so macOS negotiates
+        // the HFP profile (required to use the BT mic). Only do this at start time —
+        // doing it on device selection would keep HFP active permanently and the
+        // orange mic indicator would stay lit between recordings.
+        if let uid = preferredDeviceUID, let deviceID = AudioDevices.idForUID(uid),
+           AudioDevices.isBluetoothDevice(deviceID) {
+            AudioDevices.setSystemDefaultInput(uid: uid)
+        }
+
         // Bind the requested device to the input AudioUnit BEFORE reading inputFormat
         if let uid = preferredDeviceUID, let deviceID = AudioDevices.idForUID(uid) {
             if let au = engine.inputNode.audioUnit {
@@ -306,6 +315,11 @@ enum AudioDevices {
             return []
         }
         return devices
+    }
+
+    /// Public Bluetooth check — used by AudioEngine to decide whether to force HFP at start.
+    static func isBluetoothDevice(_ deviceID: AudioDeviceID) -> Bool {
+        return isBluetooth(deviceID)
     }
 
     private static func transportType(_ deviceID: AudioDeviceID) -> UInt32 {
