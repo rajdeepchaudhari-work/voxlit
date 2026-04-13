@@ -331,9 +331,9 @@ export default function SettingsPanel() {
         </div>
       </Row>
 
-      <Row label="Noise suppression" hint="Apple's voice processing — removes background noise and echo. Engages on next recording.">
+      <Row label="Noise suppression" hint="Apple's voice processing — removes background noise and echo. Off by default; some hardware conflicts with our gain control. Engages on next recording.">
         <Toggle
-          value={settings.noiseSuppressionEnabled ?? true}
+          value={settings.noiseSuppressionEnabled ?? false}
           onChange={(enabled) => {
             set('noiseSuppressionEnabled', enabled)
             ipc.setNoiseSuppression(enabled)

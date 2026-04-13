@@ -174,7 +174,13 @@ function wireServices() {
       const mode = store.get('micGainMode') ?? 'auto'
       socketManager.setMicGainMode(mode)
       socketManager.setMicGain(store.get('micGain') ?? 2.5)
-      socketManager.setNoiseSuppression(store.get('noiseSuppressionEnabled') ?? true)
+      // VPIO causes engine start failures on some hardware (mic indicator flickers,
+      // no audio captured). One-time reset for users who got defaulted to true earlier.
+      if (!store.get('noiseSuppressionMigrated' as never)) {
+        store.set('noiseSuppressionEnabled', false)
+        store.set('noiseSuppressionMigrated' as never, true as never)
+      }
+      socketManager.setNoiseSuppression(store.get('noiseSuppressionEnabled') ?? false)
     }
   })
 

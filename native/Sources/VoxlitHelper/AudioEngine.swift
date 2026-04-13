@@ -30,7 +30,10 @@ class AudioEngine {
     private let agcReleaseCoef: Float = 0.02
     /// Apple's voice processing IO: built-in noise suppression + echo cancellation.
     /// Toggled by setNoiseSuppression(); applied at engine.start() time.
-    private var noiseSuppression: Bool = true
+    /// Default off — VPIO can conflict with custom device binding and our own AGC,
+    /// causing the engine to fail-to-start on some hardware (mic indicator flickers).
+    /// Users can opt in via Settings.
+    private var noiseSuppression: Bool = false
 
     private let targetFormat = AVAudioFormat(
         commonFormat: .pcmFormatFloat32,

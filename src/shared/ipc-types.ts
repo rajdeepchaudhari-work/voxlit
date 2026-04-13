@@ -99,7 +99,8 @@ export interface VoxlitSettings {
   //   manual: apply micGain× with tanh soft-limit
   //   auto:   AGC — gain adapts per buffer to hit a target peak
   micGainMode?: 'off' | 'manual' | 'auto'
-  // Apple's voice processing IO — built-in noise + echo cancellation. Default true.
+  // Apple's voice processing IO — built-in noise + echo cancellation.
+  // Default off because VPIO can conflict with custom device binding and AGC on some hardware.
   noiseSuppressionEnabled?: boolean
 }
 
