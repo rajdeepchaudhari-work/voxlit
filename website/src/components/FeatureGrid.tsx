@@ -44,12 +44,6 @@ const features: Feature[] = [
     body: 'The base model covers 40+ languages out of the box. Download the large model for 100+. All offline, all free, no API key needed.',
     bg: '#FFFFFF',
   },
-  {
-    icon: <CubeIcon />,
-    heading: 'Three Engines, One App',
-    body: 'Voxlit Cloud (default, hosted), Local (offline whisper.cpp), or OpenAI BYOK (bring your own key). Switch anytime. Your choice, not ours.',
-    bg: '#FFFFFF',
-  },
 ]
 
 export default function FeatureGrid() {
@@ -186,13 +180,3 @@ function GlobeIcon() {
   )
 }
 
-function CubeIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M11 2L2 7v8l9 5 9-5V7L11 2z" stroke="currentColor" strokeWidth="2" />
-      <line x1="11" y1="2" x2="11" y2="20" stroke="currentColor" strokeWidth="2" />
-      <line x1="2" y1="7" x2="11" y2="12" stroke="currentColor" strokeWidth="2" />
-      <line x1="20" y1="7" x2="11" y2="12" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  )
-}
