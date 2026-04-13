@@ -340,25 +340,25 @@ function EngineStep({ onNext, onLocalSetup, onApiKey }: { onNext: () => void; on
     {
       value: 'voxlit' as const,
       title: 'Voxlit Cloud',
-      tagline: 'Fastest, most accurate. Whisper + AI cleanup.',
+      meta: 'Free · No setup',
+      tagline: 'Fastest and most accurate. Whisper plus AI cleanup. Recommended.',
       badge: 'RECOMMENDED',
-      chips: ['Free', 'No API key', 'Cloud'],
       icon: <CloudIcon />,
     },
     {
       value: 'local' as const,
       title: 'Local',
-      tagline: 'Runs 100% on your Mac. Zero network.',
+      meta: 'Offline · ~500 MB',
+      tagline: 'Runs 100% on your Mac. Zero network. Maximum privacy.',
       badge: null,
-      chips: ['Offline', 'Private', '~500MB download'],
       icon: <DiskIcon />,
     },
     {
       value: 'cloud' as const,
       title: 'OpenAI Whisper',
-      tagline: 'Bring your own API key. Direct to Whisper.',
+      meta: 'Bring your own key',
+      tagline: 'Direct to Whisper, no post-processing. You pay OpenAI per request.',
       badge: 'BYOK',
-      chips: ['Pay OpenAI', 'No cleanup'],
       icon: <KeyIcon />,
     },
   ]
@@ -380,18 +380,21 @@ function EngineStep({ onNext, onLocalSetup, onApiKey }: { onNext: () => void; on
         </p>
       </div>
 
-      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
-        {options.map(({ value, title, tagline, badge, chips, icon }) => {
+      <div style={{
+        marginTop: 22, width: '100%',
+        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12,
+      }}>
+        {options.map(({ value, title, meta, tagline, badge, icon }) => {
           const active = engine === value
           return (
             <button
               key={value}
               onClick={() => chooseEngine(value)}
               style={{
-                width: '100%', padding: '14px 16px', cursor: 'pointer',
+                width: '100%', padding: '18px 20px', cursor: 'pointer',
                 background: active ? '#FFFFFF' : '#FFFDF7',
                 border: `2px solid #0A0A0A`,
-                boxShadow: active ? '4px 4px 0px #665DF5' : '2px 2px 0px #0A0A0A',
+                boxShadow: active ? '5px 5px 0px #665DF5' : '3px 3px 0px #0A0A0A',
                 transform: active ? 'translate(-1px, -1px)' : 'none',
                 textAlign: 'left',
                 transition: 'transform 0.1s, box-shadow 0.1s, background 0.1s',
@@ -401,20 +404,20 @@ function EngineStep({ onNext, onLocalSetup, onApiKey }: { onNext: () => void; on
               onMouseEnter={(e) => {
                 if (!active) {
                   e.currentTarget.style.transform = 'translate(-1px, -1px)'
-                  e.currentTarget.style.boxShadow = '3px 3px 0px #0A0A0A'
+                  e.currentTarget.style.boxShadow = '4px 4px 0px #0A0A0A'
                 }
               }}
               onMouseLeave={(e) => {
                 if (!active) {
                   e.currentTarget.style.transform = 'none'
-                  e.currentTarget.style.boxShadow = '2px 2px 0px #0A0A0A'
+                  e.currentTarget.style.boxShadow = '3px 3px 0px #0A0A0A'
                 }
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                {/* Icon box */}
+              {/* Top row: icon + radio dot. Title + content stacked below for vertical rhythm */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div style={{
-                  width: 36, height: 36, flexShrink: 0,
+                  width: 40, height: 40,
                   border: '2px solid #0A0A0A',
                   background: active ? '#665DF5' : '#FFFFFF',
                   color: active ? '#FFFFFF' : '#665DF5',
@@ -423,63 +426,61 @@ function EngineStep({ onNext, onLocalSetup, onApiKey }: { onNext: () => void; on
                 }}>
                   {icon}
                 </div>
-
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <span style={{
-                      fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700,
-                      letterSpacing: '-0.01em', color: '#0A0A0A',
-                    }}>
-                      {title}
-                    </span>
-                    {badge && (
-                      <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 800,
-                        letterSpacing: '0.1em',
-                        background: badge === 'RECOMMENDED' ? '#FFEB3B' : '#FFFFFF',
-                        color: '#0A0A0A',
-                        border: '1.5px solid #0A0A0A', padding: '2px 6px',
-                      }}>
-                        {badge}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{
-                    marginTop: 4, fontSize: 11, color: '#555', lineHeight: 1.5,
-                    fontFamily: 'var(--font-mono)',
-                  }}>
-                    {tagline}
-                  </div>
-                  <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                    {chips.map((chip) => (
-                      <span key={chip} style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
-                        letterSpacing: '0.06em', textTransform: 'uppercase',
-                        background: '#FFFDF7', color: '#0A0A0A',
-                        border: '1px solid #0A0A0A', padding: '2px 6px',
-                      }}>
-                        {chip}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Selected radio dot */}
                 <div style={{
-                  width: 18, height: 18, flexShrink: 0,
+                  width: 20, height: 20,
                   border: '2px solid #0A0A0A', borderRadius: '50%',
                   background: active ? '#665DF5' : '#FFFFFF',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'background 0.1s',
                 }}>
-                  {active && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FFFFFF' }} />}
+                  {active && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#FFFFFF' }} />}
                 </div>
+              </div>
+
+              {/* Title + badge */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                <span style={{
+                  fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 700,
+                  letterSpacing: '-0.02em', color: '#0A0A0A', lineHeight: 1,
+                }}>
+                  {title}
+                </span>
+                {badge && (
+                  <span style={{
+                    fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 800,
+                    letterSpacing: '0.1em',
+                    background: badge === 'RECOMMENDED' ? '#FFEB3B' : '#FFFFFF',
+                    color: '#0A0A0A',
+                    border: '1.5px solid #0A0A0A',
+                    boxShadow: '1.5px 1.5px 0px #0A0A0A',
+                    padding: '2px 6px',
+                  }}>
+                    {badge}
+                  </span>
+                )}
+              </div>
+
+              {/* Meta line — short pipe-separated facts */}
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: 10, color: '#665DF5',
+                fontWeight: 700, letterSpacing: '0.04em', marginBottom: 8,
+              }}>
+                {meta}
+              </div>
+
+              {/* Description */}
+              <div style={{
+                fontFamily: 'var(--font-body, var(--font-display))', fontSize: 12,
+                color: '#444', lineHeight: 1.55,
+              }}>
+                {tagline}
               </div>
             </button>
           )
         })}
       </div>
 
-      <div style={{ marginTop: 20, width: '100%' }}>
+      <div style={{ marginTop: 22, width: '100%' }}>
         <PrimaryButton onClick={handleContinue}>
           {engine === 'voxlit' ? 'Continue →' : engine === 'local' ? 'Download model →' : 'Enter API key →'}
         </PrimaryButton>
@@ -1097,11 +1098,12 @@ export default function OnboardingWizard() {
         <ProgressDots total={STEPS.length} current={stepIndex} />
       </div>
 
-      {/* Content card */}
+      {/* Content card. Engine step is wider so the 3 engine cards fit horizontally. */}
       <div style={{
-        width: '100%', maxWidth: 380,
+        width: '100%', maxWidth: step === 'engine' ? 720 : 380,
         padding: '0 24px',
-        WebkitAppRegion: 'no-drag'
+        WebkitAppRegion: 'no-drag',
+        transition: 'max-width 0.2s ease',
       } as React.CSSProperties}>
         <div style={{
           background: '#FFFFFF',
