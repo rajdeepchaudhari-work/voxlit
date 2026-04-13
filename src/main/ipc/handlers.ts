@@ -53,11 +53,22 @@ export function registerHandlers(deps: {
 
   ipcMain.handle(IPC.CHECK_PERMISSIONS, () => socketManager.checkPermissions())
 
-  ipcMain.handle(IPC.REQUEST_PERMISSION, async (_, type: 'microphone' | 'accessibility') => {
+  ipcMain.handle(IPC.REQUEST_PERMISSION, async (_, type: 'microphone' | 'accessibility' | 'automation') => {
     if (type === 'microphone') {
       await systemPreferences.askForMediaAccess('microphone')
     } else if (type === 'accessibility') {
       await shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility')
+    } else if (type === 'automation') {
+      // Trigger the macOS TCC prompt by running a real System Events command.
+      // - First time: prompt fires, user clicks Allow/Deny
+      // - Already denied: command fails fast (open Settings as fallback)
+      // - Already granted: succeeds silently
+      exec(`osascript -e 'tell application "System Events" to count processes'`, (err) => {
+        if (err) {
+          // Already denied or dismissed — open the Automation pane so the user can flip it
+          shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Automation')
+        }
+      })
     }
   })
 

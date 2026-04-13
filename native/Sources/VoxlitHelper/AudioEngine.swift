@@ -138,7 +138,14 @@ class AudioEngine {
         guard isRunning else { return }
         isRunning = false
         engine.inputNode.removeTap(onBus: 0)
+        // Disable voice processing first — VPIO holds the audio HAL open
+        // for echo-cancel reference, which keeps the orange mic indicator on.
+        try? engine.inputNode.setVoiceProcessingEnabled(false)
         engine.stop()
+        // Recreate the engine to drop the input AudioUnit reference. Without this,
+        // ARC keeps the old AudioUnit alive long enough that the system still sees
+        // an active input client, and the menubar mic indicator never turns off.
+        engine = AVAudioEngine()
         print("[AudioEngine] Stopped")
     }
 

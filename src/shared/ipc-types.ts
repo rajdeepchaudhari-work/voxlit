@@ -173,10 +173,12 @@ export interface UpdateInfo {
 
 // ─── Permissions ──────────────────────────────────────────────────────────────
 
-export type PermissionType = 'microphone' | 'accessibility'
+export type PermissionType = 'microphone' | 'accessibility' | 'automation'
 export type PermissionStatus = 'granted' | 'denied' | 'not-determined'
 
 export interface PermissionsState {
   microphone: PermissionStatus
   accessibility: PermissionStatus
+  /// Automation/AppleEvents — required to send Cmd+V to System Events for text injection
+  automation: PermissionStatus
 }

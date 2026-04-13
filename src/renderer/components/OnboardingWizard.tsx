@@ -257,6 +257,83 @@ function AccessibilityStep({ perms, onRefresh, onNext, onSkip }: {
   )
 }
 
+// ─── Step: Automation ─────────────────────────────────────────────────────────
+
+function AutomationStep({ perms, onRefresh, onNext, onSkip }: {
+  perms: PermissionsState
+  onRefresh: () => void
+  onNext: () => void
+  onSkip: () => void
+}) {
+  const status = perms.automation
+  const [polling, setPolling] = useState(false)
+
+  useEffect(() => {
+    if (status === 'granted') onNext()
+  }, [status])
+
+  async function requestAccess() {
+    setPolling(true)
+    // Triggers macOS's TCC prompt the first time, otherwise opens System Settings → Automation
+    await ipc.requestPermission('automation')
+    const interval = setInterval(async () => {
+      const updated = await ipc.checkPermissions()
+      onRefresh()
+      if (updated.automation === 'granted') {
+        clearInterval(interval)
+        setPolling(false)
+      }
+    }, 1000)
+    setTimeout(() => { clearInterval(interval); setPolling(false) }, 60_000)
+  }
+
+  return (
+    <div className="animate-onboarding-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 0 }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 14,
+        background: 'rgba(102,93,245,0.12)', border: '1px solid rgba(102,93,245,0.3)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="14" rx="2" stroke="#665DF5" strokeWidth="1.8"/>
+          <path d="M7 9h2M11 9h2M15 9h2M7 13h10" stroke="#665DF5" strokeWidth="1.8" strokeLinecap="round"/>
+        </svg>
+      </div>
+      <h2 style={{ marginTop: 20, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
+        Automation access
+      </h2>
+      <p style={{ marginTop: 8, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.65, maxWidth: 280 }}>
+        Lets Voxlit paste transcribed text into other apps via System Events. macOS will ask you once.
+      </p>
+      <div style={{ marginTop: 20 }}>
+        <PermBadge status={status} />
+      </div>
+      {(status === 'not-determined' || status === 'denied') && (
+        <>
+          {polling && (
+            <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginBottom: 12, lineHeight: 1.6 }}>
+              {status === 'denied'
+                ? 'Enable Voxlit under "System Events" in Privacy & Security → Automation, then come back.'
+                : 'Click Allow on the macOS prompt that just appeared.'}
+            </p>
+          )}
+          <PrimaryButton onClick={requestAccess} disabled={polling}>
+            {polling
+              ? 'Waiting for permission…'
+              : status === 'denied' ? 'Open Automation Settings' : 'Grant automation access'}
+          </PrimaryButton>
+        </>
+      )}
+      {status === 'granted' && (
+        <PrimaryButton onClick={onNext}>Continue →</PrimaryButton>
+      )}
+      <div style={{ marginTop: 12 }}>
+        <GhostButton onClick={onSkip}>Skip for now</GhostButton>
+      </div>
+    </div>
+  )
+}
+
 // ─── Step: Engine ─────────────────────────────────────────────────────────────
 
 function EngineStep({ onNext, onLocalSetup, onApiKey }: { onNext: () => void; onLocalSetup: () => void; onApiKey: () => void }) {
@@ -743,7 +820,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
 
 // ─── Wizard root ──────────────────────────────────────────────────────────────
 
-const STEPS = ['welcome', 'microphone', 'accessibility', 'engine', 'apikey', 'localsetup', 'done'] as const
+const STEPS = ['welcome', 'microphone', 'accessibility', 'automation', 'engine', 'apikey', 'localsetup', 'done'] as const
 type Step = typeof STEPS[number]
 
 export default function OnboardingWizard() {
@@ -751,7 +828,7 @@ export default function OnboardingWizard() {
   const setOnboardingStep = useAppStore((s) => s.setOnboardingStep)
   const completeOnboarding = useAppStore((s) => s.completeOnboarding)
 
-  const [perms, setPerms] = useState<PermissionsState>({ microphone: 'not-determined', accessibility: 'not-determined' })
+  const [perms, setPerms] = useState<PermissionsState>({ microphone: 'not-determined', accessibility: 'not-determined', automation: 'not-determined' })
   const [settings, setSettings] = useState<VoxlitSettings | null>(null)
 
   useEffect(() => {
@@ -815,6 +892,9 @@ export default function OnboardingWizard() {
           )}
           {step === 'accessibility' && (
             <AccessibilityStep perms={perms} onRefresh={refreshPerms} onNext={goNext} onSkip={goNext} />
+          )}
+          {step === 'automation' && (
+            <AutomationStep perms={perms} onRefresh={refreshPerms} onNext={goNext} onSkip={goNext} />
           )}
           {step === 'engine' && <EngineStep onNext={() => setOnboardingStep('done')} onApiKey={() => setOnboardingStep('apikey')} onLocalSetup={() => setOnboardingStep('localsetup')} />}
           {step === 'apikey' && <ApiKeyStep onNext={() => setOnboardingStep('done')} onSkip={() => setOnboardingStep('done')} />}
