@@ -13,6 +13,8 @@
     "dev": "electron-vite dev",
     "reset": "./scripts/reset-dev.sh",
     "dev:fresh": "./scripts/reset-dev.sh && electron-vite dev",
+    "dev:fresh-id": "./scripts/rotate-bundle-id.sh && ./scripts/reset-dev.sh && electron-vite dev",
+    "reset:restore-id": "./scripts/restore-bundle-id.sh",
     "build": "electron-vite build",
     "build:mac": "electron-vite build && node scripts/stage-build.js && electron-builder --mac --arm64 && node scripts/patch-resources.js",
     "release": "node scripts/release.js",
