@@ -147,13 +147,17 @@ export class HealthCheck {
       action: { label: 'Open settings', kind: 'open-settings' },
     })
 
+    // Reachability probe. Any HTTP response (even 4xx like 405 Method Not Allowed)
+    // means the server is up. Only a network error or 5xx is a real failure.
     return new Promise((resolve) => {
-      // Just hit the host with a HEAD on root — ~50ms to a healthy CDN, fast-fail otherwise.
-      const req = https.request(url, { method: 'HEAD', timeout: 2000 }, (res) => {
-        const status = (res.statusCode ?? 0) < 500 ? 'ok' : 'warn'
-        resolve({ name: 'Voxlit Server', status, message: `HTTP ${res.statusCode}` })
+      const req = https.request(url, { method: 'GET', timeout: 2000 }, (res) => {
+        const code = res.statusCode ?? 0
+        res.resume()  // drain so the socket can close cleanly
+        if (code === 0) resolve({ name: 'Voxlit Server', status: 'fail', message: 'No response' })
+        else if (code >= 500) resolve({ name: 'Voxlit Server', status: 'fail', message: `Server error (${code})` })
+        else resolve({ name: 'Voxlit Server', status: 'ok', message: 'Reachable' })
       })
-      req.on('error', () => resolve({ name: 'Voxlit Server', status: 'fail', message: 'Unreachable' }))
+      req.on('error', (err) => resolve({ name: 'Voxlit Server', status: 'fail', message: `Unreachable: ${err.message}` }))
       req.on('timeout', () => { req.destroy(); resolve({ name: 'Voxlit Server', status: 'fail', message: 'Timed out' }) })
       req.end()
     })
