@@ -687,6 +687,129 @@ const HOTKEY_OPTIONS = [
   { value: 'Ctrl+Shift+F', label: '⌃ ⇧ F',        desc: 'Control + Shift + F' },
 ]
 
+// ─── Step: Test ───────────────────────────────────────────────────────────────
+
+function TestStep({ settings, onNext, onSkip }: {
+  settings: VoxlitSettings | null
+  onNext: () => void
+  onSkip: () => void
+}) {
+  const recordingState = useAppStore((s) => s.recordingState)
+  const lastTranscript = useAppStore((s) => s.lastTranscript)
+  const amplitude = useAppStore((s) => s.amplitude)
+
+  // Track which transcript ID is "from this test" so we don't show stale ones.
+  // entryId on lastTranscript is unique per transcription — capture the ID seen
+  // when the test step mounts so we only render fresher ones.
+  const baselineId = useRef<string | null>(lastTranscript?.entryId ?? null)
+  const [testTranscript, setTestTranscript] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (lastTranscript && lastTranscript.entryId !== baselineId.current) {
+      setTestTranscript(lastTranscript.text)
+    }
+  }, [lastTranscript])
+
+  const hotkey = settings?.hotkeyPrimary ?? 'Fn'
+  const tested = testTranscript !== null
+
+  return (
+    <div className="animate-onboarding-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 0 }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 14,
+        background: '#FFEB3B', border: '2px solid #0A0A0A',
+        boxShadow: '3px 3px 0px #0A0A0A',
+        display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }}>
+        <span style={{ fontSize: 26 }}>🎙️</span>
+      </div>
+      <h2 style={{ marginTop: 20, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
+        Try it out
+      </h2>
+      <p style={{ marginTop: 8, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.65, maxWidth: 280 }}>
+        Hold <kbd style={{
+          fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700,
+          background: '#665DF5', color: '#FFFFFF',
+          border: '2px solid #0A0A0A', boxShadow: '2px 2px 0px #0A0A0A',
+          padding: '2px 8px', margin: '0 2px',
+        }}>{hotkey}</kbd> and say something. Release when done.
+      </p>
+
+      {/* Live recording indicator */}
+      <div style={{
+        marginTop: 20, marginBottom: 16,
+        width: '100%',
+        padding: '14px 18px',
+        background: recordingState === 'listening' ? '#FFEB3B' : '#FFFDF7',
+        border: '2px solid #0A0A0A',
+        boxShadow: recordingState === 'listening' ? '3px 3px 0px #0A0A0A' : 'none',
+        transition: 'all 0.15s',
+        display: 'flex', alignItems: 'center', gap: 10,
+      }}>
+        <span style={{
+          width: 10, height: 10, borderRadius: '50%',
+          background: recordingState === 'listening' ? '#FF1744' : recordingState === 'processing' ? '#665DF5' : '#999',
+          boxShadow: recordingState === 'listening' ? '0 0 8px rgba(255,23,68,0.6)' : 'none',
+          animation: recordingState === 'listening' ? 'pulse-rec 1s ease-in-out infinite' : 'none',
+        }} />
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em' }}>
+          {recordingState === 'listening' ? 'LISTENING' : recordingState === 'processing' ? 'TRANSCRIBING…' : tested ? 'GOT IT' : 'WAITING FOR HOTKEY'}
+        </span>
+        {recordingState === 'listening' && (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2, height: 14 }}>
+            {[0.4, 0.7, 1.0, 0.7, 0.4].map((mult, i) => (
+              <div key={i} style={{
+                width: 3,
+                height: Math.max(3, Math.min(14, amplitude * 80 * mult)),
+                background: '#0A0A0A', transition: 'height 0.05s',
+              }} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {testTranscript !== null && (
+        <div style={{
+          width: '100%',
+          padding: '12px 14px',
+          background: '#FFFFFF',
+          border: '2px solid #00C853',
+          boxShadow: '3px 3px 0px #0A0A0A',
+          marginBottom: 16,
+          textAlign: 'left',
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
+            letterSpacing: '0.1em', color: '#00C853', marginBottom: 6,
+          }}>
+            ✓ TRANSCRIPT
+          </div>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: 13, lineHeight: 1.5, color: '#0A0A0A',
+          }}>
+            {testTranscript}
+          </div>
+        </div>
+      )}
+
+      {tested ? (
+        <>
+          <PrimaryButton onClick={onNext}>Looks good — continue →</PrimaryButton>
+          <div style={{ marginTop: 10 }}>
+            <GhostButton onClick={() => setTestTranscript(null)}>Try again</GhostButton>
+          </div>
+        </>
+      ) : (
+        <div style={{ marginTop: 4 }}>
+          <GhostButton onClick={onSkip}>Skip test</GhostButton>
+        </div>
+      )}
+
+      <style>{`@keyframes pulse-rec { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }`}</style>
+    </div>
+  )
+}
+
 function DoneStep({ settings, onFinish }: { settings: VoxlitSettings | null; onFinish: () => void }) {
   const [hotkey, setHotkey] = useState(settings?.hotkeyPrimary ?? 'Fn')
   const [showRestartDialog, setShowRestartDialog] = useState(false)
@@ -814,7 +937,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
 
 // ─── Wizard root ──────────────────────────────────────────────────────────────
 
-const STEPS = ['welcome', 'microphone', 'accessibility', 'automation', 'engine', 'apikey', 'localsetup', 'done'] as const
+const STEPS = ['welcome', 'microphone', 'accessibility', 'automation', 'engine', 'apikey', 'localsetup', 'test', 'done'] as const
 type Step = typeof STEPS[number]
 
 export default function OnboardingWizard() {
@@ -890,9 +1013,10 @@ export default function OnboardingWizard() {
           {step === 'automation' && (
             <AutomationStep perms={perms} onRefresh={refreshPerms} onNext={goNext} onSkip={goNext} />
           )}
-          {step === 'engine' && <EngineStep onNext={() => setOnboardingStep('done')} onApiKey={() => setOnboardingStep('apikey')} onLocalSetup={() => setOnboardingStep('localsetup')} />}
-          {step === 'apikey' && <ApiKeyStep onNext={() => setOnboardingStep('done')} onSkip={() => setOnboardingStep('done')} />}
-          {step === 'localsetup' && <LocalSetupStep onNext={() => setOnboardingStep('done')} />}
+          {step === 'engine' && <EngineStep onNext={() => setOnboardingStep('test')} onApiKey={() => setOnboardingStep('apikey')} onLocalSetup={() => setOnboardingStep('localsetup')} />}
+          {step === 'apikey' && <ApiKeyStep onNext={() => setOnboardingStep('test')} onSkip={() => setOnboardingStep('test')} />}
+          {step === 'localsetup' && <LocalSetupStep onNext={() => setOnboardingStep('test')} />}
+          {step === 'test' && <TestStep settings={settings} onNext={() => setOnboardingStep('done')} onSkip={() => setOnboardingStep('done')} />}
           {step === 'done' && <DoneStep settings={settings} onFinish={completeOnboarding} />}
         </div>
 
