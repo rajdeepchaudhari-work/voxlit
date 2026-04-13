@@ -5,14 +5,16 @@ interface Feature {
   heading: string
   body: string
   bg?: string
+  badge?: string
 }
 
 const features: Feature[] = [
   {
     icon: <CloudIcon />,
-    heading: 'Voxlit Cloud',
-    body: 'Our hosted endpoint at api.voxlit.co — Whisper-powered, dictation-tuned. No API key, no setup, works instantly. Use it as default, or switch to fully local at any time.',
+    heading: 'Voxlit Cloud — Free Beta',
+    body: 'Zero setup. No API key. No credit card. Fire up the app and start dictating.\n\nFree for everyone during beta — download now, lock in unlimited access while it lasts.',
     bg: 'rgba(102,93,245,0.1)',
+    badge: 'BETA · FREE',
   },
   {
     icon: <ShieldIcon />,
@@ -98,6 +100,24 @@ export default function FeatureGrid() {
                   {feature.icon}
                 </div>
 
+                {feature.badge && (
+                  <div style={{
+                    display: 'inline-block',
+                    background: '#FFEB3B',
+                    border: '2px solid #0A0A0A',
+                    boxShadow: '2px 2px 0px #0A0A0A',
+                    padding: '3px 9px',
+                    marginBottom: 12,
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.625rem',
+                    fontWeight: 800,
+                    letterSpacing: '0.08em',
+                    color: '#0A0A0A',
+                    textTransform: 'uppercase',
+                  }}>
+                    {feature.badge}
+                  </div>
+                )}
                 <h3 style={{
                   fontFamily: 'var(--font-display)',
                   fontWeight: 700,
@@ -113,6 +133,7 @@ export default function FeatureGrid() {
                   fontSize: '0.875rem',
                   lineHeight: 1.65,
                   color: '#333333',
+                  whiteSpace: 'pre-line',
                 }}>
                   {feature.body}
                 </p>

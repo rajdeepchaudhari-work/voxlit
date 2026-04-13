@@ -40,6 +40,49 @@ export default function Hero() {
           {/* Left — Text with stagger */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
 
+            {/* Beta announcement */}
+            <a
+              href="#features"
+              className="hero-stagger beta-pill"
+              style={{
+                alignSelf: 'flex-start',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '6px 6px 6px 14px',
+                marginBottom: 18,
+                background: '#FFFFFF',
+                border: '2px solid #0A0A0A',
+                boxShadow: '3px 3px 0px #665DF5',
+                textDecoration: 'none',
+                transition: 'transform 0.1s, box-shadow 0.1s',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#0A0A0A',
+                letterSpacing: '0.02em',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translate(-1px,-1px)'; e.currentTarget.style.boxShadow = '4px 4px 0px #665DF5' }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '3px 3px 0px #665DF5' }}
+            >
+              <span style={{
+                background: '#FFEB3B', border: '2px solid #0A0A0A',
+                padding: '2px 6px', fontSize: '0.625rem', fontWeight: 800,
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+              }}>
+                Beta
+              </span>
+              <span>Voxlit Cloud is free while in beta</span>
+              <span style={{
+                background: '#665DF5', color: '#FFFFFF',
+                border: '2px solid #0A0A0A',
+                padding: '3px 10px', fontSize: '0.6875rem', fontWeight: 700,
+                letterSpacing: '0.04em',
+              }}>
+                Try it →
+              </span>
+            </a>
+
             {/* Overline */}
             <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 20 }}>
               {['Open Source', 'macOS', 'Free Forever'].map((t, i, arr) => (
