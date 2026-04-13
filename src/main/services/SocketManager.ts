@@ -108,6 +108,10 @@ export class SocketManager extends EventEmitter {
       this.scheduleRestart()
     })
 
+    // removeAllListeners before adding — previous helpers may have attached listeners
+    // to the same pipes if references were kept around during a respawn
+    this.helper.stdout?.removeAllListeners('data')
+    this.helper.stderr?.removeAllListeners('data')
     this.helper.stdout?.on('data', (d: Buffer) => console.log('[helper]', d.toString()))
     this.helper.stderr?.on('data', (d: Buffer) => console.error('[helper]', d.toString()))
 

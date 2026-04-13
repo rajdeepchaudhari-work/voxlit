@@ -105,6 +105,11 @@ function Slider({ value, onChange, min = 0, max = 1, step = 0.05 }: {
 
 function CheckForUpdatesRow() {
   const [status, setStatus] = useState<'idle' | 'checking' | 'uptodate'>('idle')
+  const [version, setVersion] = useState<string>('')
+
+  useEffect(() => {
+    ipc.getAppVersion().then(setVersion)
+  }, [])
 
   async function handleCheck() {
     setStatus('checking')
@@ -114,7 +119,7 @@ function CheckForUpdatesRow() {
   }
 
   return (
-    <Row label="Updates" hint="Current version: 1.0.1">
+    <Row label="Updates" hint={version ? `Current version: ${version}` : 'Checking version…'}>
       <button
         onClick={handleCheck}
         disabled={status === 'checking'}
@@ -173,6 +178,9 @@ export default function SettingsPanel() {
   }
 
   async function downloadModel(name: string) {
+    // Clean up any previous download subscription before starting a new one
+    unsubRef.current?.()
+    unsubRef.current = null
     setDownloading(name)
     setDlProgress(null)
     unsubRef.current = ipc.onModelDownloadProgress((data) => {
@@ -180,11 +188,16 @@ export default function SettingsPanel() {
       setDlProgress(data)
       if (data.done) {
         unsubRef.current?.()
+        unsubRef.current = null
         setDownloading(null)
-        setModelStatuses(prev => ({ ...prev, [name]: true }))
+        if (!data.error) setModelStatuses(prev => ({ ...prev, [name]: true }))
       }
     })
-    ipc.downloadModel(name).catch(() => { unsubRef.current?.(); setDownloading(null) })
+    ipc.downloadModel(name).catch(() => {
+      unsubRef.current?.()
+      unsubRef.current = null
+      setDownloading(null)
+    })
   }
 
   useEffect(() => () => { unsubRef.current?.() }, [])

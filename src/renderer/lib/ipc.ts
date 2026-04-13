@@ -22,7 +22,7 @@ declare global {
   interface Window {
     voxlit: {
       onRecordingState: (cb: (data: RecordingStateChange) => void) => Unsubscribe
-      onAmplitude: (cb: (amplitude: number) => void) => Unsubscribe
+      onAmplitude: (cb: (bars: number[]) => void) => Unsubscribe
       onTranscript: (cb: (segment: TranscriptSegment) => void) => Unsubscribe
       onHelperStatus: (cb: (data: HelperStatusChange) => void) => Unsubscribe
       getSettings: () => Promise<VoxlitSettings>
@@ -38,6 +38,7 @@ declare global {
       downloadModel: (name: string) => Promise<void>
       onModelDownloadProgress: (cb: (data: ModelDownloadProgress) => void) => Unsubscribe
       relaunch: () => Promise<void>
+      getAppVersion: () => Promise<string>
       onUpdateAvailable: (cb: (info: UpdateInfo) => void) => Unsubscribe
       onUpdateDownloaded: (cb: (info: UpdateInfo) => void) => Unsubscribe
       installUpdate: () => Promise<void>

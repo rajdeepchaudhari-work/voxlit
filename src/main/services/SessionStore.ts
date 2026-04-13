@@ -1,5 +1,5 @@
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, sql } from 'drizzle-orm'
 import { join } from 'path'
 import { app } from 'electron'
 import { randomUUID } from 'crypto'
@@ -64,12 +64,13 @@ export class SessionStore {
       engine: params.engine ?? 'local'
     }).run()
 
-    // Update session counters
+    // Increment session counters in-place — accumulates words across entries.
+    // Previous code overwrote totalWords with the current entry's count, losing history.
     this.db
       .update(sessions)
       .set({
-        entryCount: this.db.$count(entries, eq(entries.sessionId, sessionId)),
-        totalWords: wordCount
+        entryCount: sql`${sessions.entryCount} + 1`,
+        totalWords: sql`${sessions.totalWords} + ${wordCount}`
       })
       .where(eq(sessions.id, sessionId))
       .run()

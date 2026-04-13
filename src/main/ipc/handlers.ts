@@ -98,55 +98,78 @@ export function registerHandlers(deps: {
 
     return new Promise<void>((resolve, reject) => {
       const win = BrowserWindow.fromWebContents(event.sender)
-      const file = createWriteStream(dest + '.tmp')
       let bytesReceived = 0
       let totalBytes = 0
 
-      const request = httpsGet(url, (res) => {
-        // Follow redirect
-        if (res.statusCode === 302 || res.statusCode === 301) {
-          file.close()
-          const redirectUrl = res.headers.location!
-          httpsGet(redirectUrl, (res2) => {
-            totalBytes = parseInt(res2.headers['content-length'] ?? '0')
-            res2.on('data', (chunk: Buffer) => {
-              bytesReceived += chunk.length
-              file.write(chunk)
-              win?.webContents.send(IPC.MODEL_DOWNLOAD_PROGRESS, { model: name, bytesReceived, totalBytes, done: false })
-            })
-            res2.on('end', () => {
-              file.end()
-              const { renameSync } = require('fs')
-              renameSync(dest + '.tmp', dest)
-              win?.webContents.send(IPC.MODEL_DOWNLOAD_PROGRESS, { model: name, bytesReceived, totalBytes, done: true })
-              resolve()
-            })
-            res2.on('error', (err: Error) => { file.destroy(); reject(err) })
-          }).on('error', (err: Error) => { file.destroy(); reject(err) })
-          return
+      const sendProgress = (done: boolean, error?: string) => {
+        if (win && !win.isDestroyed()) {
+          win.webContents.send(IPC.MODEL_DOWNLOAD_PROGRESS, { model: name, bytesReceived, totalBytes, done, error })
         }
+      }
+
+      // Validate redirect URL stays within huggingface CDN (security hardening)
+      const isSafeRedirect = (u: string): boolean => {
+        try {
+          const host = new URL(u).hostname
+          return host === 'huggingface.co' || host.endsWith('.huggingface.co') || host.endsWith('.hf.co') || host.endsWith('.cloudfront.net')
+        } catch { return false }
+      }
+
+      const streamTo = (res: import('http').IncomingMessage, file: import('fs').WriteStream) => {
         totalBytes = parseInt(res.headers['content-length'] ?? '0')
         res.on('data', (chunk: Buffer) => {
           bytesReceived += chunk.length
-          file.write(chunk)
-          win?.webContents.send(IPC.MODEL_DOWNLOAD_PROGRESS, { model: name, bytesReceived, totalBytes, done: false })
+          if (!file.write(chunk)) res.pause()
         })
+        file.on('drain', () => res.resume())
+        // Throttle progress to ~20 updates/sec instead of one-per-chunk
+        const progressTimer = setInterval(() => sendProgress(false), 50)
         res.on('end', () => {
-          file.end()
-          const { renameSync } = require('fs')
-          renameSync(dest + '.tmp', dest)
-          win?.webContents.send(IPC.MODEL_DOWNLOAD_PROGRESS, { model: name, bytesReceived, totalBytes, done: true })
-          resolve()
+          clearInterval(progressTimer)
+          file.end(() => {
+            const { renameSync } = require('fs')
+            try { renameSync(dest + '.tmp', dest); sendProgress(true); resolve() }
+            catch (e) { sendProgress(true, (e as Error).message); reject(e) }
+          })
         })
-        res.on('error', (err: Error) => { file.destroy(); reject(err) })
-      })
-      request.on('error', (err: Error) => { file.destroy(); reject(err) })
+        res.on('error', (err: Error) => { clearInterval(progressTimer); file.destroy(); sendProgress(true, err.message); reject(err) })
+      }
+
+      const doRequest = (requestUrl: string, redirectDepth = 0) => {
+        if (redirectDepth > 5) { reject(new Error('Too many redirects')); return }
+
+        const file = createWriteStream(dest + '.tmp')
+        file.on('error', (err) => { reject(err) })
+
+        httpsGet(requestUrl, (res) => {
+          if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307) {
+            file.destroy()
+            res.resume()  // drain the redirect response body so socket can close
+            const loc = res.headers.location
+            if (!loc) { reject(new Error(`Redirect ${res.statusCode} without Location header`)); return }
+            if (!isSafeRedirect(loc)) { reject(new Error(`Unsafe redirect to ${loc}`)); return }
+            doRequest(loc, redirectDepth + 1)
+            return
+          }
+          if (res.statusCode !== 200) {
+            file.destroy()
+            res.resume()
+            reject(new Error(`Download failed: HTTP ${res.statusCode}`))
+            return
+          }
+          streamTo(res, file)
+        }).on('error', (err: Error) => { file.destroy(); reject(err) })
+      }
+
+      doRequest(url)
     })
   })
 
   ipcMain.handle(IPC.INJECT_TEXT, (_, text: string) => {
     socketManager.sendInject(text)
   })
+
+  ipcMain.handle(IPC.GET_APP_VERSION, () => app.getVersion())
 
   ipcMain.handle(IPC.RELAUNCH, () => {
     app.relaunch()

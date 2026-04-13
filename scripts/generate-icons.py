@@ -9,28 +9,7 @@ import subprocess
 import cairosvg
 from PIL import Image
 
-# ─── Tray icon SVG (monochrome, template for macOS menu bar) ──────────────────
-TRAY_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <polyline
-    points="5,8 16,24 27,8"
-    fill="none"
-    stroke="black"
-    stroke-width="4.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-</svg>"""
-
-TRAY_SVG_WHITE = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <polyline
-    points="5,8 16,24 27,8"
-    fill="none"
-    stroke="white"
-    stroke-width="4.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-</svg>"""
+# Tray icon is generated below from logos/logo_tray.png
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), '..', 'resources', 'icons')
 ICONSET_DIR = os.path.join(OUTPUT_DIR, 'iconset.iconset')
@@ -84,10 +63,22 @@ master_path = os.path.join(OUTPUT_DIR, 'icon.png')
 make_padded(MASTER_SIZE).save(master_path)
 print(f'  ✓ icon.png (1024x1024)')
 
-# ─── Tray icons ───────────────────────────────────────────────────────────────
-cairosvg.svg2png(bytestring=TRAY_SVG.encode(), write_to=os.path.join(OUTPUT_DIR, 'tray.png'), output_width=16, output_height=16)
-cairosvg.svg2png(bytestring=TRAY_SVG.encode(), write_to=os.path.join(OUTPUT_DIR, 'tray@2x.png'), output_width=32, output_height=32)
-print(f'  ✓ tray.png / tray@2x.png')
+# ─── Tray icons (from logos/logo_tray.png, black for macOS template mode) ────
+# macOS auto-inverts template images for dark/light menu bar — source must be black on transparent.
+TRAY_SOURCE = os.path.join(os.path.dirname(__file__), '..', 'logos', 'logo_tray.png')
+
+def make_tray(size):
+    src = Image.open(TRAY_SOURCE).convert('RGBA')
+    # Convert any non-transparent pixel to black — alpha channel defines the shape
+    r, g, b, a = src.split()
+    black = Image.new('RGBA', src.size, (0, 0, 0, 0))
+    black.putalpha(a)
+    # Scale down with high quality
+    return black.resize((size, size), Image.LANCZOS)
+
+make_tray(16).save(os.path.join(OUTPUT_DIR, 'tray.png'))
+make_tray(32).save(os.path.join(OUTPUT_DIR, 'tray@2x.png'))
+print(f'  ✓ tray.png / tray@2x.png (from logo_tray.png)')
 
 # ─── .icns via iconutil ───────────────────────────────────────────────────────
 icns_path = os.path.join(OUTPUT_DIR, 'icon.icns')

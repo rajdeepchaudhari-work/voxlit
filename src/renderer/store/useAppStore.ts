@@ -58,14 +58,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (state !== 'listening') set({ amplitude: 0 })
     })
 
-    const unsubAmplitude = ipc.onAmplitude((data) => {
-      if (Array.isArray(data)) {
-        const bars = data as number[]
-        const overall = Math.sqrt(bars.reduce((s, v) => s + v * v, 0) / bars.length)
-        set({ barAmplitudes: bars, amplitude: overall })
-      } else {
-        set({ amplitude: data as number })
-      }
+    const unsubAmplitude = ipc.onAmplitude((bars) => {
+      const overall = Math.sqrt(bars.reduce((s, v) => s + v * v, 0) / bars.length)
+      set({ barAmplitudes: bars, amplitude: overall })
     })
 
     const unsubTranscript = ipc.onTranscript((segment) => {

@@ -24,8 +24,8 @@ contextBridge.exposeInMainWorld('voxlit', {
     return () => ipcRenderer.removeListener(IPC.RECORDING_STATE, listener)
   },
 
-  onAmplitude: (cb: (amplitude: number) => void) => {
-    const listener = (_: Electron.IpcRendererEvent, amp: number) => cb(amp)
+  onAmplitude: (cb: (data: number[]) => void) => {
+    const listener = (_: Electron.IpcRendererEvent, data: number[]) => cb(data)
     ipcRenderer.on(IPC.AMPLITUDE_UPDATE, listener)
     return () => ipcRenderer.removeListener(IPC.AMPLITUDE_UPDATE, listener)
   },
@@ -83,6 +83,7 @@ contextBridge.exposeInMainWorld('voxlit', {
   },
 
   relaunch: (): Promise<void> => ipcRenderer.invoke(IPC.RELAUNCH),
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke(IPC.GET_APP_VERSION),
 
   onUpdateAvailable: (cb: (info: UpdateInfo) => void) => {
     const listener = (_: Electron.IpcRendererEvent, info: UpdateInfo) => cb(info)

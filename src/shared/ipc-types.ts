@@ -22,6 +22,7 @@ export const IPC = {
   DOWNLOAD_MODEL: 'voxlit:download-model',
   MODEL_DOWNLOAD_PROGRESS: 'voxlit:model-download-progress',
   RELAUNCH: 'voxlit:relaunch',
+  GET_APP_VERSION: 'voxlit:get-app-version',
 
   // Auto-update
   UPDATE_AVAILABLE: 'voxlit:update-available',

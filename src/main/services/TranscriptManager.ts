@@ -58,13 +58,16 @@ export class TranscriptManager extends EventEmitter {
       const threads = String(Math.min(8, require('os').cpus().length))
 
       this.warmupDone = new Promise<void>((resolve) => {
-        execFile(binaryPath, ['-m', modelPath, '-f', wavPath, '--no-prints', '-t', threads], { timeout: 30_000 }, () => {
+        execFile(binaryPath, ['-m', modelPath, '-f', wavPath, '--no-prints', '-t', threads], { timeout: 30_000 }, (err) => {
           try { unlinkSync(wavPath) } catch (_) {}
-          console.log('[TranscriptManager] Whisper warmed up')
-          resolve()
+          if (err) console.warn('[TranscriptManager] Warmup failed:', err.message)
+          else console.log('[TranscriptManager] Whisper warmed up')
+          resolve()  // always resolve — don't block future transcriptions on warmup failure
         })
       })
-    } catch (_) {}
+    } catch (e) {
+      console.warn('[TranscriptManager] Warmup setup failed:', (e as Error).message)
+    }
   }
 
   enqueue(pcmBuffer: Buffer, engine: 'local' | 'cloud' = 'local', modelName = 'ggml-base.en') {
@@ -318,12 +321,21 @@ export class TranscriptManager extends EventEmitter {
           const chunks: Buffer[] = []
           res.on('data', (c: Buffer) => chunks.push(c))
           res.on('end', () => {
+            const bodyText = Buffer.concat(chunks).toString('utf8')
+            const status = res.statusCode ?? 0
+
+            if (status === 401) return reject(new Error(`${providerName}: Invalid API key — check Settings → Transcription`))
+            if (status === 429) return reject(new Error(`${providerName}: Rate limit exceeded — try again in a moment`))
+            if (status >= 500) return reject(new Error(`${providerName}: Server error (${status}) — try again`))
+
             try {
-              const json = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+              const json = JSON.parse(bodyText)
               if (json.error) return reject(new Error(`${providerName}: ${json.error.message}`))
+              if (status >= 400) return reject(new Error(`${providerName}: HTTP ${status}`))
               resolve((json.text ?? '').trim())
-            } catch (e) {
-              reject(e)
+            } catch {
+              // Non-JSON response (e.g. HTML error page)
+              reject(new Error(`${providerName}: HTTP ${status} — ${bodyText.slice(0, 120)}`))
             }
           })
         }
