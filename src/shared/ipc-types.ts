@@ -92,6 +92,8 @@ export interface VoxlitSettings {
   micDeviceUid?: string
   // Input gain multiplier (1.0 = no boost, 2.5 = default, 5.0 = max)
   micGain?: number
+  // Whether live mic gain boost is active. Default true.
+  micGainEnabled?: boolean
 }
 
 export interface AudioDevice {

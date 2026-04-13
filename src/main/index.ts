@@ -171,7 +171,8 @@ function wireServices() {
     if (status === 'connected') {
       const uid = store.get('micDeviceUid') ?? ''
       if (uid) socketManager.setMicDevice(uid)
-      const gain = store.get('micGain') ?? 2.5
+      const gainEnabled = store.get('micGainEnabled') ?? true
+      const gain = gainEnabled ? (store.get('micGain') ?? 2.5) : 1.0
       socketManager.setMicGain(gain)
     }
   })
