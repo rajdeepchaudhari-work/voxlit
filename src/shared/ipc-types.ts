@@ -25,6 +25,7 @@ export const IPC = {
   GET_APP_VERSION: 'voxlit:get-app-version',
   GET_AUDIO_DEVICES: 'voxlit:get-audio-devices',
   SET_AUDIO_DEVICE: 'voxlit:set-audio-device',
+  SET_MIC_GAIN: 'voxlit:set-mic-gain',
 
   // Auto-update
   UPDATE_AVAILABLE: 'voxlit:update-available',
@@ -87,6 +88,8 @@ export interface VoxlitSettings {
   voxlitServerToken?: string
   // Preferred input device UID (empty = system default)
   micDeviceUid?: string
+  // Input gain multiplier (1.0 = no boost, 2.5 = default, 5.0 = max)
+  micGain?: number
 }
 
 export interface AudioDevice {

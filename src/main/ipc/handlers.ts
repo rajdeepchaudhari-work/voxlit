@@ -178,6 +178,11 @@ export function registerHandlers(deps: {
     socketManager.setMicDevice(uid ?? '')
   })
 
+  ipcMain.handle(IPC.SET_MIC_GAIN, (_, gain: number) => {
+    store.set('micGain', gain)
+    socketManager.setMicGain(gain)
+  })
+
   ipcMain.handle(IPC.RELAUNCH, () => {
     app.relaunch()
     app.exit(0)

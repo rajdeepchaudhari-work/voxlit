@@ -10,6 +10,10 @@ class AudioEngine {
     private weak var socket: SocketWriter?
     private var isRunning = false
     private var preferredDeviceUID: String?
+    /// Input gain multiplier applied to captured samples before sending.
+    /// Default 2.5x compensates for low-volume speech and quiet mics.
+    /// Output is hard-clipped to [-1, 1] to prevent distortion.
+    private var inputGain: Float = 2.5
 
     private let targetFormat = AVAudioFormat(
         commonFormat: .pcmFormatFloat32,
@@ -27,6 +31,12 @@ class AudioEngine {
     func setPreferredDevice(uid: String?) {
         preferredDeviceUID = (uid?.isEmpty == false) ? uid : nil
         print("[AudioEngine] Preferred device UID: \(preferredDeviceUID ?? "(system default)")")
+    }
+
+    /// Set input gain multiplier (1.0 = no boost, 2.5 = default, max ~5.0)
+    func setGain(_ gain: Float) {
+        inputGain = max(0.5, min(5.0, gain))
+        print("[AudioEngine] Input gain: \(inputGain)x")
     }
 
     func start() throws {
@@ -103,6 +113,15 @@ class AudioEngine {
 
         let frameLength = Int(output.frameLength)
         guard frameLength > 0, let channelData = output.floatChannelData?[0] else { return }
+
+        // Apply input gain with hard clipping to [-1, 1] — boosts quiet speech
+        // before sending to the cloud transcription model.
+        if inputGain != 1.0 {
+            for i in 0..<frameLength {
+                let amplified = channelData[i] * inputGain
+                channelData[i] = max(-1.0, min(1.0, amplified))
+            }
+        }
 
         let byteCount = frameLength * MemoryLayout<Float32>.size
         let data = Data(bytes: channelData, count: byteCount)

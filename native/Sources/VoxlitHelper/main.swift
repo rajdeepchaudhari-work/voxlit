@@ -151,6 +151,8 @@ client.onJSON = { msg in
         TextInjector.inject(text)
     } else if type == "set_mic_device" {
         audioEngine.setPreferredDevice(uid: msg["uid"] as? String)
+    } else if type == "set_mic_gain" {
+        if let g = msg["gain"] as? Double { audioEngine.setGain(Float(g)) }
     } else if type == "list_mic_devices" {
         let devices = AudioDevices.listInputs().map { d -> [String: Any] in
             ["uid": d.uid, "name": d.name, "isDefault": d.isDefault]

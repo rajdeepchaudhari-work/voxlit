@@ -24,7 +24,8 @@ const store = new Store<VoxlitSettings>({
     launchAtLogin: false,
     menubarOnly: false,
     voxlitServerUrl: 'https://api.voxlit.co/v1/transcribe',
-    voxlitServerToken: 'c6e9c055ca194fabb7f60b328ca8144b06cf2839252770a785b5abe1af3806d2'
+    voxlitServerToken: 'c6e9c055ca194fabb7f60b328ca8144b06cf2839252770a785b5abe1af3806d2',
+    micGain: 2.5
   },
   encryptionKey: 'voxlit-store-v1'  // encrypts openaiApiKey at rest
 })
@@ -166,10 +167,12 @@ function wireServices() {
 
   socketManager.on('status', (status, error) => {
     broadcastToAll(IPC.HELPER_STATUS, { status, error })
-    // When helper connects, push saved mic preference
+    // When helper connects, push saved mic preference + gain
     if (status === 'connected') {
       const uid = store.get('micDeviceUid') ?? ''
       if (uid) socketManager.setMicDevice(uid)
+      const gain = store.get('micGain') ?? 2.5
+      socketManager.setMicGain(gain)
     }
   })
 

@@ -280,6 +280,19 @@ export default function SettingsPanel() {
         />
       </Row>
 
+      <Row label="Mic gain boost" hint="Amplify quiet speech before transcription. 1× = no boost, 2.5× = default.">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Slider
+            value={settings.micGain ?? 2.5}
+            onChange={(v) => { set('micGain', v); ipc.setMicGain(v) }}
+            min={1} max={5} step={0.5}
+          />
+          <span style={{ fontSize: 11, color: '#0A0A0A', fontFamily: 'var(--font-mono)', fontWeight: 700, minWidth: 32 }}>
+            {(settings.micGain ?? 2.5).toFixed(1)}×
+          </span>
+        </div>
+      </Row>
+
       <Row label="Hotkey mode" hint="Push-to-talk: hold. Toggle: press once to start, again to stop.">
         <Select
           value={settings.hotkeyMode}

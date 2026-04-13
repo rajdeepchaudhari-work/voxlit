@@ -48,6 +48,10 @@ export class SocketManager extends EventEmitter {
     this.sendJson({ type: 'set_mic_device', uid })
   }
 
+  setMicGain(gain: number) {
+    this.sendJson({ type: 'set_mic_gain', gain })
+  }
+
   /**
    * Ask the Swift helper to enumerate audio input devices.
    * Returns a promise that resolves with the device list (or [] on timeout).
