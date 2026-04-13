@@ -284,7 +284,12 @@ export class TranscriptManager extends EventEmitter {
     const { url, token } = this.getVoxlitServer()
     if (!url || !token) throw new Error('Voxlit Server not configured')
 
-    const wav = this.pcmToWav16(pcm)
+    // Trim leading/trailing silence — eliminates "audio with brief speech +
+    // long silence" pattern that causes whisper/gpt-4o-transcribe to hallucinate.
+    const trimmed = this.trimSilence(pcm)
+    if (trimmed.length < 16000 * 4 * 0.15) return ''   // < 150ms of speech, skip
+
+    const wav = this.pcmToWav16(trimmed)
     const boundary = `voxlit${Date.now()}`
     const fieldPart = Buffer.from(
       `--${boundary}\r\n` +

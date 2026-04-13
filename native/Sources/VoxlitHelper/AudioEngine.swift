@@ -215,19 +215,25 @@ enum AudioDevices {
         return id
     }
 
-    /// Read a CFString property from CoreAudio. Uses Optional<CFString> because
-    /// the HAL writes a CFStringRef pointer into our buffer — Optional<CFString>
-    /// has the right ABI (single pointer-sized slot) for that.
+    /// Read a CFString property from CoreAudio. Uses raw memory + Unmanaged
+    /// because the HAL writes a CFStringRef pointer into the buffer with a
+    /// +1 retain count — Unmanaged.takeRetainedValue() handles ownership correctly.
     private static func stringProperty(_ deviceID: AudioDeviceID, _ selector: AudioObjectPropertySelector) -> String? {
         var addr = AudioObjectPropertyAddress(
             mSelector: selector,
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )
-        var name: CFString?
         var size = UInt32(MemoryLayout<CFString?>.size)
-        let status = AudioObjectGetPropertyData(deviceID, &addr, 0, nil, &size, &name)
-        guard status == noErr, let name else { return nil }
-        return name as String
+        let buffer = UnsafeMutableRawPointer.allocate(byteCount: Int(size), alignment: MemoryLayout<CFString?>.alignment)
+        defer { buffer.deallocate() }
+        buffer.initializeMemory(as: CFString?.self, repeating: nil, count: 1)
+
+        let status = AudioObjectGetPropertyData(deviceID, &addr, 0, nil, &size, buffer)
+        guard status == noErr else { return nil }
+
+        let typed = buffer.bindMemory(to: CFString?.self, capacity: 1)
+        guard let cf = typed.pointee else { return nil }
+        return cf as String
     }
 }

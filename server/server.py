@@ -182,21 +182,20 @@ async def transcribe(
             return {'text': '', 'reason': 'peak_too_low', 'peak': stats['peak_norm']}
 
     async with httpx.AsyncClient(timeout=60) as client:
-        # ── Transcription via whisper-1 ─────────────────────────────────────
-        # whisper-1 transcribes literally; gpt-4o-mini-transcribe was too
-        # aggressive at "interpreting" speech and changing what was said.
-        # No 'prompt' field — biasing the model nudges it to invent content.
-        # temperature=0 forces deterministic, lowest-hallucination output.
+        # ── Transcription via gpt-4o-transcribe ─────────────────────────────
+        # OpenAI's higher-accuracy audio model — significantly better than
+        # whisper-1 on non-American English accents, quiet speech, and noisy
+        # environments. Costs ~2x whisper-1 but much fewer hallucinations.
+        # gpt-4o-transcribe doesn't accept temperature param.
         t0 = time.time()
         whisper_resp = await client.post(
             'https://api.openai.com/v1/audio/transcriptions',
             headers={'Authorization': f'Bearer {OPENAI_API_KEY}'},
             files={'file': (file.filename or 'audio.wav', audio_bytes, 'audio/wav')},
             data={
-                'model': 'whisper-1',
+                'model': 'gpt-4o-transcribe',
                 'language': 'en',
                 'response_format': 'json',
-                'temperature': '0',
             },
         )
         whisper_ms = int((time.time() - t0) * 1000)

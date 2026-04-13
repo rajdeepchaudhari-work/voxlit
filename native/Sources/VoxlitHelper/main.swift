@@ -177,5 +177,12 @@ installFnKeyTap(client: client)
 // This matches Glaido and ensures macOS shows the orange mic indicator
 // only while actually recording.
 
+// Log available audio input devices on startup for debugging.
+let _devices = AudioDevices.listInputs()
+print("[VoxlitHelper] \(_devices.count) input devices available:")
+for d in _devices {
+    print("  - \(d.name) (uid: \(d.uid))\(d.isDefault ? " [default]" : "")")
+}
+
 print("[VoxlitHelper] Running.")
 RunLoop.main.run()
