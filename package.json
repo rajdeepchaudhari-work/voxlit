@@ -13,6 +13,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "build:mac": "electron-vite build && node scripts/stage-build.js && electron-builder --mac --arm64 && node scripts/patch-resources.js",
+    "release": "node scripts/release.js",
     "build:native": "./scripts/build-native.sh",
     "build:whisper": "./scripts/build-whisper.sh",
     "preview": "electron-vite preview",
