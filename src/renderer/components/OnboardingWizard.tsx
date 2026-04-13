@@ -339,74 +339,180 @@ function EngineStep({ onNext, onLocalSetup, onApiKey }: { onNext: () => void; on
   const options = [
     {
       value: 'voxlit' as const,
-      title: 'Voxlit Server',
-      badge: 'Recommended',
-      sub: 'Fastest, most accurate. No setup.\nWhisper + AI cleanup for dictation-grade output.\nNo API key needed.',
+      title: 'Voxlit Cloud',
+      tagline: 'Fastest, most accurate. Whisper + AI cleanup.',
+      badge: 'RECOMMENDED',
+      chips: ['Free', 'No API key', 'Cloud'],
+      icon: <CloudIcon />,
     },
     {
       value: 'local' as const,
-      title: 'Local (Offline)',
+      title: 'Local',
+      tagline: 'Runs 100% on your Mac. Zero network.',
       badge: null,
-      sub: 'Runs 100% on your Mac.\nNo internet required.\nNeeds ~500MB model download.',
+      chips: ['Offline', 'Private', '~500MB download'],
+      icon: <DiskIcon />,
     },
     {
       value: 'cloud' as const,
-      title: 'OpenAI Whisper — BYOK',
-      badge: null,
-      sub: 'Bring your own OpenAI API key.\nDirect to Whisper, no post-processing.',
+      title: 'OpenAI Whisper',
+      tagline: 'Bring your own API key. Direct to Whisper.',
+      badge: 'BYOK',
+      chips: ['Pay OpenAI', 'No cleanup'],
+      icon: <KeyIcon />,
     },
   ]
 
   return (
-    <div className="animate-onboarding-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 0 }}>
-      <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
-        Choose transcription engine
-      </h2>
-      <p style={{ marginTop: 8, fontSize: 13, color: 'var(--color-text-tertiary)' }}>
-        You can change this anytime in Settings.
-      </p>
-      <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
-        {options.map(({ value, title, badge, sub }) => {
+    <div className="animate-onboarding-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', textAlign: 'left', gap: 0 }}>
+      <div style={{ textAlign: 'center', marginBottom: 4 }}>
+        <h2 style={{
+          fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em',
+          color: '#0A0A0A', fontFamily: 'var(--font-display)', margin: 0,
+        }}>
+          Choose your engine
+        </h2>
+        <p style={{
+          marginTop: 6, fontSize: 11, color: '#666',
+          fontFamily: 'var(--font-mono)', letterSpacing: '0.04em',
+        }}>
+          You can change this anytime in Settings.
+        </p>
+      </div>
+
+      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+        {options.map(({ value, title, tagline, badge, chips, icon }) => {
           const active = engine === value
           return (
             <button
               key={value}
               onClick={() => chooseEngine(value)}
               style={{
-                width: '100%', padding: '14px 16px', borderRadius: 10, cursor: 'pointer',
-                background: active ? 'var(--color-accent-muted)' : 'var(--color-surface-2)',
-                border: `1.5px solid ${active ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                textAlign: 'left', transition: 'all 150ms ease'
+                width: '100%', padding: '14px 16px', cursor: 'pointer',
+                background: active ? '#FFFFFF' : '#FFFDF7',
+                border: `2px solid #0A0A0A`,
+                boxShadow: active ? '4px 4px 0px #665DF5' : '2px 2px 0px #0A0A0A',
+                transform: active ? 'translate(-1px, -1px)' : 'none',
+                textAlign: 'left',
+                transition: 'transform 0.1s, box-shadow 0.1s, background 0.1s',
+                position: 'relative',
+                outline: 'none',
+              }}
+              onMouseEnter={(e) => {
+                if (!active) {
+                  e.currentTarget.style.transform = 'translate(-1px, -1px)'
+                  e.currentTarget.style.boxShadow = '3px 3px 0px #0A0A0A'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!active) {
+                  e.currentTarget.style.transform = 'none'
+                  e.currentTarget.style.boxShadow = '2px 2px 0px #0A0A0A'
+                }
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: active ? 'var(--color-accent-text)' : 'var(--color-text-primary)', fontFamily: 'var(--font-sans)' }}>
-                  {title}
-                </span>
-                {badge && (
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-                    background: '#22D3EE', color: '#0A0A0F',
-                    border: '1.5px solid #0A0A0A', borderRadius: 4, padding: '2px 7px',
-                    boxShadow: '2px 2px 0px #0A0A0A'
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                {/* Icon box */}
+                <div style={{
+                  width: 36, height: 36, flexShrink: 0,
+                  border: '2px solid #0A0A0A',
+                  background: active ? '#665DF5' : '#FFFFFF',
+                  color: active ? '#FFFFFF' : '#665DF5',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'background 0.1s, color 0.1s',
+                }}>
+                  {icon}
+                </div>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{
+                      fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700,
+                      letterSpacing: '-0.01em', color: '#0A0A0A',
+                    }}>
+                      {title}
+                    </span>
+                    {badge && (
+                      <span style={{
+                        fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 800,
+                        letterSpacing: '0.1em',
+                        background: badge === 'RECOMMENDED' ? '#FFEB3B' : '#FFFFFF',
+                        color: '#0A0A0A',
+                        border: '1.5px solid #0A0A0A', padding: '2px 6px',
+                      }}>
+                        {badge}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{
+                    marginTop: 4, fontSize: 11, color: '#555', lineHeight: 1.5,
+                    fontFamily: 'var(--font-mono)',
                   }}>
-                    {badge}
-                  </span>
-                )}
-              </div>
-              <div style={{ marginTop: 5, fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.7, fontFamily: 'var(--font-sans)', whiteSpace: 'pre-line' }}>
-                {sub}
+                    {tagline}
+                  </div>
+                  <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {chips.map((chip) => (
+                      <span key={chip} style={{
+                        fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
+                        letterSpacing: '0.06em', textTransform: 'uppercase',
+                        background: '#FFFDF7', color: '#0A0A0A',
+                        border: '1px solid #0A0A0A', padding: '2px 6px',
+                      }}>
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Selected radio dot */}
+                <div style={{
+                  width: 18, height: 18, flexShrink: 0,
+                  border: '2px solid #0A0A0A', borderRadius: '50%',
+                  background: active ? '#665DF5' : '#FFFFFF',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {active && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FFFFFF' }} />}
+                </div>
               </div>
             </button>
           )
         })}
       </div>
+
       <div style={{ marginTop: 20, width: '100%' }}>
         <PrimaryButton onClick={handleContinue}>
-          {engine === 'voxlit' ? 'Continue →' : engine === 'local' ? 'Continue — Download Model →' : 'Continue — Enter API Key →'}
+          {engine === 'voxlit' ? 'Continue →' : engine === 'local' ? 'Download model →' : 'Enter API key →'}
         </PrimaryButton>
       </div>
     </div>
+  )
+}
+
+function CloudIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+      <path d="M6 17h10a4 4 0 0 0 .7-7.94A6 6 0 0 0 5.24 8.5 4 4 0 0 0 6 17z"
+            stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function DiskIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+      <rect x="3" y="3" width="16" height="16" rx="1" stroke="currentColor" strokeWidth="2"/>
+      <rect x="6" y="3" width="10" height="6" stroke="currentColor" strokeWidth="2"/>
+      <circle cx="11" cy="14" r="2" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  )
+}
+
+function KeyIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+      <circle cx="7" cy="11" r="4" stroke="currentColor" strokeWidth="2"/>
+      <path d="M11 11h9M17 11v3M14 11v2" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
+    </svg>
   )
 }
 
