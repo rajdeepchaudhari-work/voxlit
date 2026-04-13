@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import * as net from 'net'
-import { spawn, ChildProcess, exec, execFile as execFileFn, execSync } from 'child_process'
+import { spawn, ChildProcess, exec, execFile as execFileFn } from 'child_process'
 import { join } from 'path'
 import { app, systemPreferences, clipboard } from 'electron'
 import type { HelperStatus, PermissionsState, PermissionStatus } from '@shared/ipc-types'
@@ -110,7 +110,40 @@ export class SocketManager extends EventEmitter {
     const accessible = systemPreferences.isTrustedAccessibilityClient(false)
     const accessibility: PermissionsState['accessibility'] = accessible ? 'granted' : 'not-determined'
 
-    return { microphone: mic, accessibility, automation: probeAutomation() }
+    // Automation status is controlled by ipc/handlers — we never probe here because
+    // the only way to detect it is to RUN a System Events command, which fires the
+    // TCC prompt. That would happen on every app launch instead of when the user
+    // explicitly clicks Grant. The handler updates this via setAutomationStatus().
+    return { microphone: mic, accessibility, automation: this.lastAutomationStatus }
+  }
+
+  /// Cached automation status. Updated when the user clicks Grant in onboarding,
+  /// or by an explicit refresh-after-prompt flow. Defaults to 'not-determined'.
+  private lastAutomationStatus: PermissionStatus = 'not-determined'
+
+  /// Fire the macOS TCC prompt for AppleEvents and update cached status.
+  /// Async because the prompt blocks until the user responds (could be many seconds).
+  /// Returns the resolved status when the user picks Allow/Deny, or 'not-determined'
+  /// if they dismiss without choosing.
+  probeAutomationNow(): Promise<PermissionStatus> {
+    return new Promise((resolve) => {
+      execFileFn('osascript', ['-e', 'tell application "System Events" to count processes'],
+        { timeout: 60_000 }, (err, _stdout, stderr) => {
+          let status: PermissionStatus
+          if (!err) status = 'granted'
+          else if ((stderr ?? '').toString().includes('1743') || (stderr ?? '').toString().includes('not allowed')) status = 'denied'
+          else status = 'not-determined'
+          this.lastAutomationStatus = status
+          resolve(status)
+        }
+      )
+    })
+  }
+
+  /// Set the cached status without probing — used after onboarding to remember
+  /// a successful grant across checkPermissions() calls.
+  setAutomationStatus(status: PermissionStatus) {
+    this.lastAutomationStatus = status
   }
 
   private startSocketServer() {
@@ -262,30 +295,6 @@ export class SocketManager extends EventEmitter {
  * Used as a dev-mode fallback — production always goes through the Swift TextInjector.
  */
 let capturedAppName: string | null = null
-
-/**
- * Probe Automation/AppleEvents permission. Macros doesn't expose a non-prompting
- * API via Electron's systemPreferences, so we run a tiny System Events command:
- *   - exits 0           -> granted
- *   - stderr has "1743" -> denied
- *   - times out / other -> not-determined (probably the prompt is on-screen)
- *
- * The first call may surface the macOS TCC prompt — that's expected during
- * onboarding. After the user accepts/denies, subsequent probes return immediately.
- */
-function probeAutomation(): PermissionStatus {
-  try {
-    execSync(`osascript -e 'tell application "System Events" to count processes'`, {
-      timeout: 1500,
-      stdio: ['ignore', 'ignore', 'pipe'],
-    })
-    return 'granted'
-  } catch (err) {
-    const stderr = (err as { stderr?: Buffer | string }).stderr?.toString() ?? ''
-    if (stderr.includes('1743') || stderr.includes('not allowed')) return 'denied'
-    return 'not-determined'
-  }
-}
 
 function captureFocused() {
   // Snapshot the frontmost app BEFORE Voxlit's UI (StatusPill etc) steals focus.

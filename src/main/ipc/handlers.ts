@@ -59,16 +59,13 @@ export function registerHandlers(deps: {
     } else if (type === 'accessibility') {
       await shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility')
     } else if (type === 'automation') {
-      // Trigger the macOS TCC prompt by running a real System Events command.
-      // - First time: prompt fires, user clicks Allow/Deny
-      // - Already denied: command fails fast (open Settings as fallback)
-      // - Already granted: succeeds silently
-      exec(`osascript -e 'tell application "System Events" to count processes'`, (err) => {
-        if (err) {
-          // Already denied or dismissed — open the Automation pane so the user can flip it
-          shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Automation')
-        }
-      })
+      // Fire the TCC prompt and await the user's response (Allow/Deny).
+      // Result is cached on socketManager — subsequent checkPermissions() returns it.
+      const status = await socketManager.probeAutomationNow()
+      if (status === 'denied') {
+        // Already denied — open the Automation pane so the user can flip it manually
+        shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Automation')
+      }
     }
   })
 
