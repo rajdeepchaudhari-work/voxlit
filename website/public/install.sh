@@ -51,12 +51,15 @@ VERSION="${TAG#v}"
 DMG_URL="https://github.com/$REPO/releases/download/$TAG/voxlit-$VERSION-arm64.dmg"
 ok "Found $TAG"
 
-# ── Abort if already installed at the same version ─────────────────────────
-DEST_APP="/Applications/Voxlit.app"
-if [ -d "$DEST_APP" ]; then
-  CURRENT=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$DEST_APP/Contents/Info.plist" 2>/dev/null || echo "")
+# ── Already installed? Check both possible bundle names ────────────────────
+EXISTING_APP=""
+for candidate in /Applications/Voxlit.app /Applications/voxlit.app; do
+  if [ -d "$candidate" ]; then EXISTING_APP="$candidate"; break; fi
+done
+if [ -n "$EXISTING_APP" ]; then
+  CURRENT=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$EXISTING_APP/Contents/Info.plist" 2>/dev/null || echo "")
   if [ "$CURRENT" = "$VERSION" ]; then
-    ok "Voxlit $TAG already installed at $DEST_APP"
+    ok "Voxlit $TAG already installed at $EXISTING_APP"
     printf "\n   Open it from Spotlight or run:  ${BOLD}open -a Voxlit${RESET}\n\n"
     exit 0
   fi
@@ -65,7 +68,14 @@ fi
 
 # ── Download ────────────────────────────────────────────────────────────────
 TMP=$(mktemp -d -t voxlit-install.XXXXXX)
-trap 'rm -rf "$TMP"; hdiutil detach "$TMP/mount" -quiet 2>/dev/null || true' EXIT
+MOUNT="$TMP/mount"
+# Cleanup: detach DMG FIRST (mount is read-only — rm would error out on it),
+# then remove the tmp dir. Swallow all stderr so the exit path stays quiet.
+cleanup() {
+  hdiutil detach "$MOUNT" -quiet -force >/dev/null 2>&1 || true
+  rm -rf "$TMP" 2>/dev/null || true
+}
+trap cleanup EXIT
 
 DMG="$TMP/voxlit.dmg"
 info "Downloading DMG from GitHub Releases…"
@@ -77,23 +87,31 @@ ok "Downloaded ($SIZE)"
 
 # ── Mount + copy ────────────────────────────────────────────────────────────
 info "Mounting DMG…"
-mkdir -p "$TMP/mount"
-hdiutil attach "$DMG" -nobrowse -noautoopen -quiet -mountpoint "$TMP/mount"
+mkdir -p "$MOUNT"
+hdiutil attach "$DMG" -nobrowse -noautoopen -quiet -mountpoint "$MOUNT"
 
-APP_SRC=$(find "$TMP/mount" -maxdepth 2 -name 'Voxlit.app' -type d | head -n1)
-[ -d "$APP_SRC" ] || die "Voxlit.app not found inside DMG"
+# The .app bundle filename is 'voxlit.app' (lowercase, per package.json `name`)
+# even though productName is 'Voxlit'. Search case-insensitively for either.
+APP_SRC=$(find "$MOUNT" -maxdepth 2 -iname 'voxlit.app' -type d | head -n1)
+[ -d "$APP_SRC" ] || die "Voxlit app bundle not found inside DMG"
+
+# Resolve the real destination name from the source — so if the bundle is
+# voxlit.app we install /Applications/voxlit.app, matching auto-updater expectations.
+APP_NAME=$(basename "$APP_SRC")
+DEST_APP="/Applications/$APP_NAME"
 
 info "Copying to /Applications…"
-if [ -d "$DEST_APP" ]; then
-  # Quit any running instance so the copy doesn't race the running binary
-  osascript -e 'tell application "Voxlit" to quit' 2>/dev/null || true
-  sleep 0.5
-  rm -rf "$DEST_APP"
-fi
+# Quit any running instance so the copy doesn't race the running binary
+osascript -e 'tell application "Voxlit" to quit' 2>/dev/null || true
+sleep 0.5
+# Remove any prior install (covers case where bundle name changed case)
+for old in /Applications/Voxlit.app /Applications/voxlit.app; do
+  [ -d "$old" ] && rm -rf "$old"
+done
 cp -R "$APP_SRC" "/Applications/"
 
-info "Eject DMG…"
-hdiutil detach "$TMP/mount" -quiet || true
+info "Ejecting DMG…"
+hdiutil detach "$MOUNT" -quiet -force >/dev/null 2>&1 || true
 
 # ── Strip quarantine (the reason this script exists) ───────────────────────
 info "Clearing macOS quarantine attribute…"
