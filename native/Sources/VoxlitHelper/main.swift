@@ -150,12 +150,17 @@ client.onJSON = { msg in
     if type == "inject", let text = msg["text"] as? String {
         TextInjector.inject(text)
     } else if type == "set_mic_device" {
-        audioEngine.setPreferredDevice(uid: msg["uid"] as? String)
+        let uid = msg["uid"] as? String
+        audioEngine.setPreferredDevice(uid: uid)
+        // Force macOS to activate HFP profile if this is a Bluetooth device
+        if let uid = uid, !uid.isEmpty {
+            AudioDevices.setSystemDefaultInput(uid: uid)
+        }
     } else if type == "set_mic_gain" {
         if let g = msg["gain"] as? Double { audioEngine.setGain(Float(g)) }
     } else if type == "list_mic_devices" {
         let devices = AudioDevices.listInputs().map { d -> [String: Any] in
-            ["uid": d.uid, "name": d.name, "isDefault": d.isDefault]
+            ["uid": d.uid, "name": d.name, "isDefault": d.isDefault, "isBluetooth": d.isBluetooth]
         }
         client.sendJSON(["type": "mic_devices", "devices": devices])
     }

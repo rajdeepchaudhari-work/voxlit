@@ -65,7 +65,7 @@ export class SocketManager extends EventEmitter {
    * Ask the Swift helper to enumerate audio input devices.
    * Returns a promise that resolves with the device list (or [] on timeout).
    */
-  listMicDevices(timeoutMs = 2000): Promise<Array<{ uid: string; name: string; isDefault: boolean }>> {
+  listMicDevices(timeoutMs = 5000): Promise<Array<{ uid: string; name: string; isDefault: boolean; isBluetooth: boolean }>> {
     return new Promise((resolve) => {
       const timer = setTimeout(() => {
         this.removeListener('mic_devices', handler)

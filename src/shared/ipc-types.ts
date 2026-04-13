@@ -98,6 +98,7 @@ export interface AudioDevice {
   uid: string
   name: string
   isDefault: boolean
+  isBluetooth: boolean
 }
 
 // ─── Sessions / History ───────────────────────────────────────────────────────

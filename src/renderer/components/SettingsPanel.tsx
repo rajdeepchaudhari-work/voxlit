@@ -104,23 +104,28 @@ function Slider({ value, onChange, min = 0, max = 1, step = 0.05 }: {
 }
 
 function MicSelect({ currentUid, onChange }: { currentUid: string; onChange: (uid: string) => void }) {
-  const [devices, setDevices] = useState<Array<{ uid: string; name: string; isDefault: boolean }>>([])
+  const [devices, setDevices] = useState<Array<{ uid: string; name: string; isDefault: boolean; isBluetooth: boolean }>>([])
   const [loading, setLoading] = useState(true)
 
   async function refresh() {
     setLoading(true)
     const list = await ipc.getAudioDevices()
     setDevices(list)
+    // Auto-select the first Bluetooth device if no specific device is chosen yet
+    if (!currentUid) {
+      const bt = list.find(d => d.isBluetooth)
+      if (bt) onChange(bt.uid)
+    }
     setLoading(false)
   }
 
   useEffect(() => { refresh() }, [])
 
   const options = [
-    { value: '', label: '— System default —' },
+    { value: '', label: 'System default' },
     ...devices.map((d) => ({
       value: d.uid,
-      label: d.isDefault ? `${d.name} (default)` : d.name,
+      label: `${d.isBluetooth ? 'BT  ' : ''}${d.name}${d.isDefault ? ' (default)' : ''}`,
     })),
   ]
 

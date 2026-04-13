@@ -141,25 +141,54 @@ struct AudioDeviceInfo {
     let uid: String
     let name: String
     let isDefault: Bool
+    let isBluetooth: Bool
 }
 
 enum AudioDevices {
     /// Enumerate all input-capable audio devices.
+    /// Bluetooth devices in A2DP-only mode (no active input stream) are included
+    /// because selecting them triggers HFP negotiation via setSystemDefaultInput.
     static func listInputs() -> [AudioDeviceInfo] {
         let defaultID = currentDefaultInputID()
         let all = allDeviceIDs()
         print("[AudioDevices] Found \(all.count) total devices, default input: \(defaultID)")
         let inputs: [AudioDeviceInfo] = all.compactMap { deviceID in
-            guard hasInputStreams(deviceID) else { return nil }
+            let bt = isBluetooth(deviceID)
+            // Include if it has active input streams OR is a Bluetooth device
+            // (Bluetooth may show no input streams until HFP profile is activated)
+            guard hasInputStreams(deviceID) || bt else { return nil }
             guard let uid = stringProperty(deviceID, kAudioDevicePropertyDeviceUID) else {
-                print("[AudioDevices] Device \(deviceID) has input but no UID — skipping")
+                print("[AudioDevices] Device \(deviceID) skipped — no UID")
                 return nil
             }
             let name = stringProperty(deviceID, kAudioObjectPropertyName) ?? uid
-            return AudioDeviceInfo(uid: uid, name: name, isDefault: deviceID == defaultID)
+            return AudioDeviceInfo(uid: uid, name: name, isDefault: deviceID == defaultID, isBluetooth: bt)
         }
-        print("[AudioDevices] Returning \(inputs.count) input devices: \(inputs.map { $0.name })")
+        print("[AudioDevices] Returning \(inputs.count) input devices: \(inputs.map { "\($0.name)\($0.isBluetooth ? " [BT]" : "")" })")
         return inputs
+    }
+
+    /// Set the macOS system default input device by UID.
+    /// This forces macOS to activate the HFP profile on Bluetooth headsets,
+    /// which is what unlocks them as microphone inputs.
+    static func setSystemDefaultInput(uid: String) {
+        guard let deviceID = idForUID(uid) else {
+            print("[AudioDevices] setSystemDefaultInput: UID not found — \(uid)")
+            return
+        }
+        var addr = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultInputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var id = deviceID
+        let status = AudioObjectSetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            &addr, 0, nil,
+            UInt32(MemoryLayout<AudioDeviceID>.size),
+            &id
+        )
+        print("[AudioDevices] setSystemDefaultInput(\(uid)) status: \(status == noErr ? "OK" : "err \(status)")")
     }
 
     /// Look up the numeric AudioDeviceID for a given UID string.
@@ -190,6 +219,25 @@ enum AudioDevices {
             return []
         }
         return devices
+    }
+
+    private static func transportType(_ deviceID: AudioDeviceID) -> UInt32 {
+        var addr = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyTransportType,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var type: UInt32 = 0
+        var size = UInt32(MemoryLayout<UInt32>.size)
+        AudioObjectGetPropertyData(deviceID, &addr, 0, nil, &size, &type)
+        return type
+    }
+
+    private static func isBluetooth(_ deviceID: AudioDeviceID) -> Bool {
+        let t = transportType(deviceID)
+        // kAudioDeviceTransportTypeBluetooth = 0x0040
+        // kAudioDeviceTransportTypeBluetoothLE = 0x0041
+        return t == 0x0040 || t == 0x0041
     }
 
     private static func hasInputStreams(_ deviceID: AudioDeviceID) -> Bool {
