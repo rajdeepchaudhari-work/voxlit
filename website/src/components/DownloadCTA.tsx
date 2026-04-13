@@ -30,7 +30,7 @@ export default function DownloadCTA() {
 
           {/* Overline */}
           <div className="overline" style={{ marginBottom: 16, color: '#666' }}>
-            Free Download · v1.0.6
+            Free Download · v1.0.7
           </div>
 
           {/* Headline */}
