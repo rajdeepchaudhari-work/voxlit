@@ -51,13 +51,18 @@ export class SocketManager extends EventEmitter {
 
   sendInject(text: string) {
     if (this.socket) {
+      console.log(`[inject] -> Swift helper (${text.length} chars)`)
       this.sendJson({ type: 'inject', text })
     } else {
-      // Helper not connected (dev mode without compiled binary).
-      // Fall back to clipboard + AppleScript Cmd+V — same trick the Swift
-      // TextInjector uses, just executed from Node.
+      console.log(`[inject] -> Node fallback (${text.length} chars), no helper connected`)
       injectViaClipboard(text)
     }
+  }
+
+  /// Snapshot the frontmost app at recording start. Used by the Node fallback
+  /// to restore focus before pasting (the Swift helper does this in TextInjector.captureFocusedApp).
+  captureFocusedApp() {
+    captureFocused()
   }
 
   setMicDevice(uid: string) {
@@ -253,18 +258,43 @@ export class SocketManager extends EventEmitter {
 
 /**
  * Inject text into the focused app without the Swift helper.
- * Saves clipboard, writes new text, fires Cmd+V via System Events, restores clipboard.
+ * Captures focused app at recording start, activates it before paste, restores clipboard.
  * Used as a dev-mode fallback — production always goes through the Swift TextInjector.
  */
+let capturedAppName: string | null = null
+
+function captureFocused() {
+  // Snapshot the frontmost app BEFORE Voxlit's UI (StatusPill etc) steals focus.
+  // Used at inject time to route the Cmd+V keystroke back to the right app.
+  exec(`osascript -e 'tell application "System Events" to get name of first application process whose frontmost is true'`,
+    (err, stdout) => {
+      if (err) { console.warn('[inject-fallback] capture failed:', err.message); return }
+      capturedAppName = stdout.trim()
+      console.log(`[inject-fallback] captured focused app: "${capturedAppName}"`)
+    }
+  )
+}
+
 function injectViaClipboard(text: string) {
   if (!text) return
   const previous = clipboard.readText()
   clipboard.writeText(text)
-  // System Events keystroke is the most reliable path — works in Terminal,
-  // Notion, Slack, browsers, and Electron apps. Requires Accessibility permission.
-  exec(`osascript -e 'tell application "System Events" to keystroke "v" using command down'`, (err) => {
-    if (err) console.warn('[inject-fallback] paste failed:', err.message)
-    // Restore previous clipboard after paste has been consumed
+
+  const target = capturedAppName
+  // Activate captured app first so Cmd+V lands in the right window.
+  // If we never captured (capture wasn't called), skip activation and hope the user
+  // hasn't switched away from their target app.
+  const activate = target ? `tell application "${target.replace(/"/g, '\\"')}" to activate\ndelay 0.05\n` : ''
+  const script = activate + `tell application "System Events" to keystroke "v" using command down`
+
+  exec(`osascript -e '${script.replace(/'/g, "'\\''")}'`, (err, _stdout, stderr) => {
+    if (err) {
+      console.warn('[inject-fallback] paste failed:', err.message)
+      if (stderr) console.warn('[inject-fallback] stderr:', stderr.trim())
+      console.warn('[inject-fallback] check System Settings > Privacy & Security > Automation — Voxlit needs to control System Events')
+    } else {
+      console.log(`[inject-fallback] pasted into "${target ?? 'frontmost app'}"`)
+    }
     setTimeout(() => clipboard.writeText(previous), 800)
   })
 }

@@ -182,6 +182,9 @@ function wireServices() {
     if (action === 'start' || (action === 'toggle' && currentState === 'idle')) {
       currentState = 'listening'
       pcmAccumulator = []
+      // Snapshot the focused app NOW — needed by the Node inject fallback to
+      // restore focus before pasting. Swift TextInjector does the same in captureFocusedApp().
+      socketManager.captureFocusedApp()
       pillWindow?.showInactive()
       broadcastToAll(IPC.RECORDING_STATE, { state: currentState })
     } else if (action === 'stop' || (action === 'toggle' && currentState !== 'idle')) {
