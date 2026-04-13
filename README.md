@@ -5,7 +5,7 @@
 <h1 align="center">Voxlit</h1>
 
 <p align="center">
-  <strong>Privacy-first, offline voice dictation for macOS.</strong><br/>
+  <strong>Voice dictation for macOS. Open source. Three engines. Zero lock-in.</strong><br/>
   Press a hotkey → speak → text appears in any app.
 </p>
 
@@ -38,14 +38,17 @@
 
 ## Features
 
-- **100% offline by default** — Whisper runs locally, nothing leaves your Mac
-- **Works in any app** — text is injected via Accessibility API, no clipboard required
-- **Cloud mode (opt-in)** — OpenAI Whisper API for faster, more accurate transcription
-- **Minimal UI** — floating status pill shows only when you're speaking
-- **History panel** — full searchable transcript history stored in SQLite
-- **Customisable hotkey** — Fn, ⌥ Space, ⌃ Space, ⌘⇧D, or ⌃⇧F
-- **macOS native helper** — separate signed Swift process handles mic access and text injection
-- **Fast** — silence trimming + greedy decoding keeps local latency low
+- **Three transcription engines** — pick the one that fits your use case:
+  - **Voxlit Cloud** (recommended default) — our hosted endpoint at `api.voxlit.co`. Whisper under the hood, dictation-tuned, no API key needed
+  - **Local (offline)** — whisper.cpp runs 100% on your Mac. No internet, no telemetry, maximum privacy
+  - **OpenAI (BYOK)** — use your own OpenAI API key directly
+- **Works in every app** — universal paste via System Events: Notion, Slack, VS Code, Mail, Terminal, iTerm, Ghostty, Chrome — anywhere Cmd+V works
+- **macOS-native helper** — separate signed Swift process owns mic capture (AVFoundation) and keystroke injection; only component that needs permissions
+- **Floating status pill** — shows only while you're speaking; dismisses itself
+- **History panel** — searchable local SQLite archive of every transcript
+- **Customisable hotkey** — Fn (default), ⌥ Space, ⌃ Space, ⌘⇧D, or ⌃⇧F
+- **Input device selection** — route capture through AirPods, a USB mic, or the built-in
+- **Open source, top to bottom** — the Electron app, the Swift helper, **and the cloud server** (`server/`) are all MIT licensed. Self-host the server anytime.
 
 ---
 
@@ -66,10 +69,13 @@ brew install --cask voxlit
 
 ## Getting Started
 
-1. **Launch Voxlit** — the onboarding wizard walks you through mic and accessibility permissions.
-2. **Choose your engine** — Local (offline, no API key) or Cloud (OpenAI Whisper API key).
+1. **Launch Voxlit** — the onboarding wizard walks you through permissions step-by-step.
+2. **Choose your engine**:
+   - **Voxlit Cloud** — zero-setup, hosted Whisper + dictation-tuned polish (default)
+   - **Local** — fully offline; downloads a whisper.cpp model (~500 MB)
+   - **OpenAI** — bring your own `sk-…` key, billed pay-as-you-go
 3. **Set your hotkey** — default is `Fn`.
-4. **Hold hotkey → speak → release** — your words appear in whatever app is focused.
+4. **Hold hotkey → speak → release** — text is typed into whatever app is focused.
 
 > **Note:** The Swift helper binary must be allowed in **System Settings → Privacy & Security** on first launch.
 
@@ -90,11 +96,18 @@ brew install --cask voxlit
 │  React Renderer                                          │
 │  StatusPill · HistoryPanel · SettingsPanel · Onboarding │
 └─────────────────────────────────────────────────────────┘
+                         │ HTTPS (cloud engines only)
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│  Voxlit Server   (server/, FastAPI on api.voxlit.co)    │
+│  Whisper transcription + dictation post-processing      │
+└─────────────────────────────────────────────────────────┘
 ```
 
-- **Audio pipeline:** AVAudioEngine (16 kHz mono float32 PCM) → Unix socket → VAD worker → Whisper
+- **Audio pipeline:** AVAudioEngine (16 kHz mono float32 PCM) → Unix socket → silence trim → transcription
 - **Local transcription:** `whisper-cli` subprocess with Metal GPU acceleration
-- **Cloud transcription:** direct HTTPS to `api.openai.com` from main process (renderer has no internet)
+- **Voxlit Cloud:** multipart upload to `api.voxlit.co/v1/transcribe` from main process (renderer has no internet). Server code lives in [`server/`](server/) — fork and self-host with your own OpenAI key.
+- **OpenAI BYOK:** direct HTTPS to `api.openai.com` using the user's key
 - **Storage:** SQLite via better-sqlite3 + Drizzle ORM
 
 ---
@@ -162,16 +175,18 @@ All settings are stored in `~/Library/Application Support/Voxlit/` and can be ch
 | Setting | Default | Description |
 |---|---|---|
 | Hotkey | `Fn` | Push-to-talk trigger |
-| Engine | `local` | `local` or `cloud` |
-| Local model | `ggml-small.en` | Whisper model to use |
+| Engine | `voxlit` | `voxlit` (hosted cloud), `local` (offline), or `cloud` (OpenAI BYOK) |
+| Local model | `ggml-small.en` | Whisper model to use when engine is `local` |
+| Mic device | System default | Any CoreAudio input (built-in, AirPods, USB) |
 | VAD sensitivity | `0.5` | Voice activity detection threshold |
 
 ---
 
 ## Privacy
 
-- **Local mode:** audio never leaves your device. No telemetry, no analytics.
-- **Cloud mode:** audio is sent to OpenAI's Whisper API using your own API key. Voxlit never stores or proxies your key — it's encrypted on disk via electron-store.
+- **Local mode:** audio never leaves your device. No telemetry, no analytics, no server.
+- **Voxlit Cloud:** audio is sent over HTTPS to `api.voxlit.co` where it's transcribed by OpenAI Whisper and discarded. No account, no IP logging beyond per-minute rate limits, no retention. Server source is in [`server/`](server/) — audit it, or self-host it with your own OpenAI key.
+- **OpenAI BYOK:** audio goes directly to OpenAI's Whisper API using your API key. Voxlit never proxies or stores the key — it's encrypted on disk via electron-store.
 - The renderer process has no internet access by design — all network calls go through the auditable main process.
 
 ---

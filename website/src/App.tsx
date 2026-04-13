@@ -19,8 +19,8 @@ export default function App() {
         <Hero />
         <TrustBar />
         <AppLogoStrip />
-        <HowItWorks />
         <FeatureGrid />
+        <HowItWorks />
         <ComparisonTable />
         <TechSpecs />
         <Testimonials />

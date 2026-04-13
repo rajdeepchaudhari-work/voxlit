@@ -9,9 +9,15 @@ interface Feature {
 
 const features: Feature[] = [
   {
+    icon: <CloudIcon />,
+    heading: 'Voxlit Cloud',
+    body: 'Our hosted endpoint at api.voxlit.co — Whisper-powered, dictation-tuned. No API key, no setup, works instantly. Use it as default, or switch to fully local at any time.',
+    bg: 'rgba(102,93,245,0.1)',
+  },
+  {
     icon: <ShieldIcon />,
     heading: 'Privacy by Architecture',
-    body: 'Audio never touches a network socket. Architectural privacy — not a policy. There is no server to breach, no logs to subpoena, no account to compromise.',
+    body: 'Pick Local mode and audio never touches a network socket. Architectural privacy — not a policy. No server to breach, no logs to subpoena, no account to compromise.',
     bg: '#FFEB3B',
   },
   {
@@ -23,14 +29,14 @@ const features: Feature[] = [
   {
     icon: <CodeIcon />,
     heading: 'Open Source',
-    body: 'Every line MIT licensed. Read it, fork it, audit it. No proprietary SDK. No hidden endpoints. No trust-us-bro privacy policy.',
+    body: 'Every line MIT licensed — app, Swift helper, and the cloud server. Read it, fork it, audit it, self-host it. No proprietary SDK, no hidden endpoints.',
     bg: '#FFFFFF',
   },
   {
     icon: <AppsIcon />,
     heading: 'Works Everywhere',
-    body: 'Any app that accepts keyboard input: Notion, Slack, VS Code, Mail, Terminal. One hotkey. Universal text injection via Accessibility API.',
-    bg: 'rgba(102,93,245,0.1)',
+    body: 'Any app that accepts keyboard input: Notion, Slack, VS Code, Mail, Terminal, iTerm, Ghostty. One hotkey — universal paste via System Events.',
+    bg: '#FFFFFF',
   },
   {
     icon: <GlobeIcon />,
@@ -40,8 +46,8 @@ const features: Feature[] = [
   },
   {
     icon: <CubeIcon />,
-    heading: 'Your Models',
-    body: 'Run the bundled base model or swap in any compatible whisper.cpp model. Optionally connect your own OpenAI key for cloud accuracy.',
+    heading: 'Three Engines, One App',
+    body: 'Voxlit Cloud (default, hosted), Local (offline whisper.cpp), or OpenAI BYOK (bring your own key). Switch anytime. Your choice, not ours.',
     bg: '#FFFFFF',
   },
 ]
@@ -121,6 +127,14 @@ export default function FeatureGrid() {
         </div>
       </div>
     </section>
+  )
+}
+
+function CloudIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <path d="M6 17h10a4 4 0 0 0 .7-7.94A6 6 0 0 0 5.24 8.5 4 4 0 0 0 6 17z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+    </svg>
   )
 }
 
