@@ -171,7 +171,7 @@ function wireServices() {
     if (status === 'connected') {
       const uid = store.get('micDeviceUid') ?? ''
       if (uid) socketManager.setMicDevice(uid)
-      const mode = store.get('micGainMode') ?? 'auto'
+      const mode = store.get('micGainMode') ?? 'off'
       socketManager.setMicGainMode(mode)
       socketManager.setMicGain(store.get('micGain') ?? 2.5)
       // VPIO causes engine start failures on some hardware (mic indicator flickers,

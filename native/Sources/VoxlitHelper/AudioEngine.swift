@@ -20,7 +20,7 @@ class AudioEngine {
     /// so we use soft limiting (tanh) when gain > 1.0.
     private var inputGain: Float = 1.0
     /// Gain mode: "off" (no boost), "manual" (use inputGain), "auto" (AGC)
-    private var gainMode: String = "auto"
+    private var gainMode: String = "off"
     /// Current AGC gain — adapts each buffer to hit agcTargetPeak
     private var currentAutoGain: Float = 2.0
     private let agcTargetPeak: Float = 0.6
