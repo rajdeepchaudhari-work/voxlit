@@ -127,12 +127,19 @@ enum AudioDevices {
     /// Enumerate all input-capable audio devices.
     static func listInputs() -> [AudioDeviceInfo] {
         let defaultID = currentDefaultInputID()
-        return allDeviceIDs().compactMap { deviceID -> AudioDeviceInfo? in
+        let all = allDeviceIDs()
+        print("[AudioDevices] Found \(all.count) total devices, default input: \(defaultID)")
+        let inputs: [AudioDeviceInfo] = all.compactMap { deviceID in
             guard hasInputStreams(deviceID) else { return nil }
-            guard let uid  = stringProperty(deviceID, kAudioDevicePropertyDeviceUID) else { return nil }
+            guard let uid = stringProperty(deviceID, kAudioDevicePropertyDeviceUID) else {
+                print("[AudioDevices] Device \(deviceID) has input but no UID — skipping")
+                return nil
+            }
             let name = stringProperty(deviceID, kAudioObjectPropertyName) ?? uid
             return AudioDeviceInfo(uid: uid, name: name, isDefault: deviceID == defaultID)
         }
+        print("[AudioDevices] Returning \(inputs.count) input devices: \(inputs.map { $0.name })")
+        return inputs
     }
 
     /// Look up the numeric AudioDeviceID for a given UID string.
@@ -188,17 +195,19 @@ enum AudioDevices {
         return id
     }
 
+    /// Read a CFString property from CoreAudio. Uses Optional<CFString> because
+    /// the HAL writes a CFStringRef pointer into our buffer — Optional<CFString>
+    /// has the right ABI (single pointer-sized slot) for that.
     private static func stringProperty(_ deviceID: AudioDeviceID, _ selector: AudioObjectPropertySelector) -> String? {
         var addr = AudioObjectPropertyAddress(
             mSelector: selector,
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )
-        var cfString: CFString = "" as CFString
-        var size = UInt32(MemoryLayout<CFString>.size)
-        let status = withUnsafeMutablePointer(to: &cfString) {
-            AudioObjectGetPropertyData(deviceID, &addr, 0, nil, &size, $0)
-        }
-        return status == noErr ? (cfString as String) : nil
+        var name: CFString?
+        var size = UInt32(MemoryLayout<CFString?>.size)
+        let status = AudioObjectGetPropertyData(deviceID, &addr, 0, nil, &size, &name)
+        guard status == noErr, let name else { return nil }
+        return name as String
     }
 }

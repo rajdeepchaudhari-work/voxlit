@@ -109,17 +109,20 @@ async def transcribe(
         raise HTTPException(status_code=413, detail='File too large (max 25MB)')
 
     async with httpx.AsyncClient(timeout=60) as client:
-        # ── Step 1: Whisper transcription ───────────────────────────────────
+        # ── Transcription via gpt-4o-mini-transcribe ────────────────────────
+        # Newer audio-native model — significantly more accurate than whisper-1
+        # and far less prone to hallucinations on silence/noise. Same endpoint.
+        # The 'prompt' field is omitted intentionally — biasing the model with
+        # "Dictation of spoken words" was nudging it to fabricate content.
         t0 = time.time()
         whisper_resp = await client.post(
             'https://api.openai.com/v1/audio/transcriptions',
             headers={'Authorization': f'Bearer {OPENAI_API_KEY}'},
             files={'file': (file.filename or 'audio.wav', audio_bytes, 'audio/wav')},
             data={
-                'model': 'whisper-1',
+                'model': 'gpt-4o-mini-transcribe',
                 'language': 'en',
                 'response_format': 'json',
-                'prompt': 'Dictation of spoken words.',
             },
         )
         whisper_ms = int((time.time() - t0) * 1000)
