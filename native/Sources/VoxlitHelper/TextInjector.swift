@@ -32,39 +32,28 @@ struct TextInjector {
         let pasteboard = NSPasteboard.general
         let previous = pasteboard.string(forType: .string)
 
-        // Write text to clipboard
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
 
-        // Bring the target app to the front so Cmd+V is interpreted by IT.
-        // Without activation, the system event tap delivers Cmd+V to whatever
-        // is currently frontmost (could be Voxlit itself, the menu bar, etc.).
+        // Activate target app — Cmd+V needs to land in the target's window
         let pid = targetApp?.processIdentifier
         if let app = targetApp {
             app.activate(options: .activateIgnoringOtherApps)
         }
 
-        // Wait until the target app actually becomes frontmost — necessary
-        // because activation is async. Cap at 500ms; if it never happens,
-        // try the paste anyway (best effort).
+        // Wait until target is actually frontmost (activation is async)
         if let pid = pid {
             let deadline = Date().addingTimeInterval(0.5)
             while Date() < deadline {
-                if NSWorkspace.shared.frontmostApplication?.processIdentifier == pid {
-                    break
-                }
+                if NSWorkspace.shared.frontmostApplication?.processIdentifier == pid { break }
                 Thread.sleep(forTimeInterval: 0.015)
             }
         }
-
-        // Brief settle delay so the app's event loop is ready to process Cmd+V
-        // and the pasteboard write has propagated.
-        Thread.sleep(forTimeInterval: 0.05)
+        Thread.sleep(forTimeInterval: 0.05)   // settle delay
 
         sendCmdV()
 
-        // Restore the user's previous clipboard contents after the paste has
-        // been consumed (most apps read clipboard within ~200ms of paste).
+        // Restore clipboard after paste has been consumed
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             pasteboard.clearContents()
             if let prev = previous {
@@ -73,18 +62,38 @@ struct TextInjector {
         }
     }
 
-    /// Send Cmd+V via the system HID event tap. This goes through the same
-    /// pathway as a real keypress and works for every app that maps Cmd+V to paste.
+    /// Send Cmd+V via AppleScript (System Events). This is the most universal
+    /// path because System Events is a trusted system process whose synthetic
+    /// keystrokes are honored by every app — including iTerm, Ghostty, and
+    /// other terminals that filter raw CGEvents originating from third-party apps.
+    ///
+    /// First time this runs the user will see a TCC prompt:
+    /// "Voxlit wants to control System Events". Granting it once is permanent.
     private static func sendCmdV() {
+        let script = """
+        tell application "System Events" to keystroke "v" using command down
+        """
+        var error: NSDictionary?
+        NSAppleScript(source: script)?.executeAndReturnError(&error)
+
+        if let e = error {
+            print("[TextInjector] AppleScript paste failed: \(e). Falling back to CGEvent.")
+            sendCmdVViaCGEvent()
+        }
+    }
+
+    private static func sendCmdVViaCGEvent() {
         guard let source = CGEventSource(stateID: .hidSystemState) else { return }
         let vKey = CGKeyCode(0x09)   // V
 
         let down = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: true)
         down?.flags = .maskCommand
-        down?.post(tap: .cghidEventTap)
-
         let up = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: false)
         up?.flags = .maskCommand
-        up?.post(tap: .cghidEventTap)
+
+        // Annotated session tap is higher-level than HID — better odds with
+        // apps that filter low-level synthetic events.
+        down?.post(tap: .cgAnnotatedSessionEventTap)
+        up?.post(tap: .cgAnnotatedSessionEventTap)
     }
 }
