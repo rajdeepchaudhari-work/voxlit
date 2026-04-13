@@ -26,6 +26,15 @@ export class SocketManager extends EventEmitter {
   private restartAttempts = 0
   private restartScheduled = false
   private readonly MAX_RESTART_ATTEMPTS = 5
+  /** Last status we broadcast — lets late subscribers (renderer) query current value. */
+  private lastStatus: { status: HelperStatus; error?: string } = { status: 'disconnected' }
+
+  getStatus() { return this.lastStatus }
+
+  private emitStatus(status: HelperStatus, error?: string) {
+    this.lastStatus = { status, error }
+    this.emit('status', status, error)
+  }
 
   start() {
     this.startSocketServer()
@@ -91,17 +100,17 @@ export class SocketManager extends EventEmitter {
 
     this.server = net.createServer((socket) => {
       this.socket = socket
-      this.emit('status', 'connected' satisfies HelperStatus)
+      this.emitStatus('connected')
       this.restartAttempts = 0
 
       socket.on('data', (data) => this.handleData(data))
       socket.on('close', () => {
         this.socket = null
-        this.emit('status', 'disconnected' satisfies HelperStatus)
+        this.emitStatus('disconnected')
         this.scheduleRestart()
       })
       socket.on('error', (err) => {
-        this.emit('status', 'error' satisfies HelperStatus, err.message)
+        this.emitStatus('error', err.message)
       })
     })
 
@@ -120,17 +129,17 @@ export class SocketManager extends EventEmitter {
     if (!existsSync(helperPath)) {
       console.warn('[SocketManager] VoxlitHelper not found at', helperPath)
       console.warn('[SocketManager] Run ./scripts/build-native.sh to build it')
-      this.emit('status', 'error' satisfies HelperStatus, 'Native helper not built — run ./scripts/build-native.sh')
+      this.emitStatus('error', 'Native helper not built — run ./scripts/build-native.sh')
       return
     }
 
-    this.emit('status', 'starting' satisfies HelperStatus)
+    this.emitStatus('starting')
 
     this.helper = spawn(helperPath, [], { stdio: ['ignore', 'pipe', 'pipe'] })
 
     this.helper.on('error', (err) => {
       console.error('Failed to spawn VoxlitHelper:', err)
-      this.emit('status', 'error' satisfies HelperStatus, err.message)
+      this.emitStatus('error', err.message)
       this.helper = null
       this.scheduleRestart()
     })
@@ -161,7 +170,7 @@ export class SocketManager extends EventEmitter {
     // Deduplicate: socket 'close' and helper 'exit' both call this on a crash
     if (this.restartScheduled) return
     if (this.restartAttempts >= this.MAX_RESTART_ATTEMPTS) {
-      this.emit('status', 'error' satisfies HelperStatus, 'Helper failed to restart after max attempts')
+      this.emitStatus('error', 'Helper failed to restart after max attempts')
       return
     }
     // Don't bother retrying if the binary simply doesn't exist

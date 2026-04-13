@@ -4,6 +4,7 @@
 import type {
   RecordingStateChange,
   TranscriptSegment,
+  HelperStatus,
   HelperStatusChange,
   VoxlitSettings,
   Session,
@@ -40,6 +41,7 @@ declare global {
       onModelDownloadProgress: (cb: (data: ModelDownloadProgress) => void) => Unsubscribe
       relaunch: () => Promise<void>
       getAppVersion: () => Promise<string>
+      getHelperStatus: () => Promise<{ status: HelperStatus; error?: string }>
       getAudioDevices: () => Promise<AudioDevice[]>
       setAudioDevice: (uid: string) => Promise<void>
       setMicGain: (gain: number) => Promise<void>

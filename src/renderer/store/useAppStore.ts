@@ -105,6 +105,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ helperStatus: status })
     })
 
+    // Fetch the current status in case the helper connected BEFORE this
+    // listener was installed (common race — helper comes up in ~200ms while
+    // the renderer is still loading its bundle).
+    ipc.getHelperStatus().then(({ status }) => set({ helperStatus: status }))
+
     return () => {
       unsubRecording()
       unsubAmplitude()
