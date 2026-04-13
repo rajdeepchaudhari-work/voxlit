@@ -294,27 +294,27 @@ export class TranscriptManager extends EventEmitter {
     const tail = Buffer.from(`\r\n--${boundary}--\r\n`)
     const body = Buffer.concat([fieldPart, wav, tail])
 
-    const u = new URL(url)
-    const http = u.protocol === 'https:' ? https : require('http')
+    const isHttps = url.startsWith('https://')
+    const client = isHttps ? https : require('http') as typeof https
+
+    console.log(`[Voxlit] POST ${url} body=${body.length}b`)
 
     return new Promise<string>((resolve, reject) => {
-      const req = http.request({
-        hostname: u.hostname,
-        port: u.port || (u.protocol === 'https:' ? 443 : 80),
-        path: u.pathname,
+      const req = client.request(url, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': `multipart/form-data; boundary=${boundary}`,
           'Content-Length': body.length,
         },
-        timeout: 30_000,
-      }, (res: import('http').IncomingMessage) => {
+        timeout: 45_000,
+      }, (res) => {
         const chunks: Buffer[] = []
         res.on('data', (c: Buffer) => chunks.push(c))
         res.on('end', () => {
           const bodyText = Buffer.concat(chunks).toString('utf8')
           const status = res.statusCode ?? 0
+          console.log(`[Voxlit] response ${status} ${bodyText.length}b`)
 
           if (status === 401) return reject(new Error('Voxlit Server: Invalid token'))
           if (status === 429) return reject(new Error('Voxlit Server: Rate limit — try again'))
@@ -329,8 +329,19 @@ export class TranscriptManager extends EventEmitter {
           }
         })
       })
-      req.on('error', reject)
-      req.on('timeout', () => { req.destroy(); reject(new Error('Voxlit Server request timed out')) })
+      req.on('error', (err) => {
+        console.error('[Voxlit] request error:', err.message)
+        reject(err)
+      })
+      req.on('timeout', () => {
+        console.error('[Voxlit] timeout firing — destroying request')
+        req.destroy()
+        reject(new Error('Voxlit Server request timed out'))
+      })
+      req.on('socket', (sock) => {
+        sock.on('connect', () => console.log('[Voxlit] socket connected'))
+        sock.on('secureConnect', () => console.log('[Voxlit] TLS connected'))
+      })
       req.write(body)
       req.end()
     })

@@ -66,38 +66,33 @@ function NavItem({ label, active, onClick }: {
 // ─── Helper status ────────────────────────────────────────────────────────────
 
 function HelperStatus({ status, engine }: { status: string; engine: string }) {
-  const isCloud = engine === 'cloud'
   const dot = status === 'connected' ? '#00C853' : status === 'starting' ? '#FFEB3B' : '#999'
   const helperLabel = status === 'connected' ? 'CONNECTED' : status === 'starting' ? 'STARTING' : 'OFFLINE'
+
+  const engineInfo = engine === 'voxlit'
+    ? { color: '#665DF5', label: 'VOXLIT CLOUD — ONLINE' }
+    : engine === 'cloud'
+    ? { color: '#665DF5', label: 'OPENAI — ONLINE' }
+    : { color: '#999',    label: 'LOCAL — OFFLINE' }
+
   return (
     <div style={{
       padding: '8px 12px',
       borderTop: '2px solid #0A0A0A',
       display: 'flex', flexDirection: 'column', gap: 5
     }}>
-      {isCloud ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <div style={{ width: 7, height: 7, flexShrink: 0, background: '#665DF5', border: '1.5px solid #665DF5' }} />
-          <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: '#665DF5' }}>
-            CLOUD — ONLINE
-          </span>
-        </div>
-      ) : (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <div style={{ width: 7, height: 7, background: dot, border: '1.5px solid #0A0A0A', flexShrink: 0 }} />
-            <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: '#666' }}>
-              {helperLabel}
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <div style={{ width: 7, height: 7, flexShrink: 0, background: '#EDE8DE', border: '1.5px solid #0A0A0A' }} />
-            <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: '#999' }}>
-              LOCAL — OFFLINE
-            </span>
-          </div>
-        </>
-      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <div style={{ width: 7, height: 7, background: dot, border: '1.5px solid #0A0A0A', flexShrink: 0 }} />
+        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: '#666' }}>
+          {helperLabel}
+        </span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <div style={{ width: 7, height: 7, flexShrink: 0, background: engineInfo.color, border: `1.5px solid ${engineInfo.color === '#999' ? '#0A0A0A' : engineInfo.color}` }} />
+        <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', color: engineInfo.color === '#999' ? '#999' : engineInfo.color }}>
+          {engineInfo.label}
+        </span>
+      </div>
     </div>
   )
 }
@@ -123,7 +118,7 @@ export default function App() {
     if (onboardingStep === null) {
       ipc.getSettings().then((s) => setEngine(s.transcriptionEngine))
     }
-  }, [onboardingStep])
+  }, [onboardingStep, view])
 
   if (onboardingStep !== null) {
     return <OnboardingWizard />
