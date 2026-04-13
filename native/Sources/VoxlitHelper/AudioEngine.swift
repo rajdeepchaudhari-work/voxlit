@@ -11,6 +11,10 @@ class AudioEngine {
     private weak var socket: SocketWriter?
     private var isRunning = false
     private var preferredDeviceUID: String?
+    /// True when the engine needs full reconfiguration (device change, VPIO toggle).
+    /// First start() always reconfigures. Subsequent presses just call engine.start()
+    /// — instant compared to rebuilding inputNode + tap + format negotiation.
+    private var needsReconfigure: Bool = true
     /// Input gain multiplier applied to captured samples before sending.
     /// Default 1.0 = no boost. Hard clipping causes Whisper hallucinations,
     /// so we use soft limiting (tanh) when gain > 1.0.
@@ -49,7 +53,9 @@ class AudioEngine {
     /// Set the preferred input device by CoreAudio UID (e.g. "BuiltInMicrophoneDevice",
     /// or AirPods UID from AVAudioDevices). Empty/nil uses system default.
     func setPreferredDevice(uid: String?) {
-        preferredDeviceUID = (uid?.isEmpty == false) ? uid : nil
+        let newUID = (uid?.isEmpty == false) ? uid : nil
+        if newUID != preferredDeviceUID { needsReconfigure = true }
+        preferredDeviceUID = newUID
         print("[AudioEngine] Preferred device UID: \(preferredDeviceUID ?? "(system default)")")
     }
 
@@ -71,6 +77,7 @@ class AudioEngine {
     /// Enable/disable Apple's voice processing IO (noise + echo cancellation).
     /// Takes effect on next start() — the input node has to be reconfigured.
     func setNoiseSuppression(_ enabled: Bool) {
+        if enabled != noiseSuppression { needsReconfigure = true }
         noiseSuppression = enabled
         print("[AudioEngine] Noise suppression: \(enabled ? "on" : "off")")
     }
@@ -78,33 +85,44 @@ class AudioEngine {
     func start() throws {
         guard !isRunning else { return }
 
-        // Rebuild engine each session so device changes take effect cleanly
+        // Reconfigure (heavy: ~500-1500ms) only when device or VPIO setting actually changed.
+        // After first press the engine, tap, format, and converter all get reused — subsequent
+        // start() calls only pay the engine.start() cost (~tens of ms).
+        if needsReconfigure {
+            try reconfigure()
+            needsReconfigure = false
+        }
+
+        // For Bluetooth, force HFP at start time. Skipped for wired/built-in mics so we
+        // don't mess with the system default input unnecessarily.
+        if let uid = preferredDeviceUID, let deviceID = AudioDevices.idForUID(uid),
+           AudioDevices.isBluetoothDevice(deviceID) {
+            AudioDevices.setSystemDefaultInput(uid: uid)
+        }
+
+        try engine.start()
+        isRunning = true
+        print("[AudioEngine] Started")
+    }
+
+    /// Heavy setup: rebuild the engine, configure VPIO, bind device, install tap.
+    /// Only called when something material changed since the last reconfigure.
+    private func reconfigure() throws {
         engine = AVAudioEngine()
 
-        // Toggle Apple's voice processing IO (noise suppression + echo cancellation).
-        // Must be set before reading inputFormat — it changes the AudioUnit subtype.
-        // Wrapped in try? since macOS < 10.15 and some hardware will throw.
+        // Voice processing IO (noise + echo cancel). Must be set before reading inputFormat
+        // — it changes the AudioUnit subtype. wrapped in try? since some hardware throws.
         do {
             try engine.inputNode.setVoiceProcessingEnabled(noiseSuppression)
         } catch {
             print("[AudioEngine] setVoiceProcessingEnabled(\(noiseSuppression)) failed: \(error)")
         }
 
-        // VPIO ships with its own AGC enabled by default — disable it so our
-        // custom AGC isn't fighting Apple's. Same for built-in muting/ducking.
+        // VPIO ships with its own AGC — disable so our AGC isn't fighting Apple's.
         if noiseSuppression, let au = engine.inputNode.audioUnit {
             var off: UInt32 = 0
             AudioUnitSetProperty(au, kAUVoiceIOProperty_VoiceProcessingEnableAGC,
                                  kAudioUnitScope_Global, 0, &off, UInt32(MemoryLayout<UInt32>.size))
-        }
-
-        // For Bluetooth devices, force the system default input so macOS negotiates
-        // the HFP profile (required to use the BT mic). Only do this at start time —
-        // doing it on device selection would keep HFP active permanently and the
-        // orange mic indicator would stay lit between recordings.
-        if let uid = preferredDeviceUID, let deviceID = AudioDevices.idForUID(uid),
-           AudioDevices.isBluetoothDevice(deviceID) {
-            AudioDevices.setSystemDefaultInput(uid: uid)
         }
 
         // Bind the requested device to the input AudioUnit BEFORE reading inputFormat
@@ -112,12 +130,8 @@ class AudioEngine {
             if let au = engine.inputNode.audioUnit {
                 var dev = deviceID
                 let status = AudioUnitSetProperty(
-                    au,
-                    kAudioOutputUnitProperty_CurrentDevice,
-                    kAudioUnitScope_Global,
-                    0,
-                    &dev,
-                    UInt32(MemoryLayout<AudioDeviceID>.size)
+                    au, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0,
+                    &dev, UInt32(MemoryLayout<AudioDeviceID>.size)
                 )
                 if status != noErr {
                     print("[AudioEngine] Failed to bind device \(uid) (status \(status)) — using default")
@@ -141,23 +155,20 @@ class AudioEngine {
             self.processBuffer(buffer, converter: converter)
         }
 
-        try engine.start()
-        isRunning = true
-        print("[AudioEngine] Started — inputFormat: \(inputFormat)")
+        // Pre-roll the audio HAL so the FIRST engine.start() is also fast.
+        // Without prepare(), the first start() call still has to negotiate with the HAL.
+        engine.prepare()
+
+        print("[AudioEngine] Reconfigured — inputFormat: \(inputFormat)")
     }
 
     func stop() {
         guard isRunning else { return }
         isRunning = false
-        engine.inputNode.removeTap(onBus: 0)
-        // Disable voice processing first — VPIO holds the audio HAL open
-        // for echo-cancel reference, which keeps the orange mic indicator on.
-        try? engine.inputNode.setVoiceProcessingEnabled(false)
+        // Just stop — keep tap installed and engine alive across recordings so the
+        // next start() is sub-50ms instead of paying the full reconfigure cost.
+        // engine.stop() releases the audio HAL, so the orange mic indicator turns off.
         engine.stop()
-        // Recreate the engine to drop the input AudioUnit reference. Without this,
-        // ARC keeps the old AudioUnit alive long enough that the system still sees
-        // an active input client, and the menubar mic indicator never turns off.
-        engine = AVAudioEngine()
         print("[AudioEngine] Stopped")
     }
 
