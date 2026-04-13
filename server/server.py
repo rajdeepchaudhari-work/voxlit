@@ -81,6 +81,29 @@ def needs_polish(text: str) -> bool:
     return False
 
 
+# Known Whisper hallucinations from subtitle training data — never real dictation
+WHISPER_PHANTOMS = {
+    'thank you', 'thank you.', 'thanks', 'thanks.',
+    'thank you for watching', 'thank you for watching.',
+    'thanks for watching', 'thanks for watching.',
+    'please subscribe', 'like and subscribe',
+    'subtitles by the amara.org community',
+    'subtitles by',
+    'transcribed by', 'transcription by',
+    'bye', 'bye.', 'bye bye', 'goodbye',
+    'you', 'you.', '.', '!', '?',
+    '[music]', '[applause]', '[laughter]', '(music)', '(applause)',
+}
+
+def is_whisper_phantom(text: str) -> bool:
+    t = text.strip().lower()
+    if t in WHISPER_PHANTOMS:
+        return True
+    # Strip all non-letters; if the result is empty or 1 char, it's noise
+    letters_only = re.sub(r'[^a-z]', '', t)
+    return len(letters_only) <= 1
+
+
 @app.get('/health')
 async def health():
     return {'status': 'ok'}
@@ -109,20 +132,21 @@ async def transcribe(
         raise HTTPException(status_code=413, detail='File too large (max 25MB)')
 
     async with httpx.AsyncClient(timeout=60) as client:
-        # ── Transcription via gpt-4o-mini-transcribe ────────────────────────
-        # Newer audio-native model — significantly more accurate than whisper-1
-        # and far less prone to hallucinations on silence/noise. Same endpoint.
-        # The 'prompt' field is omitted intentionally — biasing the model with
-        # "Dictation of spoken words" was nudging it to fabricate content.
+        # ── Transcription via whisper-1 ─────────────────────────────────────
+        # whisper-1 transcribes literally; gpt-4o-mini-transcribe was too
+        # aggressive at "interpreting" speech and changing what was said.
+        # No 'prompt' field — biasing the model nudges it to invent content.
+        # temperature=0 forces deterministic, lowest-hallucination output.
         t0 = time.time()
         whisper_resp = await client.post(
             'https://api.openai.com/v1/audio/transcriptions',
             headers={'Authorization': f'Bearer {OPENAI_API_KEY}'},
             files={'file': (file.filename or 'audio.wav', audio_bytes, 'audio/wav')},
             data={
-                'model': 'gpt-4o-mini-transcribe',
+                'model': 'whisper-1',
                 'language': 'en',
                 'response_format': 'json',
+                'temperature': '0',
             },
         )
         whisper_ms = int((time.time() - t0) * 1000)
@@ -132,6 +156,8 @@ async def transcribe(
             raise HTTPException(status_code=502, detail='Upstream auth error')
         if whisper_resp.status_code == 429:
             raise HTTPException(status_code=503, detail='Upstream rate limit')
+        if whisper_resp.status_code == 400 and 'audio_too_short' in whisper_resp.text:
+            return {'text': '', 'whisper_ms': whisper_ms, 'polish_ms': 0}
         if whisper_resp.status_code >= 400:
             log.error('Whisper error %s: %s', whisper_resp.status_code, whisper_resp.text[:200])
             raise HTTPException(status_code=502, detail=f'Whisper error: {whisper_resp.status_code}')
@@ -139,6 +165,12 @@ async def transcribe(
         raw_text = whisper_resp.json().get('text', '').strip()
         if not raw_text:
             return {'text': '', 'whisper_ms': whisper_ms, 'polish_ms': 0}
+
+        # Filter known Whisper phantom outputs — these are training-data
+        # leakage from subtitles, not anything the user actually said.
+        if is_whisper_phantom(raw_text):
+            log.info('phantom filtered: "%s"', raw_text[:80])
+            return {'text': '', 'whisper_ms': whisper_ms, 'polish_ms': 0, 'phantom': True}
 
         # GPT polish layer disabled — return raw Whisper output directly.
         # The polish step was rewriting names and adding hallucinated content,
