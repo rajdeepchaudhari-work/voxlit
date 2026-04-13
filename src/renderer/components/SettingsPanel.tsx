@@ -259,13 +259,14 @@ export default function SettingsPanel() {
 
       <SectionHeader label="Transcription" index="02" />
 
-      <Row label="Engine" hint="Whisper AI Cloud is recommended — faster and more accurate. Local runs fully offline.">
+      <Row label="Engine" hint="Voxlit Server is recommended — Whisper + AI cleanup for dictation-grade output.">
         <Select
           value={settings.transcriptionEngine}
           onChange={(v) => set('transcriptionEngine', v as VoxlitSettings['transcriptionEngine'])}
           options={[
-            { value: 'cloud', label: 'Whisper AI — Cloud ★' },
-            { value: 'local', label: 'Local (offline)' }
+            { value: 'voxlit', label: 'Voxlit Server ★' },
+            { value: 'local',  label: 'Local (offline)' },
+            { value: 'cloud',  label: 'OpenAI (BYOK)' },
           ]}
         />
       </Row>

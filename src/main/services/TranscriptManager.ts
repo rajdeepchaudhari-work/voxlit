@@ -15,7 +15,8 @@ import type { SessionStore } from './SessionStore'
  * Events emitted:
  *   'segment' (segment: TranscriptSegment)
  */
-interface QueueItem { pcm: Buffer; engine: 'local' | 'cloud'; modelName: string }
+type Engine = 'voxlit' | 'local' | 'cloud'
+interface QueueItem { pcm: Buffer; engine: Engine; modelName: string }
 
 export class TranscriptManager extends EventEmitter {
   private queue: QueueItem[] = []
@@ -28,7 +29,8 @@ export class TranscriptManager extends EventEmitter {
   constructor(
     private readonly sessionStore: SessionStore,
     private readonly getCloudConfig: () => { openaiApiKey?: string },
-    private readonly getDefaultModel: () => string = () => 'ggml-small.en'
+    private readonly getDefaultModel: () => string = () => 'ggml-small.en',
+    private readonly getVoxlitServer: () => { url: string; token: string } = () => ({ url: '', token: '' })
   ) {
     super()
     // Warmup deferred to first enqueue — avoids blocking app startup
@@ -70,7 +72,7 @@ export class TranscriptManager extends EventEmitter {
     }
   }
 
-  enqueue(pcmBuffer: Buffer, engine: 'local' | 'cloud' = 'local', modelName = 'ggml-base.en') {
+  enqueue(pcmBuffer: Buffer, engine: Engine = 'voxlit', modelName = 'ggml-base.en') {
     // Trigger warmup on first local enqueue — deferred from constructor
     if (engine === 'local' && !this.warmedUp) {
       this.warmedUp = true
@@ -92,9 +94,9 @@ export class TranscriptManager extends EventEmitter {
 
     try {
       const raw =
-        engine === 'local'
-          ? await this.transcribeLocal(pcm, modelName)
-          : await this.transcribeCloud(pcm)
+        engine === 'local'  ? await this.transcribeLocal(pcm, modelName)
+        : engine === 'cloud' ? await this.transcribeCloud(pcm)
+        : await this.transcribeVoxlit(pcm)
 
       const text = this.cleanText(raw)
       if (text && !this.isHallucination(text)) {
@@ -268,6 +270,70 @@ export class TranscriptManager extends EventEmitter {
       sum += v * v
     }
     return Math.sqrt(sum / samples)
+  }
+
+  /**
+   * Voxlit Server engine — proxies audio to our hosted endpoint which runs
+   * Whisper + GPT-4o-mini post-processing for dictation-quality output.
+   * Returns text that's already punctuated, capitalized, and filler-word-stripped.
+   */
+  private async transcribeVoxlit(pcm: Buffer): Promise<string> {
+    // Skip if audio is silence
+    if (this.audioRms(pcm) < 0.005) return ''
+
+    const { url, token } = this.getVoxlitServer()
+    if (!url || !token) throw new Error('Voxlit Server not configured')
+
+    const wav = this.pcmToWav16(pcm)
+    const boundary = `voxlit${Date.now()}`
+    const fieldPart = Buffer.from(
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="file"; filename="audio.wav"\r\n` +
+      `Content-Type: audio/wav\r\n\r\n`
+    )
+    const tail = Buffer.from(`\r\n--${boundary}--\r\n`)
+    const body = Buffer.concat([fieldPart, wav, tail])
+
+    const u = new URL(url)
+    const http = u.protocol === 'https:' ? https : require('http')
+
+    return new Promise<string>((resolve, reject) => {
+      const req = http.request({
+        hostname: u.hostname,
+        port: u.port || (u.protocol === 'https:' ? 443 : 80),
+        path: u.pathname,
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': `multipart/form-data; boundary=${boundary}`,
+          'Content-Length': body.length,
+        },
+        timeout: 30_000,
+      }, (res: import('http').IncomingMessage) => {
+        const chunks: Buffer[] = []
+        res.on('data', (c: Buffer) => chunks.push(c))
+        res.on('end', () => {
+          const bodyText = Buffer.concat(chunks).toString('utf8')
+          const status = res.statusCode ?? 0
+
+          if (status === 401) return reject(new Error('Voxlit Server: Invalid token'))
+          if (status === 429) return reject(new Error('Voxlit Server: Rate limit — try again'))
+          if (status === 502 || status === 503) return reject(new Error('Voxlit Server: Temporarily unavailable'))
+
+          try {
+            const json = JSON.parse(bodyText)
+            if (status >= 400) return reject(new Error(`Voxlit Server: ${json.detail ?? 'HTTP ' + status}`))
+            resolve((json.text ?? '').trim())
+          } catch {
+            reject(new Error(`Voxlit Server: HTTP ${status} — ${bodyText.slice(0, 100)}`))
+          }
+        })
+      })
+      req.on('error', reject)
+      req.on('timeout', () => { req.destroy(); reject(new Error('Voxlit Server request timed out')) })
+      req.write(body)
+      req.end()
+    })
   }
 
   private async transcribeCloud(pcm: Buffer): Promise<string> {

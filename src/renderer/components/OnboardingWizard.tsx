@@ -259,31 +259,38 @@ function AccessibilityStep({ perms, onRefresh, onNext, onSkip }: {
 
 // ─── Step: Engine ─────────────────────────────────────────────────────────────
 
-function EngineStep({ onNext, onLocalSetup }: { onNext: () => void; onLocalSetup: () => void }) {
-  const [engine, setEngine] = useState<'cloud' | 'local'>('cloud')
+function EngineStep({ onNext, onLocalSetup, onApiKey }: { onNext: () => void; onLocalSetup: () => void; onApiKey: () => void }) {
+  const [engine, setEngine] = useState<'voxlit' | 'cloud' | 'local'>('voxlit')
 
-  function chooseEngine(e: 'cloud' | 'local') {
+  function chooseEngine(e: 'voxlit' | 'cloud' | 'local') {
     setEngine(e)
   }
 
   async function handleContinue() {
     await ipc.setSetting('transcriptionEngine', engine)
     if (engine === 'local') onLocalSetup()
-    else onNext()
+    else if (engine === 'cloud') onApiKey()
+    else onNext()   // voxlit — no setup required, jump to hotkey step
   }
 
   const options = [
     {
-      value: 'cloud' as const,
-      title: 'Whisper AI — Cloud',
+      value: 'voxlit' as const,
+      title: 'Voxlit Server',
       badge: 'Recommended',
-      sub: 'Faster & more accurate.\nNo model download needed.\nRequires OpenAI API key.',
+      sub: 'Fastest, most accurate. No setup.\nWhisper + AI cleanup for dictation-grade output.\nNo API key needed.',
     },
     {
       value: 'local' as const,
       title: 'Local (Offline)',
       badge: null,
       sub: 'Runs 100% on your Mac.\nNo internet required.\nNeeds ~500MB model download.',
+    },
+    {
+      value: 'cloud' as const,
+      title: 'OpenAI Whisper — BYOK',
+      badge: null,
+      sub: 'Bring your own OpenAI API key.\nDirect to Whisper, no post-processing.',
     },
   ]
 
@@ -333,7 +340,7 @@ function EngineStep({ onNext, onLocalSetup }: { onNext: () => void; onLocalSetup
       </div>
       <div style={{ marginTop: 20, width: '100%' }}>
         <PrimaryButton onClick={handleContinue}>
-          {engine === 'local' ? 'Continue — Download Model →' : 'Continue — Enter API Key →'}
+          {engine === 'voxlit' ? 'Continue →' : engine === 'local' ? 'Continue — Download Model →' : 'Continue — Enter API Key →'}
         </PrimaryButton>
       </div>
     </div>
@@ -809,7 +816,7 @@ export default function OnboardingWizard() {
           {step === 'accessibility' && (
             <AccessibilityStep perms={perms} onRefresh={refreshPerms} onNext={goNext} onSkip={goNext} />
           )}
-          {step === 'engine' && <EngineStep onNext={() => setOnboardingStep('apikey')} onLocalSetup={() => setOnboardingStep('localsetup')} />}
+          {step === 'engine' && <EngineStep onNext={() => setOnboardingStep('done')} onApiKey={() => setOnboardingStep('apikey')} onLocalSetup={() => setOnboardingStep('localsetup')} />}
           {step === 'apikey' && <ApiKeyStep onNext={() => setOnboardingStep('done')} onSkip={() => setOnboardingStep('done')} />}
           {step === 'localsetup' && <LocalSetupStep onNext={() => setOnboardingStep('done')} />}
           {step === 'done' && <DoneStep settings={settings} onFinish={completeOnboarding} />}

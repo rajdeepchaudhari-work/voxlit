@@ -63,7 +63,7 @@ export interface HelperStatusChange {
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
 
-export type TranscriptionEngine = 'local' | 'cloud'
+export type TranscriptionEngine = 'voxlit' | 'local' | 'cloud'
 export type CloudProvider = 'openai'
 export type HotkeyMode = 'push-to-talk' | 'toggle'
 
@@ -80,6 +80,9 @@ export interface VoxlitSettings {
   launchAtLogin: boolean
   menubarOnly: boolean
   hasCompletedOnboarding?: boolean
+  // Voxlit Server (cloud with prompt engineering). Defaults filled in main.
+  voxlitServerUrl?: string
+  voxlitServerToken?: string
 }
 
 // ─── Sessions / History ───────────────────────────────────────────────────────

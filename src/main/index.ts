@@ -15,14 +15,16 @@ const store = new Store<VoxlitSettings>({
   defaults: {
     hotkeyPrimary: 'Fn',
     hotkeyMode: 'push-to-talk',
-    transcriptionEngine: 'local',
+    transcriptionEngine: 'voxlit',
     cloudProvider: 'openai',
     localModel: 'ggml-small.en',
     vadSensitivity: 0.5,
     fillerWordFilter: false,
     customDictionary: [],
     launchAtLogin: false,
-    menubarOnly: false
+    menubarOnly: false,
+    voxlitServerUrl: 'https://api.voxlit.co/v1/transcribe',
+    voxlitServerToken: 'c6e9c055ca194fabb7f60b328ca8144b06cf2839252770a785b5abe1af3806d2'
   },
   encryptionKey: 'voxlit-store-v1'  // encrypts openaiApiKey at rest
 })
@@ -32,7 +34,11 @@ const sessionStore = new SessionStore()
 const transcriptManager = new TranscriptManager(
   sessionStore,
   () => ({ openaiApiKey: store.get('openaiApiKey') }),
-  () => store.get('localModel')
+  () => store.get('localModel'),
+  () => ({
+    url:   store.get('voxlitServerUrl')   ?? '',
+    token: store.get('voxlitServerToken') ?? '',
+  })
 )
 
 let mainWindow: BrowserWindow | null = null
