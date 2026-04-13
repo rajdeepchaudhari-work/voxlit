@@ -30,7 +30,7 @@ export default function DownloadCTA() {
 
           {/* Overline */}
           <div className="overline" style={{ marginBottom: 16, color: '#666' }}>
-            Free Download · v0.1.0
+            Free Download · v1.0.5
           </div>
 
           {/* Headline */}
@@ -53,7 +53,7 @@ export default function DownloadCTA() {
             color: '#333',
             marginBottom: 40,
           }}>
-            macOS 13 Ventura or later. Apple Silicon and Intel. ~180 MB.
+            macOS 13 Ventura or later. Apple Silicon. ~135 MB.
           </p>
 
           {/* ── PRIMARY: Homebrew ── */}
@@ -188,7 +188,7 @@ export default function DownloadCTA() {
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.8125rem',
                   color: '#333',
-                }}>Download the .dmg · arm64 + x64 · ~178 MB</div>
+                }}>Download the .dmg · arm64 · ~135 MB</div>
               </div>
               <a href={DOWNLOAD_URL} className="btn-ghost" style={{ padding: '10px 20px', fontSize: '0.8125rem', flexShrink: 0 }}>
                 <DownloadIcon /> Download .dmg

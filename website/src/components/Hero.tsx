@@ -202,7 +202,7 @@ export default function Hero() {
             </div>
 
             <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {['v0.1.0', 'arm64 + x64', '.dmg', '~178 MB'].map(t => (
+              {['v1.0.5', 'arm64', '.dmg', '~135 MB'].map(t => (
                 <span key={t} className="trust-pill">{t}</span>
               ))}
             </div>
