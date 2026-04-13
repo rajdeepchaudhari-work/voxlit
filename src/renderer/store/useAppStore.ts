@@ -107,8 +107,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     // Fetch the current status in case the helper connected BEFORE this
     // listener was installed (common race — helper comes up in ~200ms while
-    // the renderer is still loading its bundle).
-    ipc.getHelperStatus().then(({ status }) => set({ helperStatus: status }))
+    // the renderer is still loading its bundle). Only available on the main
+    // window's preload; the pill window doesn't expose this method so we
+    // guard against it being undefined.
+    if (typeof ipc.getHelperStatus === 'function') {
+      ipc.getHelperStatus().then(({ status }) => set({ helperStatus: status })).catch(() => {})
+    }
 
     return () => {
       unsubRecording()
