@@ -12,7 +12,8 @@ import type {
   SystemInfo,
   ModelStatus,
   ModelDownloadProgress,
-  UpdateInfo
+  UpdateInfo,
+  UpdateProgress
 } from '@shared/ipc-types'
 
 // Full API surface for the settings/history window.
@@ -97,6 +98,12 @@ contextBridge.exposeInMainWorld('voxlit', {
     const listener = (_: Electron.IpcRendererEvent, info: UpdateInfo) => cb(info)
     ipcRenderer.on(IPC.UPDATE_AVAILABLE, listener)
     return () => ipcRenderer.removeListener(IPC.UPDATE_AVAILABLE, listener)
+  },
+
+  onUpdateProgress: (cb: (p: UpdateProgress) => void) => {
+    const listener = (_: Electron.IpcRendererEvent, p: UpdateProgress) => cb(p)
+    ipcRenderer.on(IPC.UPDATE_PROGRESS, listener)
+    return () => ipcRenderer.removeListener(IPC.UPDATE_PROGRESS, listener)
   },
 
   onUpdateDownloaded: (cb: (info: UpdateInfo) => void) => {

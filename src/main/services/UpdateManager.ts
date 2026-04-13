@@ -20,6 +20,15 @@ export function initAutoUpdater(getMainWindow: () => BrowserWindow | null) {
     send(IPC.UPDATE_AVAILABLE, { version: info.version, releaseName: info.releaseName, releaseNotes: info.releaseNotes })
   })
 
+  autoUpdater.on('download-progress', (p) => {
+    send(IPC.UPDATE_PROGRESS, {
+      percent: p.percent,
+      bytesPerSecond: p.bytesPerSecond,
+      transferred: p.transferred,
+      total: p.total,
+    })
+  })
+
   autoUpdater.on('update-downloaded', (info) => {
     send(IPC.UPDATE_DOWNLOADED, { version: info.version, releaseName: info.releaseName, releaseNotes: info.releaseNotes })
   })

@@ -15,6 +15,7 @@ import type {
   ModelStatus,
   ModelDownloadProgress,
   UpdateInfo,
+  UpdateProgress,
   AudioDevice
 } from '@shared/ipc-types'
 
@@ -46,6 +47,7 @@ declare global {
       setAudioDevice: (uid: string) => Promise<void>
       setMicGain: (gain: number) => Promise<void>
       onUpdateAvailable: (cb: (info: UpdateInfo) => void) => Unsubscribe
+      onUpdateProgress: (cb: (p: UpdateProgress) => void) => Unsubscribe
       onUpdateDownloaded: (cb: (info: UpdateInfo) => void) => Unsubscribe
       installUpdate: () => Promise<void>
       checkForUpdates: () => Promise<void>

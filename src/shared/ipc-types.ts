@@ -30,6 +30,7 @@ export const IPC = {
 
   // Auto-update
   UPDATE_AVAILABLE: 'voxlit:update-available',
+  UPDATE_PROGRESS: 'voxlit:update-progress',
   UPDATE_DOWNLOADED: 'voxlit:update-downloaded',
   UPDATE_ERROR: 'voxlit:update-error',
   INSTALL_UPDATE: 'voxlit:install-update',
@@ -144,6 +145,13 @@ export interface ModelDownloadProgress {
 }
 
 // ─── Updates ─────────────────────────────────────────────────────────────────
+
+export interface UpdateProgress {
+  percent: number          // 0-100
+  bytesPerSecond: number
+  transferred: number      // bytes
+  total: number            // bytes
+}
 
 export interface UpdateInfo {
   version: string
