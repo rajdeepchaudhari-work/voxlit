@@ -691,6 +691,11 @@ function DoneStep({ settings, onFinish }: { settings: VoxlitSettings | null; onF
   const [hotkey, setHotkey] = useState(settings?.hotkeyPrimary ?? 'Fn')
   const [showRestartDialog, setShowRestartDialog] = useState(false)
   const [restarting, setRestarting] = useState(false)
+  const [isPackaged, setIsPackaged] = useState(true)
+
+  useEffect(() => {
+    ipc.isPackaged().then(setIsPackaged).catch(() => setIsPackaged(true))
+  }, [])
 
   async function selectHotkey(value: string) {
     setHotkey(value)
@@ -699,6 +704,9 @@ function DoneStep({ settings, onFinish }: { settings: VoxlitSettings | null; onF
 
   async function handleLaunch() {
     await onFinish()
+    // app.relaunch() doesn't work in dev — there's no Vite dev server to come back to.
+    // Just close the wizard; the main UI mounts immediately since onFinish nulls onboardingStep.
+    if (!isPackaged) return
     setShowRestartDialog(true)
   }
 

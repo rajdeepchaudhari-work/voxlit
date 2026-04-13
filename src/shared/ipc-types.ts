@@ -23,6 +23,7 @@ export const IPC = {
   MODEL_DOWNLOAD_PROGRESS: 'voxlit:model-download-progress',
   RELAUNCH: 'voxlit:relaunch',
   GET_APP_VERSION: 'voxlit:get-app-version',
+  IS_PACKAGED: 'voxlit:is-packaged',
   GET_HELPER_STATUS: 'voxlit:get-helper-status',
   GET_AUDIO_DEVICES: 'voxlit:get-audio-devices',
   SET_AUDIO_DEVICE: 'voxlit:set-audio-device',

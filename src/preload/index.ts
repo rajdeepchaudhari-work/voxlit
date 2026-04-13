@@ -85,6 +85,7 @@ contextBridge.exposeInMainWorld('voxlit', {
 
   relaunch: (): Promise<void> => ipcRenderer.invoke(IPC.RELAUNCH),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(IPC.GET_APP_VERSION),
+  isPackaged: (): Promise<boolean> => ipcRenderer.invoke(IPC.IS_PACKAGED),
   getHelperStatus: (): Promise<{ status: HelperStatus; error?: string }> =>
     ipcRenderer.invoke(IPC.GET_HELPER_STATUS),
   getAudioDevices: (): Promise<Array<{ uid: string; name: string; isDefault: boolean }>> =>

@@ -179,6 +179,8 @@ export function registerHandlers(deps: {
 
   ipcMain.handle(IPC.GET_APP_VERSION, () => app.getVersion())
 
+  ipcMain.handle(IPC.IS_PACKAGED, () => app.isPackaged)
+
   ipcMain.handle(IPC.GET_HELPER_STATUS, () => socketManager.getStatus())
 
   ipcMain.handle(IPC.GET_AUDIO_DEVICES, () => socketManager.listMicDevices())

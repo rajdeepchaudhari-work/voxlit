@@ -42,6 +42,7 @@ declare global {
       onModelDownloadProgress: (cb: (data: ModelDownloadProgress) => void) => Unsubscribe
       relaunch: () => Promise<void>
       getAppVersion: () => Promise<string>
+      isPackaged: () => Promise<boolean>
       getHelperStatus: () => Promise<{ status: HelperStatus; error?: string }>
       getAudioDevices: () => Promise<AudioDevice[]>
       setAudioDevice: (uid: string) => Promise<void>
