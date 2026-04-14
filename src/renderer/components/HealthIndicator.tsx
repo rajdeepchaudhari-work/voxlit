@@ -2,6 +2,37 @@ import { useEffect, useState } from 'react'
 import { ipc } from '../lib/ipc'
 import type { HealthSnapshot, SubsystemHealth } from '@shared/ipc-types'
 
+type ActionKind = NonNullable<SubsystemHealth['action']>['kind']
+
+async function runAction(kind: ActionKind) {
+  if (kind === 'grant-microphone')         await ipc.requestPermission('microphone')
+  else if (kind === 'grant-accessibility') await ipc.requestPermission('accessibility')
+  else if (kind === 'grant-automation')    await ipc.requestPermission('automation')
+  else if (kind === 'open-settings' || kind === 'download-model') {
+    window.dispatchEvent(new CustomEvent('voxlit:navigate', { detail: { view: 'settings' } }))
+  } else if (kind === 'install-helper') {
+    window.open('https://github.com/rajdeepchaudhari-work/voxlit#building-the-native-helper', '_blank')
+  }
+}
+
+/// Auto-fix all fixable warn/fail checks at boot. Skips 'denied' actions
+/// (those open System Settings — too intrusive on every launch) and skips
+/// install-helper (would open a browser tab on every cold start).
+export async function autoFixHealthIssues() {
+  const snap = await ipc.healthCheck()
+  const fixable = snap.checks.filter(c => {
+    if (!c.action) return false
+    if (c.status !== 'warn' && c.status !== 'fail') return false
+    // Only auto-trigger TCC prompts; never auto-open Settings or external URLs
+    return c.action.kind === 'grant-microphone'
+        || c.action.kind === 'grant-automation'
+  })
+  // Sequential — avoid stacking three OS prompts on top of each other.
+  for (const c of fixable) {
+    await runAction(c.action!.kind)
+  }
+}
+
 const COLORS = {
   ok:      { bg: '#00C853', label: 'HEALTHY' },
   warn:    { bg: '#FFEB3B', label: 'WARNINGS' },
@@ -88,14 +119,14 @@ export default function HealthIndicator() {
               {refreshing ? '…' : '↻ REFRESH'}
             </button>
           </div>
-          {health.checks.map(c => <CheckRow key={c.name} check={c} />)}
+          {health.checks.map(c => <CheckRow key={c.name} check={c} onAction={async (kind) => { await runAction(kind); setOpen(false); setTimeout(refresh, 1500) }} />)}
         </div>
       )}
     </div>
   )
 }
 
-function CheckRow({ check }: { check: SubsystemHealth }) {
+function CheckRow({ check, onAction }: { check: SubsystemHealth; onAction: (kind: ActionKind) => void }) {
   const dot = check.status === 'ok' ? '#00C853'
             : check.status === 'warn' ? '#FFEB3B'
             : check.status === 'fail' ? '#FF1744'
@@ -116,6 +147,24 @@ function CheckRow({ check }: { check: SubsystemHealth }) {
         <div style={{ fontSize: 11, color: '#555', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
           {check.message}
         </div>
+        {check.action && (
+          <button
+            onClick={() => onAction(check.action!.kind)}
+            style={{
+              marginTop: 6,
+              fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
+              letterSpacing: '0.08em', textTransform: 'uppercase',
+              padding: '3px 8px',
+              background: '#FFEB3B',
+              border: '1.5px solid #0A0A0A',
+              boxShadow: '2px 2px 0px #0A0A0A',
+              cursor: 'pointer',
+              color: '#0A0A0A',
+            }}
+          >
+            {check.action.label} →
+          </button>
+        )}
       </div>
     </div>
   )

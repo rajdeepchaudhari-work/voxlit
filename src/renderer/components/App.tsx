@@ -8,7 +8,7 @@ import HomePanel from './HomePanel'
 import AboutPanel from './AboutPanel'
 import OnboardingWizard from './OnboardingWizard'
 import UpdateBanner from './UpdateBanner'
-import HealthIndicator from './HealthIndicator'
+import HealthIndicator, { autoFixHealthIssues } from './HealthIndicator'
 import SplashScreen from './SplashScreen'
 import { warmupChimes } from './StatusPill'
 
@@ -131,7 +131,7 @@ export default function App() {
   }, [onboardingStep, view])
 
   // HealthIndicator dispatches a 'voxlit:navigate' event when a user clicks
-  // an action button (e.g. failed check -> Re-run onboarding / Open settings).
+  // an action button (e.g. failed check → Open settings / Re-run onboarding).
   useEffect(() => {
     function handler(e: Event) {
       const detail = (e as CustomEvent<{ view: View }>).detail
@@ -150,6 +150,10 @@ export default function App() {
       // so the first record/stop sound doesn't play choppy while the HAL
       // is still warming up under the recording path.
       warmupChimes()
+      // Try to silently grant any not-determined permissions. Only triggers
+      // OS prompts (mic, automation) — never auto-opens System Settings.
+      // Won't re-prompt if user previously denied. Runs once per launch.
+      void autoFixHealthIssues()
       setBooted(true)
     }} />
   }
