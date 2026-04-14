@@ -63,7 +63,10 @@ try {
 } catch { /* has changes, continue */ }
 
 const message = `Bump voxlit cask to v${version}\n\nsha256 ${hash}`
-execSync(`git -C "${tap}" commit -am "${message.replace(/"/g, '\\"')}"`, { stdio: 'inherit' })
+// --no-gpg-sign: the homebrew tap doesn't require signed commits, and our
+// global commit.gpgsign config would otherwise fail when the SSH agent
+// isn't loaded with the signing key.
+execSync(`git -C "${tap}" commit --no-gpg-sign -am "${message.replace(/"/g, '\\"')}"`, { stdio: 'inherit' })
 execSync(`git -C "${tap}" push origin main`, { stdio: 'inherit' })
 
 console.log(`\n✓ Homebrew cask updated to v${version}`)

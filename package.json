@@ -1,6 +1,6 @@
 {
   "name": "voxlit",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Privacy-first, open-source macOS voice transcription app",
   "main": "out/main/index.js",
   "author": "Voxlit Contributors",
