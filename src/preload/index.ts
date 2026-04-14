@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '@shared/ipc-types'
-import type { HealthSnapshot, BootState } from '@shared/ipc-types'
+import type { HealthSnapshot, BootState, HelperStatus } from '@shared/ipc-types'
 import type {
   RecordingStateChange,
   TranscriptSegment,

@@ -59,7 +59,7 @@ export interface TranscriptSegment {
   sessionId: string
   entryId: string
   durationMs: number
-  engine: 'local' | 'cloud'
+  engine: 'voxlit' | 'local' | 'cloud'
   confidence?: number
 }
 
@@ -136,7 +136,7 @@ export interface Entry {
   processedText: string | null
   durationMs: number | null
   confidence: number | null
-  engine: 'local' | 'cloud'
+  engine: 'voxlit' | 'local' | 'cloud'
 }
 
 // ─── System / Models ──────────────────────────────────────────────────────────

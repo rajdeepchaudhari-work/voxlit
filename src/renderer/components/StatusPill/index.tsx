@@ -199,7 +199,9 @@ export default function StatusPill() {
 
   if (recordingState === 'idle') return null
 
-  const activeState = (recordingState === 'idle' ? 'processing' : recordingState) as keyof typeof STATE
+  // recordingState is narrowed to the non-idle union here. The earlier conditional
+  // was a defensive holdover from before the early return.
+  const activeState = recordingState as keyof typeof STATE
   const { color, glow, glowOuter, label } = STATE[activeState] ?? STATE.listening
 
   return (
@@ -225,14 +227,12 @@ export default function StatusPill() {
           <VoxlitMark color={color} />
         </div>
 
-        {/* Waveform bars */}
-        {recordingState !== 'idle' && (
-          <WaveformBars
-            barAmplitudes={barAmplitudes}
-            color={color}
-            state={recordingState as 'listening' | 'processing' | 'error'}
-          />
-        )}
+        {/* Waveform bars — recordingState is already non-idle at this point */}
+        <WaveformBars
+          barAmplitudes={barAmplitudes}
+          color={color}
+          state={recordingState as 'listening' | 'processing' | 'error'}
+        />
 
         {/* State label */}
         <span style={{
