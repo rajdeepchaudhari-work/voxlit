@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ipc } from '../lib/ipc'
 import { useAppStore } from '../store/useAppStore'
 import type { HealthSnapshot, SubsystemHealth, HealthCategory } from '@shared/ipc-types'
@@ -32,7 +33,41 @@ export default function HealthIndicator({ onAction }: Props = {}) {
   const [health, setHealth] = useState<HealthSnapshot | null>(null)
   const [open, setOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [anchor, setAnchor] = useState<{ top: number; right: number } | null>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const setOnboardingStep = useAppStore((s) => s.setOnboardingStep)
+
+  // Measure the button's position every time we open, so the portal-rendered
+  // popover can anchor directly under it (React portal removes it from the flow
+  // so we can't use position:absolute relative to the button anymore).
+  function toggleOpen() {
+    setOpen(prev => {
+      if (!prev && buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect()
+        setAnchor({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
+      }
+      return !prev
+    })
+  }
+
+  // Close on click-outside + escape
+  useEffect(() => {
+    if (!open) return
+    function onClick(e: MouseEvent) {
+      const target = e.target as Node
+      if (buttonRef.current?.contains(target)) return
+      // target might be inside the portal popover — check via data attribute
+      if ((target as HTMLElement).closest?.('[data-voxlit-health-popover]')) return
+      setOpen(false)
+    }
+    function onEsc(e: KeyboardEvent) { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('click', onClick)
+    window.addEventListener('keydown', onEsc)
+    return () => {
+      window.removeEventListener('click', onClick)
+      window.removeEventListener('keydown', onEsc)
+    }
+  }, [open])
 
   // Default handlers for the action kinds. Parent's onAction (if provided)
   // runs first so it can override these (e.g. App.tsx wants 'open-settings'
@@ -85,38 +120,19 @@ export default function HealthIndicator({ onAction }: Props = {}) {
   const warnCount = blocking.filter(c => c.status === 'warn').length
   const okCount   = blocking.filter(c => c.status === 'ok').length
 
-  return (
-    <div style={{ position: 'relative' }}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        title="Click for system status detail"
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '6px 10px',
-          background: '#FFFFFF',
-          border: '2px solid #0A0A0A',
-          boxShadow: '2px 2px 0px #0A0A0A',
-          cursor: 'pointer',
-          fontFamily: 'var(--font-mono)',
-          fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
-        }}
-      >
-        <span style={{
-          width: 8, height: 8, borderRadius: '50%', background: bg,
-          boxShadow: health.overall === 'ok' ? `0 0 6px ${bg}` : 'none',
-        }} />
-        {label}
-      </button>
-
-      {open && (
-        <div style={{
-          position: 'absolute', top: 'calc(100% + 6px)', right: 0,
-          width: 360, maxHeight: '70vh', overflowY: 'auto', zIndex: 100,
-          background: '#FFFDF7',
-          border: '3px solid #0A0A0A',
-          boxShadow: '6px 6px 0px #0A0A0A',
-          padding: 14,
-        }}>
+  const popover = open && anchor ? (
+    <div
+      data-voxlit-health-popover
+      style={{
+        position: 'fixed',
+        top: anchor.top, right: anchor.right,
+        width: 360, maxHeight: '70vh', overflowY: 'auto', zIndex: 9999,
+        background: '#FFFDF7',
+        border: '3px solid #0A0A0A',
+        boxShadow: '6px 6px 0px #0A0A0A',
+        padding: 14,
+      }}
+    >
           {/* Header */}
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -168,9 +184,34 @@ export default function HealthIndicator({ onAction }: Props = {}) {
           }}>
             Auto-refreshes every 30 s · click ↻ for live snapshot
           </div>
-        </div>
-      )}
     </div>
+  ) : null
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        onClick={toggleOpen}
+        title="Click for system status detail"
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          padding: '6px 10px',
+          background: '#FFFFFF',
+          border: '2px solid #0A0A0A',
+          boxShadow: '2px 2px 0px #0A0A0A',
+          cursor: 'pointer',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+        }}
+      >
+        <span style={{
+          width: 8, height: 8, borderRadius: '50%', background: bg,
+          boxShadow: health.overall === 'ok' ? `0 0 6px ${bg}` : 'none',
+        }} />
+        {label}
+      </button>
+      {popover && createPortal(popover, document.body)}
+    </>
   )
 }
 
