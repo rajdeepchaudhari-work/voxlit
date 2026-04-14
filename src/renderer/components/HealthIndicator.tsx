@@ -1,96 +1,49 @@
-import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useEffect, useState } from 'react'
 import { ipc } from '../lib/ipc'
-import { useAppStore } from '../store/useAppStore'
-import type { HealthSnapshot, SubsystemHealth, HealthCategory } from '@shared/ipc-types'
+import type { HealthSnapshot, SubsystemHealth } from '@shared/ipc-types'
 
 type ActionKind = NonNullable<SubsystemHealth['action']>['kind']
 
-interface Props {
-  /// Called when a check's action button is clicked. Receives the action kind
-  /// so the parent can switch views, open URLs, etc.
-  onAction?: (kind: ActionKind) => void
+async function runAction(kind: ActionKind) {
+  if (kind === 'grant-microphone')         await ipc.requestPermission('microphone')
+  else if (kind === 'grant-accessibility') await ipc.requestPermission('accessibility')
+  else if (kind === 'grant-automation')    await ipc.requestPermission('automation')
+  else if (kind === 'open-settings' || kind === 'download-model') {
+    window.dispatchEvent(new CustomEvent('voxlit:navigate', { detail: { view: 'settings' } }))
+  } else if (kind === 'install-helper') {
+    window.open('https://github.com/rajdeepchaudhari-work/voxlit#building-the-native-helper', '_blank')
+  }
 }
 
-const COLORS: Record<HealthSnapshot['overall'], { bg: string; label: string }> = {
+/// Auto-fix all fixable warn/fail checks at boot. Skips 'denied' actions
+/// (those open System Settings — too intrusive on every launch) and skips
+/// install-helper (would open a browser tab on every cold start).
+export async function autoFixHealthIssues() {
+  const snap = await ipc.healthCheck()
+  const fixable = snap.checks.filter(c => {
+    if (!c.action) return false
+    if (c.status !== 'warn' && c.status !== 'fail') return false
+    // Only auto-trigger TCC prompts; never auto-open Settings or external URLs
+    return c.action.kind === 'grant-microphone'
+        || c.action.kind === 'grant-automation'
+  })
+  // Sequential — avoid stacking three OS prompts on top of each other.
+  for (const c of fixable) {
+    await runAction(c.action!.kind)
+  }
+}
+
+const COLORS = {
   ok:      { bg: '#00C853', label: 'HEALTHY' },
   warn:    { bg: '#FFEB3B', label: 'WARNINGS' },
   fail:    { bg: '#FF1744', label: 'ISSUES' },
   unknown: { bg: '#999999', label: 'CHECKING' },
-  // Info shouldn't propagate to overall, but type union requires us to cover it
-  info:    { bg: '#665DF5', label: 'INFO' },
 }
 
-const CATEGORY_TITLES: Record<HealthCategory, string> = {
-  permissions:    'PERMISSIONS',
-  subsystems:     'SUBSYSTEMS',
-  configuration:  'CONFIGURATION',
-}
-
-const CATEGORY_ORDER: HealthCategory[] = ['subsystems', 'permissions', 'configuration']
-
-export default function HealthIndicator({ onAction }: Props = {}) {
+export default function HealthIndicator() {
   const [health, setHealth] = useState<HealthSnapshot | null>(null)
   const [open, setOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
-  const [anchor, setAnchor] = useState<{ top: number; right: number } | null>(null)
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const setOnboardingStep = useAppStore((s) => s.setOnboardingStep)
-
-  // Measure the button's position every time we open, so the portal-rendered
-  // popover can anchor directly under it.
-  function toggleOpen() {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect()
-      setAnchor({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
-    }
-    setOpen(prev => !prev)
-  }
-
-  // Close on click-outside + Escape. Use mousedown so our onClick opens win the
-  // race — the outside handler only fires for the NEXT click after open.
-  useEffect(() => {
-    if (!open) return
-    function onMouseDown(e: MouseEvent) {
-      const target = e.target as HTMLElement
-      if (buttonRef.current?.contains(target)) return
-      if (target.closest?.('[data-voxlit-health-popover]')) return
-      setOpen(false)
-    }
-    function onEsc(e: KeyboardEvent) { if (e.key === 'Escape') setOpen(false) }
-    window.addEventListener('mousedown', onMouseDown)
-    window.addEventListener('keydown', onEsc)
-    return () => {
-      window.removeEventListener('mousedown', onMouseDown)
-      window.removeEventListener('keydown', onEsc)
-    }
-  }, [open])
-
-  // Default handlers for the action kinds. Parent's onAction (if provided)
-  // runs first so it can override these (e.g. App.tsx wants 'open-settings'
-  // to switch its view state). We then fall through to sensible defaults.
-  async function handleAction(kind: ActionKind) {
-    onAction?.(kind)
-    if (kind === 'open-onboarding') {
-      setOnboardingStep('welcome')
-    } else if (kind === 'open-settings' || kind === 'download-model') {
-      // Fire a global event — App.tsx listens and switches its 'view' state
-      window.dispatchEvent(new CustomEvent('voxlit:navigate', { detail: { view: 'settings' } }))
-    } else if (kind === 'install-helper') {
-      window.open('https://github.com/rajdeepchaudhari-work/voxlit#building-the-native-helper', '_blank')
-    } else if (kind === 'grant-microphone') {
-      await ipc.requestPermission('microphone')
-    } else if (kind === 'grant-accessibility') {
-      await ipc.requestPermission('accessibility')
-    } else if (kind === 'grant-automation') {
-      await ipc.requestPermission('automation')
-    }
-    setOpen(false)
-    // Re-run health check after a beat so the popover reflects the new state
-    // next time it's opened. The TCC prompt for automation can take several
-    // seconds (waiting for user response) — refresh later doesn't hurt.
-    setTimeout(refresh, 1500)
-  }
 
   async function refresh() {
     setRefreshing(true)
@@ -111,93 +64,11 @@ export default function HealthIndicator({ onAction }: Props = {}) {
   if (!health) return null
   const { bg, label } = COLORS[health.overall]
 
-  // Group checks by category, preserve insertion order within each
-  const grouped = new Map<HealthCategory, SubsystemHealth[]>()
-  for (const check of health.checks) {
-    const cat = check.category ?? 'subsystems'
-    if (!grouped.has(cat)) grouped.set(cat, [])
-    grouped.get(cat)!.push(check)
-  }
-
-  // Counts for the popover header summary (only blocking checks)
-  const blocking = health.checks.filter(c => c.category !== 'configuration')
-  const failCount = blocking.filter(c => c.status === 'fail').length
-  const warnCount = blocking.filter(c => c.status === 'warn').length
-  const okCount   = blocking.filter(c => c.status === 'ok').length
-
-  const popover = open && anchor ? (
-    <div
-      data-voxlit-health-popover
-      style={{
-        position: 'fixed',
-        top: anchor.top, right: anchor.right,
-        width: 360, maxHeight: '70vh', overflowY: 'auto', zIndex: 9999,
-        background: '#FFFDF7',
-        border: '3px solid #0A0A0A',
-        boxShadow: '6px 6px 0px #0A0A0A',
-        padding: 14,
-      }}
-    >
-          {/* Header */}
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            borderBottom: '2px solid #0A0A0A', paddingBottom: 8, marginBottom: 6,
-          }}>
-            <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 11, letterSpacing: '0.06em', color: '#0A0A0A' }}>
-                SYSTEM HEALTH
-              </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: '#666', marginTop: 2, letterSpacing: '0.04em' }}>
-                {okCount} ok · {warnCount} warn · {failCount} fail · checked {timeAgo(health.checkedAt)}
-              </div>
-            </div>
-            <button
-              onClick={refresh}
-              disabled={refreshing}
-              style={{
-                background: 'transparent', border: '1px solid #0A0A0A',
-                cursor: refreshing ? 'default' : 'pointer',
-                fontSize: 9, fontFamily: 'var(--font-mono)',
-                fontWeight: 700, padding: '3px 8px', letterSpacing: '0.06em',
-              }}
-            >
-              {refreshing ? '…' : '↻ REFRESH'}
-            </button>
-          </div>
-
-          {/* Grouped checks */}
-          {CATEGORY_ORDER.map(cat => {
-            const items = grouped.get(cat)
-            if (!items || items.length === 0) return null
-            return (
-              <div key={cat} style={{ marginTop: 12 }}>
-                <div style={{
-                  fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
-                  letterSpacing: '0.12em', color: '#665DF5', marginBottom: 4,
-                }}>
-                  {CATEGORY_TITLES[cat]}
-                </div>
-                {items.map(item => <CheckRow key={item.name} check={item} onAction={handleAction} />)}
-              </div>
-            )
-          })}
-
-          {/* Footer hint */}
-          <div style={{
-            marginTop: 14, paddingTop: 10, borderTop: '1px dashed rgba(10,10,10,0.15)',
-            fontFamily: 'var(--font-mono)', fontSize: 9, color: '#666', letterSpacing: '0.04em',
-          }}>
-            Auto-refreshes every 30 s · click ↻ for live snapshot
-          </div>
-    </div>
-  ) : null
-
   return (
-    <>
+    <div style={{ position: 'relative' }}>
       <button
-        ref={buttonRef}
-        onClick={toggleOpen}
-        title="Click for system status detail"
+        onClick={() => setOpen(o => !o)}
+        title="Click for details"
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           padding: '6px 10px',
@@ -207,9 +78,9 @@ export default function HealthIndicator({ onAction }: Props = {}) {
           cursor: 'pointer',
           fontFamily: 'var(--font-mono)',
           fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
-          // The top 44px of the window is a drag region for the frameless traffic
-          // lights. Without this override, Electron swallows clicks here at the
-          // native level and onClick never fires.
+          // The top 44px of the window is a drag region for traffic-light dragging.
+          // Without this override Electron swallows clicks at the native layer
+          // and onClick never fires.
           WebkitAppRegion: 'no-drag',
         } as React.CSSProperties}
       >
@@ -219,39 +90,63 @@ export default function HealthIndicator({ onAction }: Props = {}) {
         }} />
         {label}
       </button>
-      {popover && createPortal(popover, document.body)}
-    </>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', right: 0,
+          width: 320, zIndex: 100,
+          background: '#FFFDF7',
+          border: '3px solid #0A0A0A',
+          boxShadow: '6px 6px 0px #0A0A0A',
+          padding: 14,
+        }}>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            borderBottom: '2px solid #0A0A0A', paddingBottom: 8, marginBottom: 10,
+          }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 11, letterSpacing: '0.06em' }}>
+              SYSTEM HEALTH
+            </span>
+            <button
+              onClick={refresh}
+              disabled={refreshing}
+              style={{
+                background: 'transparent', border: '1px solid #0A0A0A',
+                cursor: 'pointer', fontSize: 9, fontFamily: 'var(--font-mono)',
+                fontWeight: 700, padding: '2px 8px', letterSpacing: '0.06em',
+              }}
+            >
+              {refreshing ? '…' : '↻ REFRESH'}
+            </button>
+          </div>
+          {health.checks.map(c => <CheckRow key={c.name} check={c} onAction={async (kind) => { await runAction(kind); setOpen(false); setTimeout(refresh, 1500) }} />)}
+        </div>
+      )}
+    </div>
   )
 }
 
 function CheckRow({ check, onAction }: { check: SubsystemHealth; onAction: (kind: ActionKind) => void }) {
-  const dot =
-    check.status === 'ok'   ? '#00C853' :
-    check.status === 'warn' ? '#FFEB3B' :
-    check.status === 'fail' ? '#FF1744' :
-    check.status === 'info' ? '#665DF5' :
-                              '#999'
+  const dot = check.status === 'ok' ? '#00C853'
+            : check.status === 'warn' ? '#FFEB3B'
+            : check.status === 'fail' ? '#FF1744'
+            : '#999'
   return (
     <div style={{
       display: 'flex', alignItems: 'flex-start', gap: 8,
-      padding: '6px 0', borderBottom: '1px dashed rgba(10,10,10,0.08)',
+      padding: '6px 0', borderBottom: '1px dashed rgba(10,10,10,0.1)',
     }}>
       <span style={{
         width: 8, height: 8, borderRadius: '50%', background: dot,
         marginTop: 5, flexShrink: 0,
       }} />
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: '#0A0A0A', fontFamily: 'var(--font-display)' }}>
           {check.name}
         </div>
-        <div style={{ fontSize: 11, color: '#555', fontFamily: 'var(--font-mono)', marginTop: 2, wordBreak: 'break-word' }}>
+        <div style={{ fontSize: 11, color: '#555', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
           {check.message}
         </div>
-        {check.detail && (
-          <div style={{ fontSize: 10, color: '#888', fontFamily: 'var(--font-mono)', marginTop: 2, wordBreak: 'break-all' }}>
-            {check.detail}
-          </div>
-        )}
         {check.action && (
           <button
             onClick={() => onAction(check.action!.kind)}
@@ -273,14 +168,4 @@ function CheckRow({ check, onAction }: { check: SubsystemHealth; onAction: (kind
       </div>
     </div>
   )
-}
-
-function timeAgo(ts: number): string {
-  const s = Math.floor((Date.now() - ts) / 1000)
-  if (s < 5) return 'just now'
-  if (s < 60) return `${s}s ago`
-  const m = Math.floor(s / 60)
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  return `${h}h ago`
 }
