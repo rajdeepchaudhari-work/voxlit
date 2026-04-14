@@ -38,35 +38,23 @@ export default function HealthIndicator({ onAction }: Props = {}) {
   const setOnboardingStep = useAppStore((s) => s.setOnboardingStep)
 
   // Measure the button's position every time we open, so the portal-rendered
-  // popover can anchor directly under it (React portal removes it from the flow
-  // so we can't use position:absolute relative to the button anymore).
+  // popover can anchor directly under it.
   function toggleOpen() {
-    setOpen(prev => {
-      if (!prev && buttonRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect()
-        setAnchor({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
-      }
-      return !prev
-    })
+    console.log('[HealthIndicator] toggleOpen', { currentOpen: open, hasButtonRef: !!buttonRef.current, hasHealth: !!health })
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      console.log('[HealthIndicator] button rect', rect)
+      setAnchor({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
+    }
+    setOpen(prev => !prev)
   }
 
-  // Close on click-outside + escape
+  // Close on Escape only for now — click-outside can race with the open click
   useEffect(() => {
     if (!open) return
-    function onClick(e: MouseEvent) {
-      const target = e.target as Node
-      if (buttonRef.current?.contains(target)) return
-      // target might be inside the portal popover — check via data attribute
-      if ((target as HTMLElement).closest?.('[data-voxlit-health-popover]')) return
-      setOpen(false)
-    }
     function onEsc(e: KeyboardEvent) { if (e.key === 'Escape') setOpen(false) }
-    window.addEventListener('click', onClick)
     window.addEventListener('keydown', onEsc)
-    return () => {
-      window.removeEventListener('click', onClick)
-      window.removeEventListener('keydown', onEsc)
-    }
+    return () => window.removeEventListener('keydown', onEsc)
   }, [open])
 
   // Default handlers for the action kinds. Parent's onAction (if provided)
@@ -119,6 +107,8 @@ export default function HealthIndicator({ onAction }: Props = {}) {
   const failCount = blocking.filter(c => c.status === 'fail').length
   const warnCount = blocking.filter(c => c.status === 'warn').length
   const okCount   = blocking.filter(c => c.status === 'ok').length
+
+  console.log('[HealthIndicator] render', { open, hasAnchor: !!anchor, willShowPopover: open && !!anchor })
 
   const popover = open && anchor ? (
     <div
