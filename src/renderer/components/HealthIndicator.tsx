@@ -40,21 +40,30 @@ export default function HealthIndicator({ onAction }: Props = {}) {
   // Measure the button's position every time we open, so the portal-rendered
   // popover can anchor directly under it.
   function toggleOpen() {
-    console.log('[HealthIndicator] toggleOpen', { currentOpen: open, hasButtonRef: !!buttonRef.current, hasHealth: !!health })
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
-      console.log('[HealthIndicator] button rect', rect)
       setAnchor({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
     }
     setOpen(prev => !prev)
   }
 
-  // Close on Escape only for now — click-outside can race with the open click
+  // Close on click-outside + Escape. Use mousedown so our onClick opens win the
+  // race — the outside handler only fires for the NEXT click after open.
   useEffect(() => {
     if (!open) return
+    function onMouseDown(e: MouseEvent) {
+      const target = e.target as HTMLElement
+      if (buttonRef.current?.contains(target)) return
+      if (target.closest?.('[data-voxlit-health-popover]')) return
+      setOpen(false)
+    }
     function onEsc(e: KeyboardEvent) { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('mousedown', onMouseDown)
     window.addEventListener('keydown', onEsc)
-    return () => window.removeEventListener('keydown', onEsc)
+    return () => {
+      window.removeEventListener('mousedown', onMouseDown)
+      window.removeEventListener('keydown', onEsc)
+    }
   }, [open])
 
   // Default handlers for the action kinds. Parent's onAction (if provided)
@@ -107,8 +116,6 @@ export default function HealthIndicator({ onAction }: Props = {}) {
   const failCount = blocking.filter(c => c.status === 'fail').length
   const warnCount = blocking.filter(c => c.status === 'warn').length
   const okCount   = blocking.filter(c => c.status === 'ok').length
-
-  console.log('[HealthIndicator] render', { open, hasAnchor: !!anchor, willShowPopover: open && !!anchor })
 
   const popover = open && anchor ? (
     <div
@@ -192,7 +199,11 @@ export default function HealthIndicator({ onAction }: Props = {}) {
           cursor: 'pointer',
           fontFamily: 'var(--font-mono)',
           fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
-        }}
+          // The top 44px of the window is a drag region for the frameless traffic
+          // lights. Without this override, Electron swallows clicks here at the
+          // native level and onClick never fires.
+          WebkitAppRegion: 'no-drag',
+        } as React.CSSProperties}
       >
         <span style={{
           width: 8, height: 8, borderRadius: '50%', background: bg,
