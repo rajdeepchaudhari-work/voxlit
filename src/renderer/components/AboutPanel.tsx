@@ -6,12 +6,6 @@ const GITHUB_PROFILE = `https://github.com/${GITHUB_USER}`
 const REPO = 'rajdeepchaudhari-work/voxlit'
 const REPO_URL = `https://github.com/${REPO}`
 
-// github.com/{user}.png redirects to the actual avatar CDN URL — works without
-// an API call AND tolerates the user changing their photo. The avatars
-// subdomain only accepts numeric user IDs, not usernames, so we can't hit it
-// directly from a static URL.
-const AVATAR_URL = `https://github.com/${GITHUB_USER}.png?size=240`
-
 interface GitHubProfile {
   name?: string | null
   bio?: string | null
@@ -20,7 +14,6 @@ interface GitHubProfile {
   twitter_username?: string | null
   followers?: number
   public_repos?: number
-  avatar_url?: string | null
 }
 
 export default function AboutPanel() {
@@ -43,9 +36,6 @@ export default function AboutPanel() {
 
   const displayName = profile?.name ?? 'Rajdeep Chaudhari'
   const bio = profile?.bio ?? 'Building privacy-first developer tools. Voxlit is the latest one — voice dictation that runs entirely on your Mac.'
-  // Prefer the API's canonical avatar URL (skips one redirect), fall back to
-  // the predictable username-based URL if the API call hasn't landed yet.
-  const avatarSrc = profile?.avatar_url ?? AVATAR_URL
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: '#FFFDF7' }}>
@@ -60,69 +50,50 @@ export default function AboutPanel() {
 
         {/* ── Developer card ────────────────────────────────────────────── */}
         <div style={{
-          display: 'flex', gap: 20, padding: 20,
+          padding: 24,
           background: '#FFFFFF',
           border: '3px solid #0A0A0A',
           boxShadow: '6px 6px 0px #665DF5',
           marginBottom: 28,
         }}>
-          <div style={{ flexShrink: 0 }}>
-            <img
-              src={avatarSrc}
-              alt={displayName}
-              width={96}
-              height={96}
-              referrerPolicy="no-referrer"
-              style={{
-                display: 'block',
-                width: 96, height: 96,
-                border: '2.5px solid #0A0A0A',
-                boxShadow: '3px 3px 0px #0A0A0A',
-                objectFit: 'cover',
-              }}
-            />
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
+            letterSpacing: '0.12em', color: '#665DF5', marginBottom: 6,
+          }}>
+            MAINTAINED BY
+          </div>
+          <div style={{
+            fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700,
+            letterSpacing: '-0.02em', color: '#0A0A0A', lineHeight: 1.05,
+          }}>
+            {displayName}
+          </div>
+          <div style={{
+            marginTop: 10,
+            fontFamily: 'var(--font-body, system-ui)', fontSize: 13,
+            color: '#444', lineHeight: 1.55,
+          }}>
+            {bio}
           </div>
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
-              letterSpacing: '0.12em', color: '#665DF5', marginBottom: 4,
-            }}>
-              MAINTAINED BY
+          {/* Profile stats — only shown if API responded */}
+          {profile && (
+            <div style={{ marginTop: 14, display: 'flex', gap: 18, flexWrap: 'wrap' }}>
+              {profile.location && <Stat label="Location" value={profile.location} />}
+              {typeof profile.public_repos === 'number' && <Stat label="Repos" value={String(profile.public_repos)} />}
+              {typeof profile.followers === 'number' && <Stat label="Followers" value={String(profile.followers)} />}
             </div>
-            <div style={{
-              fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700,
-              letterSpacing: '-0.02em', color: '#0A0A0A', lineHeight: 1.1,
-            }}>
-              {displayName}
-            </div>
-            <div style={{
-              marginTop: 8,
-              fontFamily: 'var(--font-body, system-ui)', fontSize: 13,
-              color: '#444', lineHeight: 1.55,
-            }}>
-              {bio}
-            </div>
+          )}
 
-            {/* Profile stats — only shown if API responded */}
-            {profile && (
-              <div style={{ marginTop: 12, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-                {profile.location && <Stat label="Location" value={profile.location} />}
-                {typeof profile.public_repos === 'number' && <Stat label="Repos" value={String(profile.public_repos)} />}
-                {typeof profile.followers === 'number' && <Stat label="Followers" value={String(profile.followers)} />}
-              </div>
+          {/* Social links */}
+          <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <SocialLink href={GITHUB_PROFILE} label="GitHub" />
+            {profile?.twitter_username && (
+              <SocialLink href={`https://twitter.com/${profile.twitter_username}`} label={`@${profile.twitter_username}`} />
             )}
-
-            {/* Social links */}
-            <div style={{ marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <SocialLink href={GITHUB_PROFILE} label="GitHub" />
-              {profile?.twitter_username && (
-                <SocialLink href={`https://twitter.com/${profile.twitter_username}`} label={`@${profile.twitter_username}`} />
-              )}
-              {profile?.blog && (
-                <SocialLink href={profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`} label="Website" />
-              )}
-            </div>
+            {profile?.blog && (
+              <SocialLink href={profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`} label="Website" />
+            )}
           </div>
         </div>
 
