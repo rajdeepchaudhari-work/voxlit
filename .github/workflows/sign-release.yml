@@ -1,0 +1,58 @@
+name: Sign Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write  # upload signatures back to the release
+  id-token: write  # required for Sigstore keyless OIDC flow
+
+jobs:
+  sign:
+    name: Cosign keyless signing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - uses: sigstore/cosign-installer@1aa8e0f2454b781fbf0fbf306a4c9533a0c57409  # v3.7.0
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          mkdir -p assets
+          cd assets
+          gh release download "$TAG" --repo "${{ github.repository }}"
+          ls -la
+
+      - name: Sign each binary asset (keyless)
+        run: |
+          cd assets
+          # Sign everything that's not already a signature/certificate/blockmap/yml.
+          # Keyless signing pulls an ephemeral cert from Fulcio via GitHub OIDC,
+          # writes the signature to an .sig file, and records the transparency
+          # log entry in Rekor. No secrets, no key rotation.
+          for asset in *; do
+            case "$asset" in
+              *.sig|*.pem|*.crt|*.blockmap|*.yml) continue ;;
+            esac
+            echo "› signing $asset"
+            COSIGN_EXPERIMENTAL=1 cosign sign-blob \
+              --yes \
+              --output-signature "$asset.sig" \
+              --output-certificate "$asset.pem" \
+              "$asset"
+          done
+
+      - name: Upload signatures to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd assets
+          TAG="${{ github.event.release.tag_name }}"
+          for f in *.sig *.pem; do
+            [ -f "$f" ] || continue
+            gh release upload "$TAG" "$f" --clobber --repo "${{ github.repository }}"
+          done

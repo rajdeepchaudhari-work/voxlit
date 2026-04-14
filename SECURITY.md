@@ -68,10 +68,22 @@ This policy covers:
 
 Every release ships with:
 - A SHA256 checksum visible on the GitHub Releases page
+- A **Sigstore keyless signature** — each asset has a paired `.sig` and `.pem`.
+  Verify with:
+  ```bash
+  cosign verify-blob \
+    --certificate voxlit-1.0.7-arm64.dmg.pem \
+    --signature  voxlit-1.0.7-arm64.dmg.sig \
+    --certificate-identity-regexp 'https://github.com/rajdeepchaudhari-work/voxlit' \
+    --certificate-oidc-issuer     'https://token.actions.githubusercontent.com' \
+    voxlit-1.0.7-arm64.dmg
+  ```
+  The cert ties the signature to a specific GitHub Actions run — you can audit
+  exactly which commit built the binary.
 - A reproducible build — clone the repo at the release tag, run
-  `npm ci && npm run build:mac`, and the resulting DMG's sha256 should match
-  the published release asset (within code-signing differences — subtract
-  signatures if comparing against ours)
+  `npm install && npm run build:mac`, and the resulting DMG's sha256 should
+  match the published release asset (within code-signing differences —
+  subtract signatures if comparing against ours)
 - Signed commits on `main` (GitHub verified badge)
 
 Thanks for helping keep Voxlit and its users safe.
