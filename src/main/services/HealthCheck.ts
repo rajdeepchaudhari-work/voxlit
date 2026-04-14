@@ -47,8 +47,10 @@ export class HealthCheck {
     // the current settings so the user can see what's active at a glance.
     checks.push(this.describeEngine(engine))
     checks.push(this.describeMicDevice())
+    checks.push(this.describeHotkey())
     checks.push(this.describeGainMode())
     checks.push(this.describeNoiseSuppression())
+    checks.push(this.describeVersion())
 
     // Overall status ignores info-only checks in category 'configuration'
     const blocking = checks.filter(c => c.category !== 'configuration')
@@ -109,6 +111,26 @@ export class HealthCheck {
       status: 'info',
       category: 'configuration',
       message: enabled ? 'On — Apple voice processing engaged at next recording' : 'Off',
+    }
+  }
+
+  private describeHotkey(): SubsystemHealth {
+    const key = this.store.get('hotkeyPrimary') ?? 'Fn'
+    const mode = this.store.get('hotkeyMode') ?? 'push-to-talk'
+    return {
+      name: 'Hotkey',
+      status: 'info',
+      category: 'configuration',
+      message: mode === 'push-to-talk' ? `Push-to-talk — hold ${key}` : `Toggle — press ${key}`,
+    }
+  }
+
+  private describeVersion(): SubsystemHealth {
+    return {
+      name: 'Voxlit version',
+      status: 'info',
+      category: 'configuration',
+      message: `v${app.getVersion()} · ${process.arch} · ${app.isPackaged ? 'production' : 'dev'}`,
     }
   }
 

@@ -129,6 +129,17 @@ export default function App() {
     }
   }, [onboardingStep, view])
 
+  // HealthIndicator dispatches a 'voxlit:navigate' event when a user clicks
+  // an action button (e.g. failed check -> Re-run onboarding / Open settings).
+  useEffect(() => {
+    function handler(e: Event) {
+      const detail = (e as CustomEvent<{ view: View }>).detail
+      if (detail?.view) setView(detail.view)
+    }
+    window.addEventListener('voxlit:navigate', handler)
+    return () => window.removeEventListener('voxlit:navigate', handler)
+  }, [])
+
   // Splash gate — block both onboarding and main UI until boot completes.
   // Without this the user sees a flash of the home screen before the helper
   // is connected and health checks have run.

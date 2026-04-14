@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import { ipc } from '../lib/ipc'
+import { useAppStore } from '../store/useAppStore'
 import type { HealthSnapshot, SubsystemHealth, HealthCategory } from '@shared/ipc-types'
+
+type ActionKind = NonNullable<SubsystemHealth['action']>['kind']
+
+interface Props {
+  /// Called when a check's action button is clicked. Receives the action kind
+  /// so the parent can switch views, open URLs, etc.
+  onAction?: (kind: ActionKind) => void
+}
 
 const COLORS: Record<HealthSnapshot['overall'], { bg: string; label: string }> = {
   ok:      { bg: '#00C853', label: 'HEALTHY' },
@@ -19,10 +28,29 @@ const CATEGORY_TITLES: Record<HealthCategory, string> = {
 
 const CATEGORY_ORDER: HealthCategory[] = ['subsystems', 'permissions', 'configuration']
 
-export default function HealthIndicator() {
+export default function HealthIndicator({ onAction }: Props = {}) {
   const [health, setHealth] = useState<HealthSnapshot | null>(null)
   const [open, setOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const setOnboardingStep = useAppStore((s) => s.setOnboardingStep)
+
+  // Default handlers for the action kinds. Parent's onAction (if provided)
+  // runs first so it can override these (e.g. App.tsx wants 'open-settings'
+  // to switch its view state). We then fall through to sensible defaults.
+  function handleAction(kind: ActionKind) {
+    onAction?.(kind)
+    if (kind === 'open-onboarding') {
+      setOnboardingStep('welcome')
+    } else if (kind === 'open-settings') {
+      // Fire a global event — App.tsx listens and switches its 'view' state
+      window.dispatchEvent(new CustomEvent('voxlit:navigate', { detail: { view: 'settings' } }))
+    } else if (kind === 'install-helper') {
+      window.open('https://github.com/rajdeepchaudhari-work/voxlit#building-the-native-helper', '_blank')
+    } else if (kind === 'download-model') {
+      window.dispatchEvent(new CustomEvent('voxlit:navigate', { detail: { view: 'settings' } }))
+    }
+    setOpen(false)
+  }
 
   async function refresh() {
     setRefreshing(true)
@@ -128,7 +156,7 @@ export default function HealthIndicator() {
                 }}>
                   {CATEGORY_TITLES[cat]}
                 </div>
-                {items.map(item => <CheckRow key={item.name} check={item} />)}
+                {items.map(item => <CheckRow key={item.name} check={item} onAction={handleAction} />)}
               </div>
             )
           })}
@@ -146,7 +174,7 @@ export default function HealthIndicator() {
   )
 }
 
-function CheckRow({ check }: { check: SubsystemHealth }) {
+function CheckRow({ check, onAction }: { check: SubsystemHealth; onAction: (kind: ActionKind) => void }) {
   const dot =
     check.status === 'ok'   ? '#00C853' :
     check.status === 'warn' ? '#FFEB3B' :
@@ -173,6 +201,24 @@ function CheckRow({ check }: { check: SubsystemHealth }) {
           <div style={{ fontSize: 10, color: '#888', fontFamily: 'var(--font-mono)', marginTop: 2, wordBreak: 'break-all' }}>
             {check.detail}
           </div>
+        )}
+        {check.action && (
+          <button
+            onClick={() => onAction(check.action!.kind)}
+            style={{
+              marginTop: 6,
+              fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
+              letterSpacing: '0.08em', textTransform: 'uppercase',
+              padding: '3px 8px',
+              background: '#FFEB3B',
+              border: '1.5px solid #0A0A0A',
+              boxShadow: '2px 2px 0px #0A0A0A',
+              cursor: 'pointer',
+              color: '#0A0A0A',
+            }}
+          >
+            {check.action.label} →
+          </button>
         )}
       </div>
     </div>
