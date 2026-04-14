@@ -27,6 +27,11 @@ native/.build/
 # Test coverage
 coverage/
 
+# Demo recordings — scripts/record-demo.sh output + screencapture intermediates.
+# Final GIFs meant for the README belong in docs/ and ARE committed there.
+recordings/
+*.mov
+
 # Internal dev docs
 CLAUDE.md
 NAME_RESEARCH.md
