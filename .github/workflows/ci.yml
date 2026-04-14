@@ -24,7 +24,12 @@ jobs:
       # setuptools needed for node-gyp on Python 3.12+ (distutils removed)
       - run: pip3 install setuptools --break-system-packages || true
 
-      - run: npm ci
+      # npm install (not ci) — npm ci is strict about optional platform deps
+      # (electron-builder-squirrel-windows on macOS) that resolve differently
+      # on different npm versions. install auto-heals and still honors the
+      # lockfile's resolved versions. We verify npm version for reproducibility.
+      - run: npm -v && node -v
+      - run: npm install --no-audit --no-fund
 
       - name: Typecheck
         run: npm run typecheck
