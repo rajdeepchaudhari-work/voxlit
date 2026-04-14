@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTerminalAnim } from '../hooks/useTerminalAnim'
 
 const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
-const VERSION = '1.0.8'
+const VERSION = '1.0.9'
 const DOWNLOAD_URL = `https://github.com/rajdeepchaudhari-work/voxlit/releases/download/v${VERSION}/voxlit-${VERSION}-arm64.dmg`
 
 export default function Hero() {
@@ -204,7 +204,7 @@ export default function Hero() {
             </div>
 
             <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {['v1.0.8', 'arm64', '.dmg', '~135 MB'].map(t => (
+              {['v1.0.9', 'arm64', '.dmg', '~135 MB'].map(t => (
                 <span key={t} className="trust-pill">{t}</span>
               ))}
             </div>

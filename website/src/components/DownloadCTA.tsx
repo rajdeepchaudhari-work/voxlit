@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const VERSION = '1.0.8'
+const VERSION = '1.0.9'
 const REPO = 'rajdeepchaudhari-work/voxlit'
 const RELEASES_URL = `https://github.com/${REPO}/releases/latest`
 const GITHUB_URL = `https://github.com/${REPO}`
