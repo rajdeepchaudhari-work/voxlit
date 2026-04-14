@@ -64,15 +64,16 @@ try {
   console.warn('⚠ re-sign failed (non-fatal):', e.message)
 }
 
-// Rebuild the DMG
-console.log('› rebuilding DMG...')
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
+const appPath = path.join(root, 'dist/mac-arm64/voxlit.app')
+
+// ── Rebuild the DMG ─────────────────────────────────────────────────────────
+console.log('› rebuilding DMG...')
 const dmgPath = path.join(root, `dist/voxlit-${pkg.version}-arm64.dmg`)
 if (fs.existsSync(dmgPath)) fs.rmSync(dmgPath)
-
 try {
   execSync(
-    `hdiutil create -volname "Voxlit" -srcfolder "${path.join(root, 'dist/mac-arm64/voxlit.app')}" -ov -format UDZO "${dmgPath}"`,
+    `hdiutil create -volname "Voxlit" -srcfolder "${appPath}" -ov -format UDZO "${dmgPath}"`,
     { stdio: 'inherit' }
   )
   console.log(`✓ DMG rebuilt at dist/voxlit-${pkg.version}-arm64.dmg`)
@@ -80,6 +81,54 @@ try {
   console.error('DMG rebuild failed:', e.message)
   process.exit(1)
 }
+
+// ── Rebuild the ZIP (used by electron-updater) ──────────────────────────────
+// Without this, auto-updates ship a ZIP that pre-dates the patch step —
+// missing native/, migrations/, and the new signature. New installs via DMG
+// work, but every existing user who updates gets a broken install.
+console.log('› rebuilding ZIP for auto-updater...')
+const zipPath = path.join(root, `dist/voxlit-${pkg.version}-arm64-mac.zip`)
+const blockmapPath = `${zipPath}.blockmap`
+if (fs.existsSync(zipPath)) fs.rmSync(zipPath)
+if (fs.existsSync(blockmapPath)) fs.rmSync(blockmapPath)
+try {
+  execSync(
+    `ditto -c -k --keepParent "${appPath}" "${zipPath}"`,
+    { stdio: 'inherit' }
+  )
+  console.log(`✓ ZIP rebuilt at dist/voxlit-${pkg.version}-arm64-mac.zip`)
+} catch (e) {
+  console.error('ZIP rebuild failed:', e.message)
+  process.exit(1)
+}
+
+// ── Regenerate latest-mac.yml so SHA512 + size match the new ZIP ────────────
+// electron-updater verifies the downloaded ZIP against this file. Stale hashes
+// = signature failure = stuck install.
+console.log('› regenerating latest-mac.yml...')
+const crypto = require('crypto')
+const ymlPath = path.join(root, 'dist/latest-mac.yml')
+const zipBuf = fs.readFileSync(zipPath)
+const dmgBuf = fs.readFileSync(dmgPath)
+const sha512 = (buf) => crypto.createHash('sha512').update(buf).digest('base64')
+const zipName = path.basename(zipPath)
+const dmgName = path.basename(dmgPath)
+const yml = [
+  `version: ${pkg.version}`,
+  `files:`,
+  `  - url: ${zipName}`,
+  `    sha512: ${sha512(zipBuf)}`,
+  `    size: ${zipBuf.length}`,
+  `  - url: ${dmgName}`,
+  `    sha512: ${sha512(dmgBuf)}`,
+  `    size: ${dmgBuf.length}`,
+  `path: ${zipName}`,
+  `sha512: ${sha512(zipBuf)}`,
+  `releaseDate: '${new Date().toISOString()}'`,
+  '',
+].join('\n')
+fs.writeFileSync(ymlPath, yml)
+console.log('✓ latest-mac.yml regenerated with fresh hashes')
 
 // Restore evicted dirs back to project root
 const EVICT = [

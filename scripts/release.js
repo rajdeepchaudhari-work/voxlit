@@ -19,22 +19,28 @@ const version = pkg.version
 const tag = `v${version}`
 const dist = path.join(__dirname, '..', 'dist')
 
-const assets = [
+// Required (release fails if any are missing).
+const requiredAssets = [
   `voxlit-${version}-arm64.dmg`,
-  `voxlit-${version}-arm64.dmg.blockmap`,
   `voxlit-${version}-arm64-mac.zip`,
-  `voxlit-${version}-arm64-mac.zip.blockmap`,
   'latest-mac.yml',
 ]
+// Optional (uploaded if present — electron-updater uses these for delta updates
+// but falls back to full downloads cleanly when absent. patch-resources.js
+// rebuilds the ZIP and that wipes the original blockmap.)
+const optionalAssets = [
+  `voxlit-${version}-arm64.dmg.blockmap`,
+  `voxlit-${version}-arm64-mac.zip.blockmap`,
+]
 
-// Sanity-check all assets exist before we touch the remote
-const missing = assets.filter(a => !existsSync(path.join(dist, a)))
+const missing = requiredAssets.filter(a => !existsSync(path.join(dist, a)))
 if (missing.length) {
-  console.error('✗ Missing build outputs:')
+  console.error('✗ Missing required build outputs:')
   for (const m of missing) console.error('  -', m)
   console.error('\nRun `npm run build:mac` first.')
   process.exit(1)
 }
+const assets = [...requiredAssets, ...optionalAssets.filter(a => existsSync(path.join(dist, a)))]
 
 // Generate a CycloneDX SBOM of the production dependencies and attach to release.
 // npx with no-install ensures we don't pollute package.json — cyclonedx-npm fetches
