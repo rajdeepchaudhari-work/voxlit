@@ -89,9 +89,49 @@ DURATION=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$MOV" 2>/
 ok "Created $OUTPUT"
 printf "   ${DIM}size:${RESET} %s    ${DIM}duration:${RESET} %ss    ${DIM}fps:${RESET} %s\n\n" "$GIF_SIZE" "$DURATION" "$FPS"
 
-# ── Post-hints ──────────────────────────────────────────────────────────────
-printf "${BOLD}Next steps:${RESET}\n"
-printf "  ${DIM}•${RESET} Preview:  ${BOLD}open \"$OUTPUT\"${RESET}\n"
-printf "  ${DIM}•${RESET} Too big?  Re-run with a smaller WIDTH (e.g. ${BOLD}WIDTH=700${RESET})\n"
-printf "  ${DIM}•${RESET} Ship it:  move to ${BOLD}docs/demo.gif${RESET} and reference in README\n"
-printf "    (recordings/ is gitignored — docs/ is the committed location)\n\n"
+# ── Auto-open preview ───────────────────────────────────────────────────────
+open "$OUTPUT" 2>/dev/null || true
+
+# ── Offer to ship it to docs/demo.gif + wire into README ────────────────────
+DOCS_GIF="$REPO_ROOT/docs/demo.gif"
+
+read -r -p "Ship this as docs/demo.gif and update README? [y/N] " reply
+case "$reply" in
+  [yY]*)
+    mkdir -p "$REPO_ROOT/docs"
+    cp "$OUTPUT" "$DOCS_GIF"
+    ok "Copied to docs/demo.gif"
+
+    # Insert (or replace) the demo image in README, just after the title block.
+    README="$REPO_ROOT/README.md"
+    if [ -f "$README" ]; then
+      if grep -q "docs/demo.gif" "$README"; then
+        info "README already references docs/demo.gif — leaving as-is."
+      else
+        # Insert a centered <img> block right after the first <br/> we find.
+        awk '
+          !inserted && /<br\/>/ {
+            print;
+            print "";
+            print "<p align=\"center\">";
+            print "  <img src=\"docs/demo.gif\" alt=\"Voxlit demo\" width=\"720\" />";
+            print "</p>";
+            print "";
+            inserted=1; next
+          } { print }
+        ' "$README" > "$README.tmp" && mv "$README.tmp" "$README"
+        ok "Inserted <img src=docs/demo.gif> into README.md"
+      fi
+
+      info "Staging + committing…"
+      ( cd "$REPO_ROOT" && git add docs/demo.gif README.md && \
+        git commit -m "README: add recorded demo GIF" ) || true
+      ok "Done. git push when ready."
+    fi
+    ;;
+  *)
+    printf "\n${BOLD}Next steps (manual):${RESET}\n"
+    printf "  ${DIM}•${RESET} Too big?  Re-run with a smaller WIDTH (e.g. ${BOLD}WIDTH=700${RESET})\n"
+    printf "  ${DIM}•${RESET} Ship it:  ${BOLD}mv \"$OUTPUT\" docs/demo.gif${RESET}\n\n"
+    ;;
+esac
