@@ -210,7 +210,15 @@ export interface SubsystemHealth {
   category?: HealthCategory
   /// Optional detail shown as a secondary line (e.g. device name, model size).
   detail?: string
-  action?: { label: string; kind: 'open-settings' | 'open-onboarding' | 'install-helper' | 'download-model' }
+  action?: { label: string; kind:
+    | 'open-settings'
+    | 'open-onboarding'
+    | 'install-helper'
+    | 'download-model'
+    | 'grant-microphone'
+    | 'grant-accessibility'
+    | 'grant-automation'
+  }
 }
 
 export interface HealthSnapshot {

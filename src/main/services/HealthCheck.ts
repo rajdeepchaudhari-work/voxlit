@@ -154,8 +154,8 @@ export class HealthCheck {
     return {
       name: 'Microphone',
       status: 'fail',
-      message: s === 'denied' || s === 'restricted' ? 'Denied' : 'Not yet granted',
-      action: { label: 'Re-run onboarding', kind: 'open-onboarding' },
+      message: s === 'denied' || s === 'restricted' ? 'Denied — open System Settings to enable' : 'Not yet granted',
+      action: { label: s === 'denied' || s === 'restricted' ? 'Open settings' : 'Grant now', kind: 'grant-microphone' },
     }
   }
 
@@ -166,7 +166,7 @@ export class HealthCheck {
       name: 'Accessibility',
       status: 'warn',
       message: 'Not granted — text injection may fail',
-      action: { label: 'Re-run onboarding', kind: 'open-onboarding' },
+      action: { label: 'Open settings', kind: 'grant-accessibility' },
     }
   }
 
@@ -178,9 +178,14 @@ export class HealthCheck {
       name: 'Automation',
       status: 'fail',
       message: 'Denied — text paste will fail',
-      action: { label: 'Re-run onboarding', kind: 'open-onboarding' },
+      action: { label: 'Open settings', kind: 'grant-automation' },
     }
-    return { name: 'Automation', status: 'warn', message: 'Not yet granted in this session' }
+    return {
+      name: 'Automation',
+      status: 'warn',
+      message: 'Not yet granted in this session',
+      action: { label: 'Grant now', kind: 'grant-automation' },
+    }
   }
 
   private checkWhisperBinary(): SubsystemHealth {
@@ -226,15 +231,16 @@ export class HealthCheck {
     // Reachability probe. Any HTTP response (even 4xx like 405 Method Not Allowed)
     // means the server is up. Only a network error or 5xx is a real failure.
     return new Promise((resolve) => {
+      const retryAction = { label: 'Open settings', kind: 'open-settings' as const }
       const req = https.request(url, { method: 'GET', timeout: 2000 }, (res) => {
         const code = res.statusCode ?? 0
         res.resume()  // drain so the socket can close cleanly
-        if (code === 0) resolve({ name: 'Voxlit Server', status: 'fail', message: 'No response' })
-        else if (code >= 500) resolve({ name: 'Voxlit Server', status: 'fail', message: `Server error (${code})` })
+        if (code === 0) resolve({ name: 'Voxlit Server', status: 'fail', message: 'No response', action: retryAction })
+        else if (code >= 500) resolve({ name: 'Voxlit Server', status: 'fail', message: `Server error (${code})`, action: retryAction })
         else resolve({ name: 'Voxlit Server', status: 'ok', message: 'Reachable' })
       })
-      req.on('error', (err) => resolve({ name: 'Voxlit Server', status: 'fail', message: `Unreachable: ${err.message}` }))
-      req.on('timeout', () => { req.destroy(); resolve({ name: 'Voxlit Server', status: 'fail', message: 'Timed out' }) })
+      req.on('error', (err) => resolve({ name: 'Voxlit Server', status: 'fail', message: `Unreachable: ${err.message}`, action: retryAction }))
+      req.on('timeout', () => { req.destroy(); resolve({ name: 'Voxlit Server', status: 'fail', message: 'Timed out', action: retryAction }) })
       req.end()
     })
   }

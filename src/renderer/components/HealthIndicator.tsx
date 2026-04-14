@@ -69,19 +69,27 @@ export default function HealthIndicator({ onAction }: Props = {}) {
   // Default handlers for the action kinds. Parent's onAction (if provided)
   // runs first so it can override these (e.g. App.tsx wants 'open-settings'
   // to switch its view state). We then fall through to sensible defaults.
-  function handleAction(kind: ActionKind) {
+  async function handleAction(kind: ActionKind) {
     onAction?.(kind)
     if (kind === 'open-onboarding') {
       setOnboardingStep('welcome')
-    } else if (kind === 'open-settings') {
+    } else if (kind === 'open-settings' || kind === 'download-model') {
       // Fire a global event — App.tsx listens and switches its 'view' state
       window.dispatchEvent(new CustomEvent('voxlit:navigate', { detail: { view: 'settings' } }))
     } else if (kind === 'install-helper') {
       window.open('https://github.com/rajdeepchaudhari-work/voxlit#building-the-native-helper', '_blank')
-    } else if (kind === 'download-model') {
-      window.dispatchEvent(new CustomEvent('voxlit:navigate', { detail: { view: 'settings' } }))
+    } else if (kind === 'grant-microphone') {
+      await ipc.requestPermission('microphone')
+    } else if (kind === 'grant-accessibility') {
+      await ipc.requestPermission('accessibility')
+    } else if (kind === 'grant-automation') {
+      await ipc.requestPermission('automation')
     }
     setOpen(false)
+    // Re-run health check after a beat so the popover reflects the new state
+    // next time it's opened. The TCC prompt for automation can take several
+    // seconds (waiting for user response) — refresh later doesn't hurt.
+    setTimeout(refresh, 1500)
   }
 
   async function refresh() {
