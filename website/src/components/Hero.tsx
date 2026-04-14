@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useTerminalAnim } from '../hooks/useTerminalAnim'
 
 const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
-const DOWNLOAD_URL = 'https://github.com/rajdeepchaudhari-work/voxlit/releases/latest'
+const VERSION = '1.0.7'
+const DOWNLOAD_URL = `https://github.com/rajdeepchaudhari-work/voxlit/releases/download/v${VERSION}/voxlit-${VERSION}-arm64.dmg`
 
 export default function Hero() {
   const { displayText, cursorVisible } = useTerminalAnim()
@@ -130,7 +131,7 @@ export default function Hero() {
 
             {/* Secondary CTAs */}
             <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 20, marginTop: 12 }}>
-              <a href={DOWNLOAD_URL} className="btn-ghost" style={{ fontSize: '0.8125rem', padding: '10px 20px' }}>
+              <a href={DOWNLOAD_URL} download className="btn-ghost" style={{ fontSize: '0.8125rem', padding: '10px 20px' }}>
                 <DownloadIcon />
                 Download .dmg
               </a>
@@ -215,8 +216,34 @@ export default function Hero() {
   )
 }
 
+type InstallTab = 'curl' | 'brew'
+
+// Hoisted OUT of BrewBlock — if this were declared inside, React would treat it
+// as a brand-new component type on every parent render and unmount/remount the
+// buttons. That teardown is what was making the toggle feel laggy.
+function TabButton({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        background: active ? '#665DF5' : 'transparent',
+        border: `1px solid ${active ? '#665DF5' : '#444'}`,
+        cursor: 'pointer',
+        padding: '3px 10px',
+        fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
+        letterSpacing: '0.08em', textTransform: 'uppercase',
+        color: active ? '#FFFFFF' : '#888',
+        transition: 'none',  // instant swap — no transition jitter during the switch
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
 function BrewBlock() {
-  const [tab, setTab] = useState<'curl' | 'brew'>('curl')
+  const [tab, setTab] = useState<InstallTab>('curl')
 
   const curlLine = 'curl -fsSL https://voxlit.co/install.sh | bash'
   const brewLines = [
@@ -229,24 +256,6 @@ function BrewBlock() {
     navigator.clipboard.writeText(lines.join('\n'))
   }
 
-  const TabButton = ({ value, label }: { value: 'curl' | 'brew'; label: string }) => (
-    <button
-      onClick={() => setTab(value)}
-      style={{
-        background: tab === value ? '#665DF5' : 'transparent',
-        border: `1px solid ${tab === value ? '#665DF5' : '#444'}`,
-        cursor: 'pointer',
-        padding: '3px 10px',
-        fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
-        letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: tab === value ? '#FFFFFF' : '#888',
-        transition: 'border-color 0.1s, color 0.1s, background 0.1s',
-      }}
-    >
-      {label}
-    </button>
-  )
-
   return (
     <div style={{ border: '2px solid #0A0A0A', background: '#1A1A1A', marginBottom: 4 }}>
       <div style={{
@@ -255,8 +264,8 @@ function BrewBlock() {
         gap: 8,
       }}>
         <div style={{ display: 'flex', gap: 6 }}>
-          <TabButton value="curl" label="curl" />
-          <TabButton value="brew" label="brew" />
+          <TabButton active={tab === 'curl'} label="curl" onClick={() => setTab('curl')} />
+          <TabButton active={tab === 'brew'} label="brew" onClick={() => setTab('brew')} />
         </div>
         <button
           onClick={handleCopy}
