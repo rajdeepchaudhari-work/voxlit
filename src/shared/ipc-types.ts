@@ -197,12 +197,19 @@ export interface BootState {
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 
-export type HealthStatus = 'ok' | 'warn' | 'fail' | 'unknown'
+export type HealthStatus = 'ok' | 'warn' | 'fail' | 'unknown' | 'info'
+
+/// Category groups checks in the health popover. Permissions + Subsystems describe
+/// whether the app CAN run; Configuration describes how it's currently set up.
+export type HealthCategory = 'permissions' | 'subsystems' | 'configuration'
 
 export interface SubsystemHealth {
   name: string
   status: HealthStatus
   message: string
+  category?: HealthCategory
+  /// Optional detail shown as a secondary line (e.g. device name, model size).
+  detail?: string
   action?: { label: string; kind: 'open-settings' | 'open-onboarding' | 'install-helper' | 'download-model' }
 }
 
