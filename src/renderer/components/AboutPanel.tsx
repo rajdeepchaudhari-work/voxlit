@@ -6,9 +6,11 @@ const GITHUB_PROFILE = `https://github.com/${GITHUB_USER}`
 const REPO = 'rajdeepchaudhari-work/voxlit'
 const REPO_URL = `https://github.com/${REPO}`
 
-// Predictable redirect URL — no API call, served from GitHub's CDN.
-// Avatars github.com handles size negotiation server-side.
-const AVATAR_URL = `https://avatars.githubusercontent.com/${GITHUB_USER}?size=240`
+// github.com/{user}.png redirects to the actual avatar CDN URL — works without
+// an API call AND tolerates the user changing their photo. The avatars
+// subdomain only accepts numeric user IDs, not usernames, so we can't hit it
+// directly from a static URL.
+const AVATAR_URL = `https://github.com/${GITHUB_USER}.png?size=240`
 
 interface GitHubProfile {
   name?: string | null
@@ -18,6 +20,7 @@ interface GitHubProfile {
   twitter_username?: string | null
   followers?: number
   public_repos?: number
+  avatar_url?: string | null
 }
 
 export default function AboutPanel() {
@@ -40,6 +43,9 @@ export default function AboutPanel() {
 
   const displayName = profile?.name ?? 'Rajdeep Chaudhari'
   const bio = profile?.bio ?? 'Building privacy-first developer tools. Voxlit is the latest one — voice dictation that runs entirely on your Mac.'
+  // Prefer the API's canonical avatar URL (skips one redirect), fall back to
+  // the predictable username-based URL if the API call hasn't landed yet.
+  const avatarSrc = profile?.avatar_url ?? AVATAR_URL
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: '#FFFDF7' }}>
@@ -62,7 +68,7 @@ export default function AboutPanel() {
         }}>
           <div style={{ flexShrink: 0 }}>
             <img
-              src={AVATAR_URL}
+              src={avatarSrc}
               alt={displayName}
               width={96}
               height={96}
