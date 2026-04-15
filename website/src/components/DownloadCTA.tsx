@@ -81,10 +81,25 @@ export default function DownloadCTA() {
 
           <p style={{
             fontFamily: 'var(--font-body)',
-            fontSize: '1rem',
+            fontSize: '1.0625rem',
             lineHeight: 1.65,
-            color: '#333',
+            color: '#222',
+            marginBottom: 12,
+            maxWidth: 520,
+            marginInline: 'auto',
+          }}>
+            One download, one Mac, no sign-up, no subscription, no catch.
+            If it saves you time, send it to a friend. That is the only thing
+            I will ever ask from you.
+          </p>
+
+          <p style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.75rem',
+            lineHeight: 1.65,
+            color: '#555',
             marginBottom: 36,
+            letterSpacing: '0.04em',
           }}>
             macOS 13 Ventura or later · Apple Silicon · ~135 MB
           </p>

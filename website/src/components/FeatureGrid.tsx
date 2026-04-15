@@ -11,39 +11,39 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: <CloudIcon />,
-    heading: 'Voxlit Cloud: Free Beta',
-    body: 'Zero setup. No API key. No credit card. Fire up the app and start dictating.\n\nFree for everyone during beta. Download now and lock in unlimited access while it lasts.',
+    heading: 'Cloud mode, if you want it',
+    body: 'My MacBook Air could not handle the large models, so I built a Cloud lane for people with older Macs.\n\nNo API key. No credit card. Free during beta — and if you outgrow it, swap in your own OpenAI key and skip me entirely.',
     bg: 'rgba(102,93,245,0.1)',
     badge: 'BETA · FREE',
   },
   {
     icon: <ShieldIcon />,
-    heading: 'Privacy by Architecture',
-    body: 'Pick Local mode and audio never touches a network socket. Architectural privacy, not a policy. No server to breach, no logs to subpoena, no account to compromise.',
+    heading: 'I never want your audio',
+    body: 'Local mode does not open a network socket. Not for telemetry, not for analytics, not for "product improvement". I built it this way so trust is not a promise — it is something you can verify with Little Snitch in thirty seconds.',
     bg: '#FFEB3B',
   },
   {
     icon: <BoltIcon />,
-    heading: 'Real-time Performance',
-    body: 'Continuous transcription with no upload delay. Words appear as you speak. Optimized for M-series Neural Engine and Metal GPU.',
+    heading: 'Fast enough to forget you are dictating',
+    body: 'Words appear as you speak. I spent two weeks tuning the VAD buffers so Voxlit does not cut you off at the end of a sentence. Apple Silicon Metal GPU. No upload delay, because there is no upload.',
     bg: '#FFFFFF',
   },
   {
     icon: <CodeIcon />,
-    heading: 'Open Source',
-    body: 'Every line MIT licensed: app, Swift helper, and the cloud server. Read it, fork it, audit it, self-host it. No proprietary SDK, no hidden endpoints.',
+    heading: 'Read every line yourself',
+    body: 'Every line — app, Swift helper, Cloud server — is MIT licensed on GitHub. Nothing proprietary, no vendored SDKs, no hidden endpoints. You can fork it today and still be using your fork in five years.',
     bg: '#FFFFFF',
   },
   {
     icon: <AppsIcon />,
-    heading: 'Works Everywhere',
-    body: 'Any app that accepts keyboard input: Notion, Slack, VS Code, Mail, Terminal, iTerm, Ghostty. One hotkey. Universal paste via System Events.',
+    heading: 'Works in every app I use',
+    body: 'Slack, Notion, Cursor, VS Code, Mail, Terminal, iTerm, Ghostty, iMessage, Gmail. If your Mac will let you type in it, Voxlit will dictate into it. One hotkey, universal injection via the Accessibility API.',
     bg: '#FFFFFF',
   },
   {
     icon: <GlobeIcon />,
-    heading: '40+ Languages',
-    body: 'The base model covers 40+ languages out of the box. Download the large model for 100+. All offline, all free, no API key needed.',
+    heading: 'Not just English',
+    body: 'The bundled model covers 40+ languages. Download the large whisper model from Settings and you are at 100+. Offline. Free. My aunt in Delhi uses it for Hindi — that was the moment I knew this had to ship.',
     bg: '#FFFFFF',
   },
 ]
@@ -62,9 +62,21 @@ export default function FeatureGrid() {
       }}
     >
       <div className="page-container">
-        <div className={`reveal${inView ? ' in-view' : ''}`} style={{ marginBottom: 56 }}>
-          <div className="overline" style={{ marginBottom: 12 }}>Features</div>
-          <h2 className="section-heading">Built different.</h2>
+        <div className={`reveal${inView ? ' in-view' : ''}`} style={{ marginBottom: 56, maxWidth: 680 }}>
+          <div className="overline" style={{ marginBottom: 12 }}>What I built, and why</div>
+          <h2 className="section-heading">Six things I refused<br />to compromise on.</h2>
+          <p style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '1rem',
+            color: '#333',
+            marginTop: 16,
+            lineHeight: 1.65,
+          }}>
+            Every dictation app I tried asked me to give something up — my privacy,
+            my wallet, my ability to use it offline, my trust in a company that might
+            not exist next year. Voxlit is the version I built when I stopped
+            compromising.
+          </p>
         </div>
 
         <div className={`feature-grid reveal delay-2${inView ? ' in-view' : ''}`}>

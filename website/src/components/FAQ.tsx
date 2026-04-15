@@ -6,35 +6,39 @@ const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
 const faqs = [
   {
     q: 'Does Voxlit send my audio anywhere?',
-    a: 'No. All audio is processed on your Mac using whisper.cpp. No telemetry, no analytics, no background connections. MIT licensed and fully auditable.',
+    a: 'No — and that was the whole reason I built it. In Local mode, every word is transcribed on your Mac using whisper.cpp. No telemetry, no analytics, no background connections, no "anonymous usage stats". The code is MIT licensed — you can verify this yourself in under a minute.',
   },
   {
     q: 'What are the system requirements?',
-    a: 'macOS 13 Ventura or later, Apple Silicon or Intel. Apple Silicon recommended for best performance.',
+    a: 'macOS 13 Ventura or later. Works on both Apple Silicon (M1/M2/M3/M4) and Intel, but M-series Macs are where it really sings — the Neural Engine and Metal GPU make transcription feel instant.',
   },
   {
     q: 'How do I install Voxlit?',
-    a: 'Fastest path: run `curl -fsSL https://voxlit.co/install.sh | bash` in Terminal. It downloads the latest DMG, copies Voxlit.app to /Applications, and clears the macOS quarantine flag so the app launches without the Gatekeeper prompt. Alternatives: `brew install --cask voxlit` (after `brew tap rajdeepchaudhari-work/voxlit`), or download the .dmg manually from GitHub Releases and right-click → Open the first time.',
+    a: 'Fastest path: run `curl -fsSL https://voxlit.co/install.sh | bash` in Terminal. It grabs the latest DMG, drops Voxlit.app into /Applications, and clears the macOS quarantine flag so Gatekeeper does not block it. You can also use `brew install --cask voxlit` (after `brew tap rajdeepchaudhari-work/voxlit`), or download the .dmg from GitHub Releases and right-click → Open the first time.',
   },
   {
     q: 'Which apps does it work with?',
-    a: 'Any app that accepts keyboard input: Notion, Slack, VS Code, Terminal, Mail, Discord, and thousands more. Text is injected via the macOS Accessibility API.',
+    a: 'If you can type in it, you can dictate into it. Notion, Slack, Cursor, VS Code, Terminal, iTerm, Ghostty, Mail, Gmail, iMessage, Discord, Linear — basically any native or Electron app that accepts keyboard input. Voxlit uses the macOS Accessibility API, so coverage is as wide as macOS itself.',
   },
   {
     q: 'How accurate is the transcription?',
-    a: 'Excellent for everyday dictation on M-series Macs. Download larger whisper.cpp models (small, medium, large) from Settings for higher accuracy. All offline, all free.',
+    a: 'On an M-series Mac with the default base model, accuracy is good enough for everyday messages, emails, and AI prompts. If you need more — for long-form writing, medical terminology, or technical jargon — download the small, medium, or large whisper model from Settings. All of them are offline and free.',
   },
   {
     q: 'Is Voxlit really free forever?',
-    a: 'Yes. MIT licensed. No paid tier, no freemium gate, no future subscription. Fork it, modify it, ship it.',
+    a: 'Yes. I am not building this to flip it to a VC in two years. MIT licensed means even if I got hit by a bus tomorrow, every copy of Voxlit that already exists keeps working, and anyone can fork the repo and ship a new version. No paid tier. No freemium gate. No subscription hiding behind "Pro features".',
   },
   {
     q: 'Does cloud mode compromise my privacy?',
-    a: 'Cloud mode is opt-in. Audio goes directly to OpenAI\'s API using your own key. Never through any Voxlit server. Your key is encrypted on disk.',
+    a: "Cloud mode is opt-in, and it is not me looking at your audio — it is OpenAI, using your own API key. Audio goes directly from your Mac to OpenAI's API. It never passes through any Voxlit server, because I do not want that liability and you do not want that middleman. Your API key is encrypted on disk with macOS Keychain.",
   },
   {
     q: 'Why does macOS ask for permissions?',
-    a: 'Voxlit needs Microphone access (to hear you) and Accessibility access (to type into other apps). The onboarding wizard walks you through both.',
+    a: 'Two permissions, both essential and both honest: Microphone (so Voxlit can actually hear you) and Accessibility (so it can type the result into your focused app). The onboarding wizard walks you through granting both in about 30 seconds. If you ever want to revoke them, System Settings → Privacy & Security is one click away.',
+  },
+  {
+    q: 'Who are you and why should I trust this?',
+    a: "I'm Rajdeep Chaudhari. I built Voxlit alone, in public, at github.com/rajdeepchaudhari-work/voxlit. Every commit is signed. Every release has checksums and an SBOM. CodeQL and OpenSSF run on every push. You do not have to trust me — you can trust the code, because the code is right there.",
   },
 ]
 

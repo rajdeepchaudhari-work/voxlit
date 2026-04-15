@@ -4,22 +4,22 @@ const steps = [
   {
     num: '01',
     icon: <KeyboardIcon />,
-    heading: 'Press your hotkey',
-    body: 'Hit Control + Space (or any hotkey you configure) from any app on your Mac. Voxlit activates instantly. No window switching, no clicking.',
+    heading: 'Tap your hotkey',
+    body: 'Control + Space by default — or whatever feels right under your thumb. Works from any app, at any time. No Dock-hunting, no window switching, no context break.',
     accent: '#FFEB3B',
   },
   {
     num: '02',
     icon: <MicIcon />,
-    heading: 'Speak naturally',
-    body: "Talk at your normal pace. whisper.cpp processes audio in real-time using your Mac's Neural Engine or Metal GPU. Nothing is sent to a server.",
+    heading: 'Just talk',
+    body: "Speak at your normal pace. Pause. Think. Keep going. whisper.cpp runs on your Mac's Neural Engine and Metal GPU — it is not sitting on a server somewhere waiting for your voice.",
     accent: '#FFFFFF',
   },
   {
     num: '03',
     icon: <CursorIcon />,
-    heading: 'Text appears',
-    body: 'Words are injected directly into whatever text field is focused: Notion, Slack, VS Code, Terminal, anywhere. Release the hotkey to stop.',
+    heading: 'The words are already there',
+    body: 'Your sentence appears in whatever text field you were looking at — Notion, Slack, Cursor, Mail, Terminal. Release the hotkey and Voxlit disappears. You will forget it is there. That is the point.',
     accent: 'rgba(102,93,245,0.12)',
   },
 ]
@@ -38,9 +38,20 @@ export default function HowItWorks() {
       }}
     >
       <div className="page-container">
-        <div className={`reveal${inView ? ' in-view' : ''}`} style={{ marginBottom: 56 }}>
+        <div className={`reveal${inView ? ' in-view' : ''}`} style={{ marginBottom: 56, maxWidth: 640 }}>
           <div className="overline" style={{ marginBottom: 12 }}>How It Works</div>
-          <h2 className="section-heading">Three keystrokes to text.</h2>
+          <h2 className="section-heading">Three keystrokes.<br />That is the whole app.</h2>
+          <p style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '1rem',
+            color: '#333',
+            marginTop: 16,
+            lineHeight: 1.65,
+          }}>
+            I did not want another tool that needed onboarding tutorials and a
+            getting-started guide. If you can hold down a key, you already know
+            how to use Voxlit.
+          </p>
         </div>
 
         <div className={`how-grid reveal delay-2${inView ? ' in-view' : ''}`}>
