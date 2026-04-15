@@ -119,9 +119,10 @@ export default function Hero() {
               maxWidth: 500,
               marginBottom: 36,
             }}>
-              The world's fastest Mac dictation app. Hit one hotkey, speak, and your words
-              land in any app: Slack, Cursor, Notion, Terminal. Perfect for AI prompts,
-              long emails, and the paragraphs you were never going to type.
+              I got tired of paying <strong style={{ color: '#0A0A0A' }}>$20 a month</strong> to
+              talk to my own Mac, so I built Voxlit. One hotkey. Speak. Words land anywhere
+              you type — Slack, Cursor, Notion, Terminal, Gmail. Runs entirely on your
+              machine. Free, open source, and built to stay that way.
             </p>
 
             {/* Homebrew */}

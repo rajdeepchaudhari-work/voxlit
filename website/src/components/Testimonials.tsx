@@ -10,7 +10,7 @@ const quotes = [
     bg: '#FFEB3B',
   },
   {
-    text: "MIT licensed and it works in every text field I've tried — VS Code, Notion, even the terminal. Finally.",
+    text: "MIT licensed and it works in every text field I've tried — VS Code, Notion, even the terminal. Finally someone who gets it.",
     handle: '@devhandle',
     platform: 'Twitter/X',
     bg: '#FFFFFF',
@@ -40,6 +40,19 @@ export default function Testimonials() {
         <div className={`reveal${inView ? ' in-view' : ''}`} style={{ marginBottom: 48 }}>
           <div className="overline" style={{ marginBottom: 12 }}>Community</div>
           <h2 className="section-heading">Built by people who<br />got tired of paying.</h2>
+          <p style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '1rem',
+            color: '#333',
+            marginTop: 16,
+            lineHeight: 1.65,
+            maxWidth: 560,
+          }}>
+            Voxlit is not a venture-backed launch. It is a free tool a few
+            thousand people quietly started relying on. Here is what some
+            of them have said — and if you end up using it, I would love
+            to hear from you too.
+          </p>
         </div>
 
         {/* GitHub stars badge */}

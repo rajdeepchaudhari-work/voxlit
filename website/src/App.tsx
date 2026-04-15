@@ -12,6 +12,7 @@ import TechSpecs from './components/TechSpecs'
 import Testimonials from './components/Testimonials'
 import FAQ from './components/FAQ'
 import DownloadCTA from './components/DownloadCTA'
+import FromTheMaker from './components/FromTheMaker'
 import Footer from './components/Footer'
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
         <FeatureGrid />
         <VoxlitCloudPush />
         <HowItWorks />
+        <FromTheMaker />
         <ComparisonTable />
         <SecuritySignals />
         <TechSpecs />
