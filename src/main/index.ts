@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, nativeImage, shell, ipcMain, powerMonitor } from 'electron'
+import { app, BrowserWindow, Tray, Menu, nativeImage, shell, ipcMain, powerMonitor, dialog } from 'electron'
 import { join } from 'path'
 import Store from 'electron-store'
 import { IPC } from '@shared/ipc-types'
@@ -8,6 +8,20 @@ import { SessionStore } from './services/SessionStore'
 import { TranscriptManager } from './services/TranscriptManager'
 import { registerHandlers } from './ipc/handlers'
 import { initAutoUpdater, setSocketManagerForUpdater } from './services/UpdateManager'
+import { resetAllUserData, resetAndRelaunch } from './services/DataReset'
+
+// ─── CLI flags ────────────────────────────────────────────────────────────────
+// Handled BEFORE constructing any services so we clear the DB + electron-store
+// before they try to read from the directory we're about to delete. Essential
+// for users upgrading from an incompatible past version whose app won't launch.
+//
+// Usage:
+//   /Applications/Voxlit.app/Contents/MacOS/Voxlit --reset
+// Exits immediately after the wipe — user relaunches by clicking the icon.
+if (process.argv.includes('--reset')) {
+  resetAllUserData()
+  app.exit(0)
+}
 
 // ─── App-level singletons ─────────────────────────────────────────────────────
 
@@ -133,6 +147,27 @@ function createTray() {
       click: () => {
         mainWindow?.show()
         mainWindow?.focus()
+      }
+    },
+    { type: 'separator' },
+    {
+      label: 'Reset All Data…',
+      click: () => {
+        // Native modal — survives even if the React UI is broken, which is
+        // the exact scenario this command exists to rescue.
+        const result = dialog.showMessageBoxSync({
+          type: 'warning',
+          buttons: ['Reset and Relaunch', 'Cancel'],
+          defaultId: 1,
+          cancelId: 1,
+          title: 'Reset Voxlit',
+          message: 'Reset all Voxlit data?',
+          detail: 'This will delete your history, settings, API key, and downloaded models, then relaunch Voxlit. Bundled app files and system permissions (microphone, accessibility) are not affected. This cannot be undone.',
+        })
+        if (result === 0) {
+          isQuitting = true
+          resetAndRelaunch()
+        }
       }
     },
     { type: 'separator' },
