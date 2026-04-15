@@ -62,6 +62,9 @@ console.log('› package.json')
 const rootPkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
 const minimalPkg = {
   name: rootPkg.name,
+  productName: rootPkg.productName,    // flow through so CFBundleName + appId
+                                       // template resolve to 'Voxlit', not
+                                       // the default 'com.electron.<name>'
   version: rootPkg.version,
   description: rootPkg.description,
   main: rootPkg.main,
