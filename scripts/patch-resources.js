@@ -11,12 +11,20 @@ const path = require('path')
 const { execSync } = require('child_process')
 
 const root = path.resolve(__dirname, '..')
-const appResources = path.join(root, 'dist/mac-arm64/voxlit.app/Contents/Resources')
 
-if (!fs.existsSync(appResources)) {
-  console.error('App bundle not found at dist/mac-arm64/voxlit.app')
+// Bundle name follows package.json "productName" (=> 'Voxlit.app') or falls
+// back to "name" (=> 'voxlit.app') — support both to stay compatible with
+// older builds that shipped as voxlit.app before productName was set.
+const distMacDir = path.join(root, 'dist/mac-arm64')
+const bundleName = ['Voxlit.app', 'voxlit.app'].find((n) =>
+  fs.existsSync(path.join(distMacDir, n))
+)
+if (!bundleName) {
+  console.error('App bundle not found in', distMacDir)
   process.exit(1)
 }
+const appPath = path.join(distMacDir, bundleName)
+const appResources = path.join(appPath, 'Contents', 'Resources')
 
 function cpDir(src, dst) {
   fs.mkdirSync(dst, { recursive: true })
@@ -55,17 +63,23 @@ if (fs.existsSync(migrationsSrc)) {
   console.log('✓ patched migrations/')
 }
 
+// Copy whisper-cli binaries (local-engine users need these at runtime).
+const binariesSrc = path.join(root, 'resources/binaries')
+if (fs.existsSync(binariesSrc)) {
+  cpDir(binariesSrc, path.join(appResources, 'binaries'))
+  console.log('✓ patched binaries/')
+}
+
 // Re-sign the app after modifying its bundle
 console.log('› re-signing app...')
 try {
-  execSync(`codesign --force --deep --sign "VoxlitDev" "${path.join(root, 'dist/mac-arm64/voxlit.app')}"`, { stdio: 'inherit' })
+  execSync(`codesign --force --deep --sign "VoxlitDev" "${appPath}"`, { stdio: 'inherit' })
   console.log('✓ re-signed')
 } catch (e) {
   console.warn('⚠ re-sign failed (non-fatal):', e.message)
 }
 
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
-const appPath = path.join(root, 'dist/mac-arm64/voxlit.app')
 
 // ── Rebuild the DMG ─────────────────────────────────────────────────────────
 console.log('› rebuilding DMG...')

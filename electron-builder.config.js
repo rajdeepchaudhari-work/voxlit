@@ -16,8 +16,14 @@ module.exports = {
     { from: 'extra/icons', to: 'icons' },
     { from: 'extra/native', to: 'native' },
     { from: 'extra/migrations', to: 'migrations' },
+    { from: 'extra/binaries', to: 'binaries' },
   ],
   asarUnpack: ['node_modules/better-sqlite3/**/*'],
+  // Lock output filename to lowercase `voxlit-<ver>-<arch>...` even though the
+  // bundle itself is `Voxlit.app`. The release scripts (release.js, release-
+  // homebrew.js, patch-resources.js) and latest-mac.yml downloaders all expect
+  // this exact pattern; changing it breaks auto-updates for existing users.
+  artifactName: 'voxlit-${version}-${arch}.${ext}',
   mac: {
     target: [{ target: 'dmg', arch: ['arm64'] }],
     category: 'public.app-category.productivity',

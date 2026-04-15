@@ -141,6 +141,15 @@ if (fs.existsSync(nativeSrc)) {
   console.log('› extra/native/')
 }
 
+// binaries/ folder (whisper-cli for local engine)
+// Without this, HealthCheck.checkWhisperBinary fails and TranscriptManager
+// throws "Whisper helper not installed" on first local transcription.
+const binariesSrc = path.join(root, 'resources', 'binaries')
+if (fs.existsSync(binariesSrc)) {
+  cpDir(binariesSrc, path.join(clean, 'extra', 'binaries'))
+  console.log('› extra/binaries/')
+}
+
 // DB migrations
 const migrationsSrc = path.join(root, 'src', 'main', 'db', 'migrations')
 if (fs.existsSync(migrationsSrc)) {
