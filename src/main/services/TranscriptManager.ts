@@ -277,14 +277,22 @@ export class TranscriptManager extends EventEmitter {
     const anyUnsettled = chunks.some(c => c.state === 'pending' || c.state === 'running')
     if (anyUnsettled) return
 
-    const anyFailed = chunks.some(c => c.state === 'failed' && !c.isFallback)
+    const nonFallbackChunks = chunks.filter(c => !c.isFallback)
+    const anyFailed = nonFallbackChunks.some(c => c.state === 'failed')
     const fallbackChunk = chunks.find(c => c.isFallback)
 
-    // Fallback path: if a non-fallback chunk failed AND we have a raw shadow
-    // AND we haven't already tried the fallback, re-transcribe the whole
-    // utterance as a single shot. Same code path today's single-blob flow
-    // uses — guarantees "never worse than v1.0" when chunking derails.
-    if (anyFailed && u.rawPcm && !u.fallbackTriggered) {
+    // Fallback path: if chunking actually produced multiple chunks AND any of
+    // them failed AND we have a raw shadow AND we haven't already tried, re-
+    // transcribe the whole utterance as a single shot. Gives a failed chunk a
+    // second chance with full-utterance context — the common "chunk boundary
+    // confused whisper" failure mode recovers here.
+    //
+    // Deliberately gated on nonFallbackChunks.length > 1: for pass-through
+    // utterances (voxlit/cloud engines or flag=off), rawPcm == the only
+    // chunk's PCM, so re-running would just repeat the same failed operation
+    // (same HTTP 5xx, same timeout, same API error). For those, emit 'empty'
+    // and let the user retry — matches v1.0 behavior exactly.
+    if (anyFailed && u.rawPcm && !u.fallbackTriggered && nonFallbackChunks.length > 1) {
       u.fallbackTriggered = true
       const seq = Math.max(...chunks.map(c => c.seq)) + 1
       u.chunks.set(seq, {

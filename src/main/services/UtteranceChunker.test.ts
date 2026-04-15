@@ -93,6 +93,23 @@ describe('UtteranceChunker', () => {
     expect(chunks[0]!.isFinal).toBe(true)
   })
 
+  it('pass-through mode: voxlit engine never chunks even when flag is on (server-side post-processing wants full context)', () => {
+    const c = new UtteranceChunker()
+    const chunks = collectChunks(c)
+    c.begin('u1', 'voxlit', true)
+    // Long utterance with clear silence gates — would produce multiple chunks
+    // in local mode. Voxlit must still collapse to one.
+    c.pushPcm(pcmSpeech(3000))
+    c.pushPcm(pcmSilence(800))
+    c.pushPcm(pcmSpeech(3000))
+    c.pushPcm(pcmSilence(800))
+    c.pushPcm(pcmSpeech(3000))
+    c.end()
+
+    expect(chunks).toHaveLength(1)
+    expect(chunks[0]!.isFinal).toBe(true)
+  })
+
   it('pass-through mode: non-local engine never chunks even when flag is on', () => {
     const c = new UtteranceChunker()
     const chunks = collectChunks(c)
