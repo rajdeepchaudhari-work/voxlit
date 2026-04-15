@@ -62,6 +62,10 @@ interface UtteranceState {
   rawPcm: Buffer | null
   cancelled: boolean
   fallbackTriggered: boolean
+  /** Set the instant we call `emit('segment'|'empty')`. Guards against a
+   *  concurrent maybeEmit run double-emitting for the same utterance when
+   *  two chunks settle in quick succession. */
+  emitted: boolean
 }
 
 /** Pending work item in the global FIFO. Points into an UtteranceState so
@@ -174,6 +178,7 @@ export class TranscriptManager extends EventEmitter {
         rawPcm: null,
         cancelled: false,
         fallbackTriggered: false,
+        emitted: false,
       }
       this.utterances.set(utteranceId, u)
     }
@@ -237,16 +242,32 @@ export class TranscriptManager extends EventEmitter {
 
     try {
       const raw = await this.transcribeByEngine(c.pcm, u.engine, u.modelName)
+      // Re-fetch: between the await and here, cancelUtterance (or an earlier
+      // maybeEmit) may have deleted this utterance. Mutating c.text / c.state
+      // on a tracker that's been removed from the map and skipping the emit
+      // is the correct move — the utterance already settled (as cancelled or
+      // emitted) from the caller's perspective.
+      const uNow = this.utterances.get(work.utteranceId)
+      if (!uNow || uNow.cancelled) {
+        void this.processNext()
+        return
+      }
       const cleaned = this.cleanText(raw)
       // Per-chunk hallucination guard: if a chunk produces a known phantom,
       // drop its text from the stitch rather than failing the utterance.
       c.text = (cleaned && !this.isHallucination(cleaned)) ? cleaned : ''
       c.state = 'done'
+      this.maybeEmitUtterance(u.id)
     } catch (err) {
       console.error(`[TranscriptManager] chunk ${u.id}:${c.seq} failed:`, err)
+      const uNow = this.utterances.get(work.utteranceId)
+      if (!uNow || uNow.cancelled) {
+        void this.processNext()
+        return
+      }
       c.state = 'failed'
-    } finally {
       this.maybeEmitUtterance(u.id)
+    } finally {
       void this.processNext()
     }
   }
@@ -264,6 +285,10 @@ export class TranscriptManager extends EventEmitter {
   private maybeEmitUtterance(utteranceId: string): void {
     const u = this.utterances.get(utteranceId)
     if (!u) return
+    // First guard: a concurrent run may have already emitted. The tracker
+    // deletion below clears the map, but a parallel call entered before the
+    // delete would otherwise race to emit a second time.
+    if (u.emitted) return
     if (u.cancelled) {
       // Wait for all in-flight chunks to leave 'running' before deleting,
       // so a late transcribe callback doesn't resurrect a deleted utterance.
@@ -277,18 +302,30 @@ export class TranscriptManager extends EventEmitter {
     const anyUnsettled = chunks.some(c => c.state === 'pending' || c.state === 'running')
     if (anyUnsettled) return
 
-    const anyFailed = chunks.some(c => c.state === 'failed' && !c.isFallback)
+    const nonFallbackChunks = chunks.filter(c => !c.isFallback)
+    const failedChunks = nonFallbackChunks.filter(c => c.state === 'failed')
     const fallbackChunk = chunks.find(c => c.isFallback)
 
-    // Fallback path: if a non-fallback chunk failed AND we have a raw shadow
-    // AND we haven't already tried the fallback, re-transcribe the whole
-    // utterance as a single shot. Same code path today's single-blob flow
-    // uses — guarantees "never worse than v1.0" when chunking derails.
-    if (anyFailed && u.rawPcm && !u.fallbackTriggered) {
+    // Fallback path: if any non-fallback chunk failed AND we have a raw
+    // shadow AND we haven't already tried AND re-running would actually be a
+    // different input (the raw buffer isn't byte-identical to what failed),
+    // re-transcribe the whole utterance as a single shot.
+    //
+    // Content-based gate instead of a chunk-count threshold: a 5-second
+    // single-chunk failure and a 30-second multi-chunk failure are the same
+    // transient whisper problem. Skip fallback only when the failed chunk IS
+    // the raw buffer (pass-through utterances), because re-running produces
+    // the same failure.
+    const shouldFallback =
+      failedChunks.length > 0
+      && u.rawPcm
+      && !u.fallbackTriggered
+      && failedChunks.some(c => !c.pcm.equals(u.rawPcm!))
+    if (shouldFallback) {
       u.fallbackTriggered = true
       const seq = Math.max(...chunks.map(c => c.seq)) + 1
       u.chunks.set(seq, {
-        seq, pcm: u.rawPcm, state: 'pending', text: '', isFallback: true,
+        seq, pcm: u.rawPcm!, state: 'pending', text: '', isFallback: true,
       })
       this.pending.push({ utteranceId: u.id, seq })
       if (!this.processing) void this.processNext()
@@ -308,6 +345,10 @@ export class TranscriptManager extends EventEmitter {
       finalText = stitch(ordered)
     }
 
+    // Flip the guard BEFORE the delete + emit pair. A concurrent run that
+    // entered maybeEmitUtterance before the delete still sees u.emitted=true
+    // via the shared tracker ref and bails at the top.
+    u.emitted = true
     this.utterances.delete(utteranceId)
 
     if (!finalText || this.isHallucination(finalText)) {
