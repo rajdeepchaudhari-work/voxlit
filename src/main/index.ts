@@ -155,8 +155,15 @@ function createTray() {
 // ─── IPC event broadcasting ───────────────────────────────────────────────────
 
 function broadcastToAll(channel: string, ...args: unknown[]) {
-  pillWindow?.webContents.send(channel, ...args)
-  mainWindow?.webContents.send(channel, ...args)
+  // Guard against late-firing events during app quit / auto-update install:
+  // once a BrowserWindow is destroyed, accessing .webContents throws
+  // "Object has been destroyed".
+  if (pillWindow && !pillWindow.isDestroyed()) {
+    pillWindow.webContents.send(channel, ...args)
+  }
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(channel, ...args)
+  }
 }
 
 // ─── Service wiring ───────────────────────────────────────────────────────────
