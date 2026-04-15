@@ -8,6 +8,11 @@ import type { HelperStatus, PermissionsState, PermissionStatus } from '@shared/i
 const SOCKET_PATH = '/tmp/voxlit.socket'
 const MSG_TYPE_JSON = 0x01
 const MSG_TYPE_PCM = 0x02
+// Max allowed length-prefix value. Legit JSON control messages are a few hundred
+// bytes; PCM chunks are tens of KB. Anything larger means the helper is corrupt
+// (or hostile) — refusing the frame prevents Buffer.concat from OOMing the main
+// process on bogus headers like 0x7fffffff.
+const MAX_FRAME_BYTES = 16 * 1024 * 1024
 
 /**
  * SocketManager owns the lifecycle of the Swift native helper process
@@ -104,7 +109,15 @@ export class SocketManager extends EventEmitter {
     // Accessibility permissions stick. Same paste mechanism either way
     // (clipboard + osascript Cmd+V), just with one reliable permission domain.
     console.log(`[inject] (${text.length} chars)`)
-    injectViaClipboard(text)
+    // Pass an error emitter so the free function can surface inject_failed
+    // events — otherwise the user sees a successful recording but nothing
+    // gets pasted and they have no idea Automation permission was denied.
+    injectViaClipboard(text, (message) => {
+      this.emit('audio_error', {
+        kind: 'inject_failed',
+        message,
+      })
+    })
   }
 
   /// Snapshot the frontmost app at recording start. Used by the Node fallback
@@ -303,6 +316,16 @@ export class SocketManager extends EventEmitter {
 
     while (this.readBuffer.length >= 5) {
       const msgLen = this.readBuffer.readUInt32BE(0)
+      // Guard against corrupt / hostile headers that would make Buffer.concat
+      // grow without bound while we wait for `4 + msgLen` bytes to arrive.
+      if (msgLen > MAX_FRAME_BYTES) {
+        console.error(
+          `[SocketManager] Frame length ${msgLen} exceeds cap ${MAX_FRAME_BYTES} — dropping buffer and restarting helper`
+        )
+        this.readBuffer = Buffer.alloc(0)
+        this.socket?.destroy()
+        return
+      }
       if (this.readBuffer.length < 4 + msgLen) break
 
       const type = this.readBuffer[4]
@@ -393,7 +416,7 @@ function captureFocused() {
   )
 }
 
-function injectViaClipboard(text: string) {
+function injectViaClipboard(text: string, onError?: (message: string) => void) {
   if (!text) return
   const previous = clipboard.readText()
   clipboard.writeText(text)
@@ -415,6 +438,10 @@ function injectViaClipboard(text: string) {
       console.warn('[inject] paste failed:', err.message)
       if (stderr) console.warn('[inject] stderr:', stderr.trim())
       console.warn('[inject] grant Automation > System Events to Electron in System Settings > Privacy & Security')
+      // Surface to renderer so the UI can show a clear "check Automation
+      // permission" message instead of silently failing after a successful
+      // recording.
+      onError?.(`Text injection failed — check Automation permission. (${err.message})`)
     } else {
       console.log(`[inject] pasted into "${target ?? 'frontmost app'}"`)
     }

@@ -101,7 +101,10 @@ export function registerHandlers(deps: {
     const dest = modelPath(name)
     if (existsSync(dest)) {
       const win = BrowserWindow.fromWebContents(event.sender)
-      win?.webContents.send(IPC.MODEL_DOWNLOAD_PROGRESS, { model: name, bytesReceived: 1, totalBytes: 1, done: true })
+      // Guard isDestroyed — user can close Settings between check and send.
+      if (win && !win.isDestroyed()) {
+        win.webContents.send(IPC.MODEL_DOWNLOAD_PROGRESS, { model: name, bytesReceived: 1, totalBytes: 1, done: true })
+      }
       return
     }
 

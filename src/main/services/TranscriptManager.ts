@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { randomUUID } from 'crypto'
-import { writeFileSync, unlinkSync } from 'fs'
+import { writeFileSync, unlinkSync, existsSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { execFile } from 'child_process'
@@ -121,7 +121,7 @@ export class TranscriptManager extends EventEmitter {
       this.warmupDone = new Promise<void>((resolve) => {
         execFile(binaryPath, ['-m', modelPath, '-f', wavPath, '--no-prints', '-t', threads], { timeout: 30_000 }, (err) => {
           try { unlinkSync(wavPath) } catch (_) {}
-          if (err) console.warn('[TranscriptManager] Warmup failed:', err.message)
+          if (err) console.error('[TranscriptManager] Warmup failed:', err.message)
           else console.log('[TranscriptManager] Whisper warmed up')
           resolve()  // always resolve — don't block future transcriptions on warmup failure
         })
@@ -378,10 +378,15 @@ export class TranscriptManager extends EventEmitter {
    * Post-process whisper output: strip artifacts, capitalize, clean whitespace.
    */
   private cleanText(raw: string): string {
+    // Known phantom annotations from whisper's subtitle-trained heads.
+    // Only strip parens whose contents match — otherwise legit parentheticals
+    // like phone numbers "(555) 555-1212" or credentials "(PhD)" get eaten.
+    const PAREN_NOISE = /\((inaudible|silence|silent|music|applause|laughter|coughing|sighs?|background noise)\)/gi
     return raw
-      // Strip whisper noise tokens like [BLANK_AUDIO], [Music], [Applause], (inaudible), etc.
+      // Square brackets are almost never real dictation, and whisper's
+      // square-bracket outputs ([BLANK_AUDIO], [Music], etc.) are all noise.
       .replace(/\[.*?\]/g, '')
-      .replace(/\(.*?\)/g, '')
+      .replace(PAREN_NOISE, '')
       // Collapse multiple spaces
       .replace(/\s+/g, ' ')
       .trim()
@@ -441,6 +446,17 @@ export class TranscriptManager extends EventEmitter {
   }
 
   private async transcribeLocal(pcm: Buffer, modelName = 'ggml-base.en'): Promise<string> {
+    // Fail loudly if the whisper helper hasn't been built. Without this, a dev
+    // who skipped scripts/build-whisper.sh sees a cryptic ENOENT from execFile
+    // and an 'empty' pill — no clue what actually went wrong.
+    const binaryName = process.arch === 'arm64' ? 'whisper-cli-arm64' : 'whisper-cli-x64'
+    const binaryPath = app.isPackaged
+      ? join(process.resourcesPath, 'binaries', binaryName)
+      : join(app.getAppPath(), 'resources/binaries', binaryName)
+    if (!existsSync(binaryPath)) {
+      throw new Error('Whisper helper not installed — run ./scripts/build-whisper.sh')
+    }
+
     // Wait for any in-flight warmup — two whisper-cli processes using Metal simultaneously
     // causes GGML_ASSERT([rsets->data count] == 0) crash on the second process.
     await this.warmupDone
@@ -454,11 +470,6 @@ export class TranscriptManager extends EventEmitter {
 
     try {
       writeFileSync(wavPath, this.pcmToWav(trimmed))
-
-      const binaryName = process.arch === 'arm64' ? 'whisper-cli-arm64' : 'whisper-cli-x64'
-      const binaryPath = app.isPackaged
-        ? join(process.resourcesPath, 'binaries', binaryName)
-        : join(app.getAppPath(), 'resources/binaries', binaryName)
 
       const modelFile = modelName + '.bin'
       const modelPath = app.isPackaged
