@@ -329,7 +329,39 @@ export class SocketManager extends EventEmitter {
       this.emit('permissions', msg.state)
     } else if (msg.type === 'mic_devices') {
       this.emit('mic_devices', msg.devices)
+    } else if (msg.type === 'audio_error') {
+      // Helper couldn't start audio (device gone, HAL stale, bind failed).
+      // Surface to main so it can notify the renderer and reset recording state.
+      this.emit('audio_error', {
+        kind: (msg.kind as string) ?? 'unknown',
+        message: (msg.message as string) ?? 'Audio error',
+        preferredUid: (msg.preferredUid as string) ?? '',
+      })
     }
+  }
+
+  /// Called from the main process when Electron's powerMonitor fires 'resume'.
+  /// Clean up the old helper (which is likely zombified after sleep) and kick
+  /// off a fresh spawn. Resets restart backoff so we don't wait 30s for wake-up.
+  handleSystemResume() {
+    if (this.stopped) return
+    console.log('[SocketManager] System resumed — resetting helper')
+    this.restartAttempts = 0
+    if (this.restartTimer) {
+      clearTimeout(this.restartTimer)
+      this.restartTimer = null
+      this.restartScheduled = false
+    }
+    // Tear down socket + kill helper; the 'exit' or 'close' handler (whichever
+    // fires first) will scheduleRestart, which now runs with a 1s delay.
+    this.socket?.destroy()
+    this.socket = null
+    if (this.helper?.pid) {
+      try { process.kill(this.helper.pid, 'SIGKILL') } catch (_) {}
+    }
+    this.helper = null
+    // If neither handler fires (e.g. helper already dead), force a restart here.
+    this.scheduleRestart()
   }
 
   private sendJson(obj: Record<string, unknown>) {

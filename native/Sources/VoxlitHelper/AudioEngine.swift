@@ -38,6 +38,10 @@ class AudioEngine {
     /// causing the engine to fail-to-start on some hardware (mic indicator flickers).
     /// Users can opt in via Settings.
     private var noiseSuppression: Bool = false
+    /// True when the most recent start() had to fall back to the system default
+    /// because the preferred device was unavailable. Resets when the user picks
+    /// a new device or when the preferred device reappears on next start().
+    private var fellBackToDefault: Bool = false
 
     private let targetFormat = AVAudioFormat(
         commonFormat: .pcmFormatFloat32,
@@ -48,6 +52,24 @@ class AudioEngine {
 
     init(socket: SocketWriter) {
         self.socket = socket
+        // AVAudioEngine posts this when the route/device topology changes
+        // (device plugged/unplugged, system default switched). We force a full
+        // reconfigure on next start() instead of trying to patch the live graph.
+        NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            print("[AudioEngine] Configuration change — will reconfigure on next start()")
+            self.needsReconfigure = true
+        }
+    }
+
+    /// Called when the Mac wakes from sleep. AVAudioEngine's HAL bindings are
+    /// unreliable after wake (especially with Bluetooth/USB devices that come
+    /// and go), so force a full rebuild on the next press.
+    func handleSystemWake() {
+        needsReconfigure = true
+        fellBackToDefault = false
     }
 
     /// Set the preferred input device by CoreAudio UID (e.g. "BuiltInMicrophoneDevice",
@@ -85,29 +107,87 @@ class AudioEngine {
     func start() throws {
         guard !isRunning else { return }
 
+        // Attempt 1: honour the user's preferred device if it currently exists.
+        // Attempt 2 (fallback): if the preferred device is missing OR the engine
+        // fails to start with it bound, retry against the system default. This
+        // is what rescues dictation when a Bluetooth mic is gone after wake, or
+        // the user switched accounts with a different default input.
+        let wantsPreferred = preferredDeviceUID != nil && AudioDevices.idForUID(preferredDeviceUID!) != nil
+        let activeUID: String? = wantsPreferred ? preferredDeviceUID : nil
+
+        if preferredDeviceUID != nil && !wantsPreferred {
+            print("[AudioEngine] Preferred device \(preferredDeviceUID!) not available — falling back to system default")
+            reportFallback(reason: "preferred device unavailable")
+        }
+
         // Reconfigure (heavy: ~500-1500ms) only when device or VPIO setting actually changed.
         // After first press the engine, tap, format, and converter all get reused — subsequent
         // start() calls only pay the engine.start() cost (~tens of ms).
         if needsReconfigure {
-            try reconfigure()
+            do {
+                try reconfigure(withUID: activeUID)
+            } catch {
+                // If reconfigure with the preferred device failed and we haven't
+                // already been on the default path, try again against the default.
+                if activeUID != nil {
+                    print("[AudioEngine] reconfigure with preferred device failed (\(error)) — retrying with system default")
+                    reportFallback(reason: "reconfigure failed: \(error)")
+                    try reconfigure(withUID: nil)
+                } else {
+                    throw error
+                }
+            }
             needsReconfigure = false
         }
 
-        // For Bluetooth, force HFP at start time. Skipped for wired/built-in mics so we
-        // don't mess with the system default input unnecessarily.
-        if let uid = preferredDeviceUID, let deviceID = AudioDevices.idForUID(uid),
+        // For Bluetooth, force HFP at start time. Only do this when we're actually
+        // going to use the preferred device — if we already fell back, leave the
+        // system default alone.
+        if let uid = activeUID, let deviceID = AudioDevices.idForUID(uid),
            AudioDevices.isBluetoothDevice(deviceID) {
             AudioDevices.setSystemDefaultInput(uid: uid)
         }
 
-        try engine.start()
+        do {
+            try engine.start()
+        } catch {
+            // Last-chance fallback: engine passed reconfigure but engine.start()
+            // threw (e.g. device vanished between reconfigure and start). If we
+            // were bound to a preferred device, rebuild against the default.
+            if activeUID != nil {
+                print("[AudioEngine] engine.start() failed (\(error)) — falling back to system default and retrying")
+                reportFallback(reason: "engine.start failed: \(error)")
+                try reconfigure(withUID: nil)
+                try engine.start()
+            } else {
+                throw error
+            }
+        }
+
         isRunning = true
         print("[AudioEngine] Started")
     }
 
+    /// Emit an audio_error JSON to Electron so the UI can show the user that
+    /// we're on the default mic, not the one they picked. De-dupes per session
+    /// to avoid spamming on every press once a device is gone.
+    private func reportFallback(reason: String) {
+        guard !fellBackToDefault else { return }
+        fellBackToDefault = true
+        socket?.sendJSON([
+            "type": "audio_error",
+            "kind": "device_fallback",
+            "message": "Using system default microphone — \(reason)",
+            "preferredUid": preferredDeviceUID ?? "",
+        ])
+    }
+
     /// Heavy setup: rebuild the engine, configure VPIO, bind device, install tap.
     /// Only called when something material changed since the last reconfigure.
-    private func reconfigure() throws {
+    /// Pass `uid=nil` to skip device binding entirely and let AVAudioEngine use
+    /// the system default — that's the fallback path when the preferred device
+    /// is gone or fails to bind.
+    private func reconfigure(withUID uid: String?) throws {
         engine = AVAudioEngine()
 
         // Voice processing IO (noise + echo cancel). Must be set before reading inputFormat
@@ -125,8 +205,9 @@ class AudioEngine {
                                  kAudioUnitScope_Global, 0, &off, UInt32(MemoryLayout<UInt32>.size))
         }
 
-        // Bind the requested device to the input AudioUnit BEFORE reading inputFormat
-        if let uid = preferredDeviceUID, let deviceID = AudioDevices.idForUID(uid) {
+        // Bind the requested device to the input AudioUnit BEFORE reading inputFormat.
+        // If the bind fails we throw — the caller catches and retries with uid=nil.
+        if let uid, let deviceID = AudioDevices.idForUID(uid) {
             if let au = engine.inputNode.audioUnit {
                 var dev = deviceID
                 let status = AudioUnitSetProperty(
@@ -134,7 +215,8 @@ class AudioEngine {
                     &dev, UInt32(MemoryLayout<AudioDeviceID>.size)
                 )
                 if status != noErr {
-                    print("[AudioEngine] Failed to bind device \(uid) (status \(status)) — using default")
+                    print("[AudioEngine] Failed to bind device \(uid) (status \(status))")
+                    throw AudioEngineError.deviceBindFailed(status: status)
                 }
             }
         }
@@ -243,6 +325,7 @@ class AudioEngine {
 enum AudioEngineError: Error {
     case converterFailed
     case noInputDevice
+    case deviceBindFailed(status: OSStatus)
 }
 
 // MARK: - CoreAudio device enumeration

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, nativeImage, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, Tray, Menu, nativeImage, shell, ipcMain, powerMonitor } from 'electron'
 import { join } from 'path'
 import Store from 'electron-store'
 import { IPC } from '@shared/ipc-types'
@@ -269,6 +269,19 @@ function wireServices() {
     broadcastToAll(IPC.RECORDING_STATE, { state: currentState })
     pillWindow?.hide()
   })
+
+  // Helper failed to open the mic (device gone, HAL stale, or bind error).
+  // Surface to the renderer so the UI can stop showing 'listening' and, when
+  // it's a device fallback, tell the user which device is now active.
+  socketManager.on('audio_error', (err) => {
+    broadcastToAll(IPC.AUDIO_ERROR, err)
+    if (currentState !== 'idle') {
+      currentState = 'idle'
+      pcmAccumulator = []
+      broadcastToAll(IPC.RECORDING_STATE, { state: currentState })
+      pillWindow?.hide()
+    }
+  })
 }
 
 // ─── App lifecycle ────────────────────────────────────────────────────────────
@@ -315,6 +328,13 @@ app.whenReady().then(async () => {
   })
 
   void boot.run()
+
+  // On system resume, the Swift helper is often zombified (post-sleep AVAudio
+  // HAL state is unreliable, socket may be half-open). Kill it + respawn with
+  // backoff reset so the user doesn't have to quit/relaunch the app after
+  // closing the lid or switching users.
+  powerMonitor.on('resume', () => socketManager.handleSystemResume())
+  powerMonitor.on('unlock-screen', () => socketManager.handleSystemResume())
 
   app.on('activate', () => {
     mainWindow?.show()

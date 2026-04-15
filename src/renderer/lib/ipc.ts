@@ -16,7 +16,8 @@ import type {
   ModelDownloadProgress,
   UpdateInfo,
   UpdateProgress,
-  AudioDevice
+  AudioDevice,
+  AudioErrorEvent
 } from '@shared/ipc-types'
 
 type Unsubscribe = () => void
@@ -28,6 +29,7 @@ declare global {
       onAmplitude: (cb: (bars: number[]) => void) => Unsubscribe
       onTranscript: (cb: (segment: TranscriptSegment) => void) => Unsubscribe
       onHelperStatus: (cb: (data: HelperStatusChange) => void) => Unsubscribe
+      onAudioError: (cb: (err: AudioErrorEvent) => void) => Unsubscribe
       getSettings: () => Promise<VoxlitSettings>
       setSetting: <K extends keyof VoxlitSettings>(key: K, value: VoxlitSettings[K]) => Promise<void>
       getSessions: (limit?: number, offset?: number) => Promise<Session[]>

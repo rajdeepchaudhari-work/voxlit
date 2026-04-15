@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { RecordingState, TranscriptSegment, HelperStatus, Session } from '@shared/ipc-types'
+import type { RecordingState, TranscriptSegment, HelperStatus, Session, AudioErrorEvent } from '@shared/ipc-types'
 import { ipc } from '../lib/ipc'
 
 type OnboardingStep = 'welcome' | 'microphone' | 'accessibility' | 'automation' | 'engine' | 'apikey' | 'localsetup' | 'test' | 'done' | null
@@ -19,6 +19,7 @@ interface AppState {
 
   // Helper
   helperStatus: HelperStatus
+  lastAudioError: AudioErrorEvent | null
 
   // History
   sessions: Session[]
@@ -46,6 +47,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   barAmplitudes: new Array(12).fill(0),
   lastTranscript: null,
   helperStatus: 'disconnected',
+  lastAudioError: null,
   sessions: [],
   sessionsLoaded: false,
   hasCompletedOnboarding: false,
@@ -105,6 +107,14 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ helperStatus: status })
     })
 
+    // Fired when the helper can't open the mic (device gone, fell back to
+    // default, etc.). Parked on the store so the HealthIndicator / toast can
+    // surface it to the user. onAudioError is only exposed on the main window
+    // preload; pill preload doesn't include it.
+    const unsubAudioErr = typeof ipc.onAudioError === 'function'
+      ? ipc.onAudioError((err) => set({ lastAudioError: err }))
+      : () => {}
+
     // Fetch the current status in case the helper connected BEFORE this
     // listener was installed (common race — helper comes up in ~200ms while
     // the renderer is still loading its bundle). Only available on the main
@@ -119,6 +129,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       unsubAmplitude()
       unsubTranscript()
       unsubHelper()
+      unsubAudioErr()
     }
   },
 
