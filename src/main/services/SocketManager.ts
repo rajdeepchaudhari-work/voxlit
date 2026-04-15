@@ -217,7 +217,9 @@ export class SocketManager extends EventEmitter {
       this.emitStatus('connected')
       this.restartAttempts = 0
 
-      socket.on('data', (data) => this.handleData(data))
+      // @types/node v25 types socket data as `string | Buffer` since setEncoding
+       // could convert it. We never call setEncoding, so runtime is always Buffer.
+      socket.on('data', (data: Buffer) => this.handleData(data))
       socket.on('close', () => {
         this.socket = null
         this.emitStatus('disconnected')
