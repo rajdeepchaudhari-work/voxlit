@@ -3,7 +3,7 @@ import { eq, desc, sql } from 'drizzle-orm'
 import { join } from 'path'
 import { app } from 'electron'
 import { randomUUID } from 'crypto'
-import { getDb } from '../db/client'
+import { getDb, getSqliteHandle, resetDbCache } from '../db/client'
 import { sessions, entries } from '../db/schema'
 import type { Session, Entry } from '@shared/ipc-types'
 
@@ -16,6 +16,7 @@ export class SessionStore {
   private activeSessionId: string | null = null
   private inactivityTimer: NodeJS.Timeout | null = null
   private readonly INACTIVITY_TIMEOUT_MS = 30_000
+  private closed = false
 
   init() {
     // Dev: migrations live in src/main/db/migrations (app root is project root)
@@ -128,6 +129,43 @@ export class SessionStore {
       .where(eq(sessions.id, this.activeSessionId))
       .run()
     this.activeSessionId = null
+  }
+
+  /**
+   * Release SQLite file handles so a subsequent rmSync of the userData dir
+   * actually unlinks the inodes instead of leaving them held by the process.
+   * Runs a WAL checkpoint first so any buffered writes land in the main db
+   * file (otherwise the -wal sidecar might be the only truth and the checkpoint
+   * on close could recreate it after we tried to delete it).
+   *
+   * Idempotent: safe to call multiple times. Also cancels the inactivity timer
+   * so we don't race a scheduled closeActiveSession() against a closed handle.
+   */
+  close() {
+    if (this.closed) return
+    this.closed = true
+
+    if (this.inactivityTimer) {
+      clearTimeout(this.inactivityTimer)
+      this.inactivityTimer = null
+    }
+
+    const sqlite = getSqliteHandle()
+    if (sqlite) {
+      try {
+        sqlite.pragma('wal_checkpoint(TRUNCATE)')
+      } catch (e) {
+        console.warn('[SessionStore] WAL checkpoint failed:', e)
+      }
+      try {
+        sqlite.close()
+      } catch (e) {
+        console.warn('[SessionStore] sqlite close failed:', e)
+      }
+    }
+
+    this._db = null
+    resetDbCache()
   }
 
   private resetInactivityTimer() {

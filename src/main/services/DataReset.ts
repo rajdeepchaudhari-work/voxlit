@@ -36,8 +36,24 @@ import { tmpdir } from 'os'
  * Callers should still relaunch either way — a partial wipe is still better
  * than continuing in the corrupt state the user is trying to escape.
  */
-export function resetAllUserData(): boolean {
+export function resetAllUserData(teardown?: () => void): boolean {
   let ok = true
+
+  // Close live persistence handles BEFORE the rmSync. better-sqlite3 holds
+  // open fds on voxlit.db/-wal/-shm and electron-store buffers settings in
+  // memory that it flushes on process exit. If we rmSync while they're open,
+  // macOS unlinks the directory entries but the inodes stay live — then a
+  // later shutdown flush recreates files with stale data, defeating the reset.
+  // Callers from the running app pass a teardown that closes SQLite, clears
+  // electron-store, and kills the helper. The CLI --reset path runs before
+  // services are constructed, so it passes nothing.
+  if (teardown) {
+    try {
+      teardown()
+    } catch (e) {
+      console.warn('[DataReset] teardown failed:', e)
+    }
+  }
 
   // 1. Nuke the whole userData directory. electron-store, SQLite files
   //    (main + WAL + SHM), downloaded models, pending-updates/, everything.
@@ -81,8 +97,8 @@ export function resetAllUserData(): boolean {
  * Reset and relaunch. The standard way to invoke reset while the app is
  * running — from the tray menu or (future) a Settings button.
  */
-export function resetAndRelaunch(): void {
-  resetAllUserData()
+export function resetAndRelaunch(teardown?: () => void): void {
+  resetAllUserData(teardown)
   app.relaunch()
   app.exit(0)
 }
