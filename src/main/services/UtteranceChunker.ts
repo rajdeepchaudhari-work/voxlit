@@ -36,6 +36,10 @@ export interface UtteranceChunk {
   seq: number
   pcm: Buffer
   isFinal: boolean
+  /** Snapshotted at begin() time so a mid-utterance settings change can't
+   *  enqueue later chunks against a different engine or model. */
+  engine: Engine
+  modelName: string
 }
 
 const SAMPLE_RATE = 16000
@@ -59,6 +63,11 @@ export class UtteranceChunker extends EventEmitter {
   private passThrough = false
   private utteranceId: string | null = null
   private seq = 0
+  // Snapshotted at begin() time. Emitted chunks carry these so the queue
+  // dispatcher doesn't re-read settings at emit time — a change mid-utterance
+  // must not split chunks across engines/models.
+  private engine: Engine = 'local'
+  private modelName: string = 'ggml-base.en'
 
   // The current chunk's PCM frames in arrival order.
   private currentChunk: Buffer[] = []
@@ -80,11 +89,13 @@ export class UtteranceChunker extends EventEmitter {
   // independent of PCM arrival cadence.
   private samplesInChunk = 0
 
-  begin(utteranceId: string, engine: Engine, chunkedEnabled: boolean) {
+  begin(utteranceId: string, engine: Engine, chunkedEnabled: boolean, modelName: string) {
     if (this.active) this.reset()
     this.active = true
     this.utteranceId = utteranceId
     this.seq = 0
+    this.engine = engine
+    this.modelName = modelName
     // Chunking is gated on BOTH the feature flag AND the engine: cloud/voxlit
     // network RTT makes chunking net-negative; Voxlit Server's GPT-4o-mini
     // post-process also wants full-utterance context. Local whisper.cpp is
@@ -116,6 +127,8 @@ export class UtteranceChunker extends EventEmitter {
       seq: this.seq++,
       pcm,
       isFinal: true,
+      engine: this.engine,
+      modelName: this.modelName,
     } satisfies UtteranceChunk)
 
     // Return the raw shadow for the fallback path. Main+TranscriptManager hold
@@ -186,6 +199,8 @@ export class UtteranceChunker extends EventEmitter {
       seq: this.seq++,
       pcm,
       isFinal: false,
+      engine: this.engine,
+      modelName: this.modelName,
     } satisfies UtteranceChunk)
 
     this.currentChunk = []
@@ -201,6 +216,8 @@ export class UtteranceChunker extends EventEmitter {
     this.passThrough = false
     this.utteranceId = null
     this.seq = 0
+    this.engine = 'local'
+    this.modelName = 'ggml-base.en'
     this.currentChunk = []
     this.currentChunkBytes = 0
     this.rawFrames = []
