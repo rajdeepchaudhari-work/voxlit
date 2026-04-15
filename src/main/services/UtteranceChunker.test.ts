@@ -30,19 +30,44 @@ describe('UtteranceChunker', () => {
   it('emits exactly one final chunk for a short utterance (below MIN_CHUNK_MS)', () => {
     const c = new UtteranceChunker()
     const chunks = collectChunks(c)
-    c.begin('u1', 'local', true)
+    c.begin('u1', 'local', true, 'ggml-base.en')
     c.pushPcm(pcmSpeech(500))
     c.end()
 
     expect(chunks).toHaveLength(1)
     expect(chunks[0]!.isFinal).toBe(true)
     expect(chunks[0]!.seq).toBe(0)
+    expect(chunks[0]!.engine).toBe('local')
+    expect(chunks[0]!.modelName).toBe('ggml-base.en')
+  })
+
+  it('engine and model from begin() are embedded in every emitted chunk, even if store changes between chunks', () => {
+    const c = new UtteranceChunker()
+    const chunks = collectChunks(c)
+    // Caller passes specific values at begin() time.
+    c.begin('u-engine-snap', 'local', true, 'ggml-small.en')
+    // Multi-chunk utterance: speech + long silence + more speech. Simulates
+    // the user changing settings mid-stream (which we're NOT doing here —
+    // the chunker can't see store changes, which is the whole point).
+    c.pushPcm(pcmSpeech(2000))
+    c.pushPcm(pcmSilence(700))
+    c.pushPcm(pcmSpeech(2000))
+    c.pushPcm(pcmSilence(700))
+    c.pushPcm(pcmSpeech(1000))
+    c.end()
+
+    expect(chunks.length).toBeGreaterThanOrEqual(2)
+    for (const ch of chunks) {
+      expect(ch.engine).toBe('local')
+      expect(ch.modelName).toBe('ggml-small.en')
+      expect(ch.utteranceId).toBe('u-engine-snap')
+    }
   })
 
   it('splits at silence gate once chunk exceeds MIN_CHUNK_MS', () => {
     const c = new UtteranceChunker()
     const chunks = collectChunks(c)
-    c.begin('u1', 'local', true)
+    c.begin('u1', 'local', true, 'ggml-base.en')
     // 2s speech → already past MIN_CHUNK_MS (1.5s)
     c.pushPcm(pcmSpeech(2000))
     // 700ms silence → past SILENCE_MS (600ms), triggers gate
@@ -66,7 +91,7 @@ describe('UtteranceChunker', () => {
   it('head-guard: does NOT split when total buffered audio < MIN_CHUNK_MS', () => {
     const c = new UtteranceChunker()
     const chunks = collectChunks(c)
-    c.begin('u1', 'local', true)
+    c.begin('u1', 'local', true, 'ggml-base.en')
     // 300ms speech + 500ms silence → buffer = 800ms, below MIN_CHUNK_MS (1500ms).
     // Even though silence run exceeds SILENCE_MS ratio, shouldCut requires
     // chunkMs >= MIN_CHUNK_MS which isn't met.
@@ -83,7 +108,7 @@ describe('UtteranceChunker', () => {
     const c = new UtteranceChunker()
     const chunks = collectChunks(c)
     // chunkedEnabled=false → pass-through
-    c.begin('u1', 'local', false)
+    c.begin('u1', 'local', false, 'ggml-base.en')
     c.pushPcm(pcmSpeech(2500))
     c.pushPcm(pcmSilence(1000))
     c.pushPcm(pcmSpeech(2500))
@@ -96,7 +121,7 @@ describe('UtteranceChunker', () => {
   it('pass-through mode: voxlit engine never chunks even when flag is on (server-side post-processing wants full context)', () => {
     const c = new UtteranceChunker()
     const chunks = collectChunks(c)
-    c.begin('u1', 'voxlit', true)
+    c.begin('u1', 'voxlit', true, 'ggml-base.en')
     // Long utterance with clear silence gates — would produce multiple chunks
     // in local mode. Voxlit must still collapse to one.
     c.pushPcm(pcmSpeech(3000))
@@ -113,7 +138,7 @@ describe('UtteranceChunker', () => {
   it('pass-through mode: non-local engine never chunks even when flag is on', () => {
     const c = new UtteranceChunker()
     const chunks = collectChunks(c)
-    c.begin('u1', 'cloud', true)
+    c.begin('u1', 'cloud', true, 'ggml-base.en')
     c.pushPcm(pcmSpeech(2000))
     c.pushPcm(pcmSilence(700))
     c.pushPcm(pcmSpeech(2000))
@@ -125,7 +150,7 @@ describe('UtteranceChunker', () => {
   it('end() returns the full concatenated raw PCM', () => {
     const c = new UtteranceChunker()
     collectChunks(c)
-    c.begin('u1', 'local', true)
+    c.begin('u1', 'local', true, 'ggml-base.en')
     const pcm1 = pcmSpeech(500)
     const pcm2 = pcmSpeech(500)
     c.pushPcm(pcm1)
@@ -138,7 +163,7 @@ describe('UtteranceChunker', () => {
   it('abort() produces no chunk emissions', () => {
     const c = new UtteranceChunker()
     const chunks = collectChunks(c)
-    c.begin('u1', 'local', true)
+    c.begin('u1', 'local', true, 'ggml-base.en')
     c.pushPcm(pcmSpeech(2000))
     c.abort()
 
@@ -148,7 +173,7 @@ describe('UtteranceChunker', () => {
   it('pushPcm after end() is ignored (no crash, no emit)', () => {
     const c = new UtteranceChunker()
     const chunks = collectChunks(c)
-    c.begin('u1', 'local', true)
+    c.begin('u1', 'local', true, 'ggml-base.en')
     c.pushPcm(pcmSpeech(500))
     c.end()
     c.pushPcm(pcmSpeech(500))
@@ -160,7 +185,7 @@ describe('UtteranceChunker', () => {
   it('silence threshold sanity: silent-only input emits one (empty-ish) final chunk', () => {
     const c = new UtteranceChunker()
     const chunks = collectChunks(c)
-    c.begin('u1', 'local', true)
+    c.begin('u1', 'local', true, 'ggml-base.en')
     c.pushPcm(pcmSilence(SILENCE_MS + MIN_CHUNK_MS + 500))
     c.end()
 

@@ -183,10 +183,29 @@ function wireServices() {
   let currentUtteranceId: string | null = null
 
   chunker.on('chunk', (c: UtteranceChunk) => {
-    const engine = store.get('transcriptionEngine')
-    const modelName = store.get('localModel')
-    transcriptManager.enqueueChunk(c.utteranceId, c.seq, c.pcm, engine, modelName, c.isFinal)
+    // Use the engine/model snapshotted on the chunk itself — re-reading from
+    // the store here would let a mid-utterance settings change route later
+    // chunks to a different engine, or cross-contaminate a late chunk that
+    // fires after a new utterance has begun.
+    transcriptManager.enqueueChunk(c.utteranceId, c.seq, c.pcm, c.engine, c.modelName, c.isFinal)
   })
+
+  // Hard reset of in-flight utterance state. Used by audio_error and by
+  // powerMonitor resume/unlock handlers — those kill the Swift helper, so
+  // the user's hotkey-release never reaches us and `finalizeUtterance`
+  // would otherwise never fire (tracker leaks with its rawPcm shadow).
+  function abortCurrentUtterance() {
+    if (currentUtteranceId) {
+      chunker.abort()
+      transcriptManager.cancelUtterance(currentUtteranceId)
+      currentUtteranceId = null
+    }
+    if (currentState !== 'idle') {
+      currentState = 'idle'
+      broadcastToAll(IPC.RECORDING_STATE, { state: currentState })
+      pillWindow?.hide()
+    }
+  }
 
   socketManager.on('status', (status, error) => {
     broadcastToAll(IPC.HELPER_STATUS, { status, error })
@@ -212,8 +231,9 @@ function wireServices() {
       currentState = 'listening'
       currentUtteranceId = randomUUID()
       const engine = store.get('transcriptionEngine')
+      const modelName = store.get('localModel')
       const chunked = store.get('chunkedTranscription') ?? false
-      chunker.begin(currentUtteranceId, engine, chunked)
+      chunker.begin(currentUtteranceId, engine, chunked, modelName)
       // Snapshot the focused app NOW — needed by the Node inject fallback to
       // restore focus before pasting. Swift TextInjector does the same in captureFocusedApp().
       socketManager.captureFocusedApp()
@@ -303,18 +323,18 @@ function wireServices() {
   // it's a device fallback, tell the user which device is now active.
   socketManager.on('audio_error', (err) => {
     broadcastToAll(IPC.AUDIO_ERROR, err)
-    if (currentState !== 'idle') {
-      currentState = 'idle'
-      if (currentUtteranceId) {
-        chunker.abort()
-        transcriptManager.cancelUtterance(currentUtteranceId)
-        currentUtteranceId = null
-      }
-      broadcastToAll(IPC.RECORDING_STATE, { state: currentState })
-      pillWindow?.hide()
-    }
+    abortCurrentUtterance()
   })
+
+  // Expose for top-level powerMonitor handlers — they fire outside of
+  // wireServices() scope but need to reset the same in-flight state.
+  abortCurrentUtteranceRef = abortCurrentUtterance
 }
+
+// Set by wireServices() so the powerMonitor handlers installed in
+// app.whenReady() can clear in-flight utterance state before the Swift
+// helper is killed + respawned.
+let abortCurrentUtteranceRef: (() => void) | null = null
 
 // ─── App lifecycle ────────────────────────────────────────────────────────────
 
@@ -365,8 +385,17 @@ app.whenReady().then(async () => {
   // HAL state is unreliable, socket may be half-open). Kill it + respawn with
   // backoff reset so the user doesn't have to quit/relaunch the app after
   // closing the lid or switching users.
-  powerMonitor.on('resume', () => socketManager.handleSystemResume())
-  powerMonitor.on('unlock-screen', () => socketManager.handleSystemResume())
+  // On resume/unlock, clear in-flight utterance state BEFORE killing the
+  // helper — the helper respawn otherwise orphans the utterance (its
+  // hotkey-release message never arrives, so the tracker + ~2MB rawPcm leak).
+  powerMonitor.on('resume', () => {
+    abortCurrentUtteranceRef?.()
+    socketManager.handleSystemResume()
+  })
+  powerMonitor.on('unlock-screen', () => {
+    abortCurrentUtteranceRef?.()
+    socketManager.handleSystemResume()
+  })
 
   app.on('activate', () => {
     mainWindow?.show()
