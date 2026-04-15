@@ -116,6 +116,12 @@ export interface VoxlitSettings {
   // Apple's voice processing IO — built-in noise + echo cancellation.
   // Default off because VPIO can conflict with custom device binding and AGC on some hardware.
   noiseSuppressionEnabled?: boolean
+  // v2: chunk long utterances at silence gates and transcribe in parallel with
+  // recording. Reduces release-to-inject latency for utterances with natural
+  // pauses. Applies to the local whisper.cpp engine only; cloud/voxlit engines
+  // pass through single-shot (network RTT dominates, chunking is net-negative).
+  // Default off in v2.0 — flip on in a point release after latency A/B.
+  chunkedTranscription?: boolean
 }
 
 export type MicGainMode = 'off' | 'manual' | 'auto'

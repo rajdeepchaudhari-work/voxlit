@@ -49,32 +49,36 @@ export default function ComparisonTable() {
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table className="brut-table">
+          <table className="brut-table" aria-label="Feature comparison: Voxlit vs Glaido, Dragon, and Cloud SaaS dictation tools">
+            <caption style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+              Voxlit compared to Glaido, Dragon Dictate, and cloud-based dictation SaaS across price, licensing, privacy, and hardware support.
+            </caption>
             <thead>
               <tr>
-                <th style={{ minWidth: 160 }}>Feature</th>
-                <th className="col-voxlit" style={{ minWidth: 140 }}>
+                <th scope="col" style={{ minWidth: 160 }}>Feature</th>
+                <th scope="col" className="col-voxlit" style={{ minWidth: 140 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span>★</span> Voxlit
+                    <span aria-hidden="true">★</span> Voxlit
                   </div>
                 </th>
-                <th style={{ minWidth: 120 }}>Glaido</th>
-                <th style={{ minWidth: 120 }}>Dragon</th>
-                <th style={{ minWidth: 120 }}>Cloud SaaS</th>
+                <th scope="col" style={{ minWidth: 120 }}>Glaido</th>
+                <th scope="col" style={{ minWidth: 120 }}>Dragon</th>
+                <th scope="col" style={{ minWidth: 120 }}>Cloud SaaS</th>
               </tr>
             </thead>
             <tbody>
               {rows.map(row => (
                 <tr key={row.feature}>
-                  <td style={{
+                  <th scope="row" style={{
                     fontFamily: 'var(--font-mono)',
                     fontWeight: 700,
                     fontSize: '0.8125rem',
                     color: '#0A0A0A',
                     letterSpacing: '0.02em',
+                    textAlign: 'left',
                   }}>
                     {row.feature}
-                  </td>
+                  </th>
                   <td className="col-voxlit" style={cellStyle(row.voxlit)}>{row.voxlit}</td>
                   <td style={cellStyle(row.glaido)}>{row.glaido}</td>
                   <td style={cellStyle(row.dragon)}>{row.dragon}</td>

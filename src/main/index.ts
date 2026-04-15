@@ -1,11 +1,13 @@
 import { app, BrowserWindow, Tray, Menu, nativeImage, shell, ipcMain, powerMonitor } from 'electron'
 import { join } from 'path'
+import { randomUUID } from 'crypto'
 import Store from 'electron-store'
 import { IPC } from '@shared/ipc-types'
 import type { VoxlitSettings, RecordingState } from '@shared/ipc-types'
 import { SocketManager } from './services/SocketManager'
 import { SessionStore } from './services/SessionStore'
 import { TranscriptManager } from './services/TranscriptManager'
+import { UtteranceChunker, type UtteranceChunk } from './services/UtteranceChunker'
 import { registerHandlers } from './ipc/handlers'
 import { initAutoUpdater, setSocketManagerForUpdater } from './services/UpdateManager'
 
@@ -25,7 +27,10 @@ const store = new Store<VoxlitSettings>({
     menubarOnly: false,
     voxlitServerUrl: 'https://api.voxlit.co/v1/transcribe',
     voxlitServerToken: 'c6e9c055ca194fabb7f60b328ca8144b06cf2839252770a785b5abe1af3806d2',
-    micGain: 1.0
+    micGain: 1.0,
+    // v2: off by default in v2.0. Flipped to true in a v2.0.x point release
+    // after real-world latency + accuracy A/B. Applies to local engine only.
+    chunkedTranscription: false
   },
   encryptionKey: 'voxlit-store-v1'  // encrypts openaiApiKey at rest
 })
@@ -170,7 +175,18 @@ function broadcastToAll(channel: string, ...args: unknown[]) {
 
 function wireServices() {
   let currentState: RecordingState = 'idle'
-  let pcmAccumulator: Buffer[] = []
+  // v2: chunker replaces the pcmAccumulator array. It buffers PCM internally
+  // and emits 'chunk' events at silence gates for parallel transcription.
+  // In pass-through mode (flag off OR non-local engine) it collapses to
+  // one-chunk-per-utterance — identical to v1.0 behavior.
+  const chunker = new UtteranceChunker()
+  let currentUtteranceId: string | null = null
+
+  chunker.on('chunk', (c: UtteranceChunk) => {
+    const engine = store.get('transcriptionEngine')
+    const modelName = store.get('localModel')
+    transcriptManager.enqueueChunk(c.utteranceId, c.seq, c.pcm, engine, modelName, c.isFinal)
+  })
 
   socketManager.on('status', (status, error) => {
     broadcastToAll(IPC.HELPER_STATUS, { status, error })
@@ -194,24 +210,36 @@ function wireServices() {
   socketManager.on('hotkey', (action: string) => {
     if (action === 'start' || (action === 'toggle' && currentState === 'idle')) {
       currentState = 'listening'
-      pcmAccumulator = []
+      currentUtteranceId = randomUUID()
+      const engine = store.get('transcriptionEngine')
+      const chunked = store.get('chunkedTranscription') ?? false
+      chunker.begin(currentUtteranceId, engine, chunked)
       // Snapshot the focused app NOW — needed by the Node inject fallback to
       // restore focus before pasting. Swift TextInjector does the same in captureFocusedApp().
       socketManager.captureFocusedApp()
       pillWindow?.showInactive()
       broadcastToAll(IPC.RECORDING_STATE, { state: currentState })
     } else if (action === 'stop' || (action === 'toggle' && currentState !== 'idle')) {
-      if (pcmAccumulator.length > 0) {
+      const id = currentUtteranceId
+      currentUtteranceId = null
+      // chunker.end() synchronously emits the final 'chunk' event (which our
+      // listener forwards as enqueueChunk) and returns the raw concatenated
+      // PCM. The chunk must hit the queue BEFORE finalizeUtterance so the
+      // finalize check sees it. That ordering is guaranteed by end() being
+      // sync and the 'chunk' listener being sync.
+      const rawPcm = id ? chunker.end() : Buffer.alloc(0)
+      if (id && rawPcm.length > 0) {
         currentState = 'processing'
         broadcastToAll(IPC.RECORDING_STATE, { state: currentState })
-        const pcm = Buffer.concat(pcmAccumulator)
-        pcmAccumulator = []
-        transcriptManager.enqueue(pcm, store.get('transcriptionEngine'), store.get('localModel'))
+        // rawPcm only fuels the fallback path; TranscriptManager ignores it
+        // unless a chunk failed. Passing it for all cases is cheap.
+        transcriptManager.finalizeUtterance(id, rawPcm)
       } else {
         // No audio captured — hide immediately
         currentState = 'idle'
         broadcastToAll(IPC.RECORDING_STATE, { state: currentState })
         pillWindow?.hide()
+        if (id) transcriptManager.cancelUtterance(id)
       }
     }
   })
@@ -224,7 +252,7 @@ function wireServices() {
 
   socketManager.on('pcm', (chunk: Buffer) => {
     if (currentState === 'listening') {
-      pcmAccumulator.push(chunk)
+      chunker.pushPcm(chunk)
 
       // Compute per-bar RMS from actual PCM data
       const aligned = chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.length)
@@ -277,7 +305,11 @@ function wireServices() {
     broadcastToAll(IPC.AUDIO_ERROR, err)
     if (currentState !== 'idle') {
       currentState = 'idle'
-      pcmAccumulator = []
+      if (currentUtteranceId) {
+        chunker.abort()
+        transcriptManager.cancelUtterance(currentUtteranceId)
+        currentUtteranceId = null
+      }
       broadcastToAll(IPC.RECORDING_STATE, { state: currentState })
       pillWindow?.hide()
     }

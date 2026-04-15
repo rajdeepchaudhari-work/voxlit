@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events'
+import { randomUUID } from 'crypto'
 import { writeFileSync, unlinkSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
@@ -7,19 +8,73 @@ import * as https from 'https'
 import { app } from 'electron'
 import type { TranscriptSegment } from '@shared/ipc-types'
 import type { SessionStore } from './SessionStore'
+import { stitch } from './TranscriptStitcher'
 
 /**
- * TranscriptManager receives VAD-gated PCM buffers, converts them to WAV,
- * invokes whisper-cli (local) or OpenAI API (cloud), and emits transcript segments.
+ * TranscriptManager receives VAD-gated PCM buffers (or per-utterance chunks
+ * from UtteranceChunker), invokes whisper-cli (local) or OpenAI API (cloud)
+ * or the Voxlit Server, and emits one 'segment' event per completed utterance.
+ *
+ * Two entry patterns:
+ *
+ *   1. Single-shot (backward compat, cloud + voxlit engines):
+ *      enqueue(pcm, engine, modelName) — one chunk, one emit.
+ *
+ *   2. Chunked (v2, local engine only):
+ *      enqueueChunk(id, seq, pcm, engine, modelName, isFinal) × N
+ *      finalizeUtterance(id, rawPcm)
+ *      — N chunks transcribe serially, stitched into one emit at the end.
+ *
+ * The global queue stays serial: two whisper-cli processes sharing Metal
+ * crash with GGML_ASSERT, so we never run them concurrently.
  *
  * Events emitted:
  *   'segment' (segment: TranscriptSegment)
+ *   'empty'   — utterance produced no text (silence, hallucination, or failure)
  */
 type Engine = 'voxlit' | 'local' | 'cloud'
-interface QueueItem { pcm: Buffer; engine: Engine; modelName: string }
+
+type ChunkState = 'pending' | 'running' | 'done' | 'failed'
+
+interface ChunkEntry {
+  seq: number
+  pcm: Buffer
+  state: ChunkState
+  text: string
+  /** True if this is a synthetic chunk that carries the full raw utterance —
+   *  used as the single-shot fallback when one or more normal chunks failed. */
+  isFallback: boolean
+}
+
+interface UtteranceState {
+  id: string
+  engine: Engine
+  modelName: string
+  startedAtMs: number
+  chunks: Map<number, ChunkEntry>
+  /** Set when the caller has signaled "no more chunks will be enqueued for
+   *  this utterance" — e.g. user released the hotkey. Emission is gated on
+   *  this flag so we don't emit mid-utterance. */
+  finalized: boolean
+  /** Raw concatenated PCM for the whole utterance. Only set for chunked
+   *  calls; single-shot enqueue() leaves this null (fallback would just
+   *  re-run the same buffer that already failed). */
+  rawPcm: Buffer | null
+  cancelled: boolean
+  fallbackTriggered: boolean
+}
+
+/** Pending work item in the global FIFO. Points into an UtteranceState so
+ *  cancellation (flipping state.cancelled) short-circuits at process time
+ *  without needing to scrub the queue. */
+interface PendingWork {
+  utteranceId: string
+  seq: number
+}
 
 export class TranscriptManager extends EventEmitter {
-  private queue: QueueItem[] = []
+  private utterances = new Map<string, UtteranceState>()
+  private pending: PendingWork[] = []
   private processing = false
   // Resolves when any in-flight warmup finishes — real transcription waits on this
   private warmupDone: Promise<void> = Promise.resolve()
@@ -72,57 +127,210 @@ export class TranscriptManager extends EventEmitter {
     }
   }
 
+  /**
+   * Backward-compat single-shot entry. Creates a one-chunk utterance and
+   * immediately finalizes it. Used by cloud/voxlit engines (which always
+   * pass through one full buffer) and by any caller that hasn't moved to
+   * the chunked API yet.
+   */
   enqueue(pcmBuffer: Buffer, engine: Engine = 'voxlit', modelName = 'ggml-base.en') {
-    // Trigger warmup on first local enqueue — deferred from constructor
+    const id = randomUUID()
+    this.enqueueChunk(id, 0, pcmBuffer, engine, modelName, /*isFinal*/ true)
+    // rawPcm=null — if the only chunk fails, re-running the same buffer would
+    // just fail the same way. Match today's behavior: emit 'empty' on failure.
+    this.finalizeUtterance(id, null)
+  }
+
+  /**
+   * Append a chunk to the given utterance. `seq` must be monotonically
+   * increasing per utterance. `isFinal` signals "the chunker closed the
+   * utterance with this chunk" — NOT "the utterance is finalized." Caller
+   * must still invoke finalizeUtterance() to authorize emission.
+   */
+  enqueueChunk(
+    utteranceId: string,
+    seq: number,
+    pcm: Buffer,
+    engine: Engine,
+    modelName: string,
+    _isFinal: boolean,
+  ): void {
+    // Trigger warmup on first local enqueue — deferred from constructor so
+    // app startup isn't blocked by Metal GPU priming.
     if (engine === 'local' && !this.warmedUp) {
       this.warmedUp = true
       this.warmup()
     }
-    this.queue.push({ pcm: pcmBuffer, engine, modelName })
-    if (!this.processing) this.processNext()
+
+    let u = this.utterances.get(utteranceId)
+    if (!u) {
+      u = {
+        id: utteranceId,
+        engine,
+        modelName,
+        startedAtMs: Date.now(),
+        chunks: new Map(),
+        finalized: false,
+        rawPcm: null,
+        cancelled: false,
+        fallbackTriggered: false,
+      }
+      this.utterances.set(utteranceId, u)
+    }
+    if (u.cancelled) return
+
+    u.chunks.set(seq, { seq, pcm, state: 'pending', text: '', isFallback: false })
+    this.pending.push({ utteranceId, seq })
+    if (!this.processing) void this.processNext()
   }
 
-  private async processNext() {
-    if (this.queue.length === 0) {
+  /**
+   * Signal that no more chunks will be enqueued for this utterance. Pass
+   * `rawPcm` when chunked transcription was used so we have a fallback path
+   * if any chunk failed. Pass null from the single-shot enqueue() wrapper.
+   */
+  finalizeUtterance(utteranceId: string, rawPcm: Buffer | null): void {
+    const u = this.utterances.get(utteranceId)
+    if (!u) return
+    u.finalized = true
+    u.rawPcm = rawPcm
+    // Chunks may already be done by now — e.g. a short utterance with one
+    // chunk that finished before finalize landed. Kick an emit check.
+    this.maybeEmitUtterance(utteranceId)
+  }
+
+  /**
+   * Abort an in-flight utterance — e.g. audio_error, helper crash. Any
+   * pending chunks are skipped at process time; the utterance emits nothing.
+   */
+  cancelUtterance(utteranceId: string): void {
+    const u = this.utterances.get(utteranceId)
+    if (!u) return
+    u.cancelled = true
+    // Don't delete from map yet — in-flight transcribe may still reference it.
+    // maybeEmitUtterance cleans up when chunks settle.
+  }
+
+  // ─── internal: the single serial processing loop ────────────────────────
+
+  private async processNext(): Promise<void> {
+    // Find the next pending chunk whose utterance isn't cancelled. Skip
+    // cancelled items without spawning whisper.
+    let work: PendingWork | undefined
+    while ((work = this.pending.shift())) {
+      const u = this.utterances.get(work.utteranceId)
+      if (!u || u.cancelled) continue
+      const c = u.chunks.get(work.seq)
+      if (!c || c.state !== 'pending') continue
+      break
+    }
+
+    if (!work) {
       this.processing = false
       return
     }
 
     this.processing = true
-    const { pcm, engine, modelName } = this.queue.shift()!
-    const startMs = Date.now()
+    const u = this.utterances.get(work.utteranceId)!
+    const c = u.chunks.get(work.seq)!
+    c.state = 'running'
 
     try {
-      const raw =
-        engine === 'local'  ? await this.transcribeLocal(pcm, modelName)
-        : engine === 'cloud' ? await this.transcribeCloud(pcm)
-        : await this.transcribeVoxlit(pcm)
-
-      const text = this.cleanText(raw)
-      if (text && !this.isHallucination(text)) {
-        const durationMs = Date.now() - startMs
-        const model =
-          engine === 'voxlit' ? 'voxlit-cloud' :
-          engine === 'cloud'  ? 'whisper-1'    :
-          modelName
-        const entry = this.sessionStore.addEntry({ rawText: text, durationMs, engine, model })
-        const segment: TranscriptSegment = {
-          text,
-          sessionId: entry.sessionId,
-          entryId: entry.id,
-          durationMs,
-          engine
-        }
-        this.emit('segment', segment)
-      } else {
-        this.emit('empty')
-      }
+      const raw = await this.transcribeByEngine(c.pcm, u.engine, u.modelName)
+      const cleaned = this.cleanText(raw)
+      // Per-chunk hallucination guard: if a chunk produces a known phantom,
+      // drop its text from the stitch rather than failing the utterance.
+      c.text = (cleaned && !this.isHallucination(cleaned)) ? cleaned : ''
+      c.state = 'done'
     } catch (err) {
-      console.error('Transcription error:', err)
-      this.emit('empty')  // hide pill even on error
+      console.error(`[TranscriptManager] chunk ${u.id}:${c.seq} failed:`, err)
+      c.state = 'failed'
     } finally {
-      this.processNext()
+      this.maybeEmitUtterance(u.id)
+      void this.processNext()
     }
+  }
+
+  private transcribeByEngine(pcm: Buffer, engine: Engine, modelName: string): Promise<string> {
+    return engine === 'local' ? this.transcribeLocal(pcm, modelName)
+      : engine === 'cloud'    ? this.transcribeCloud(pcm)
+      : this.transcribeVoxlit(pcm)
+  }
+
+  /**
+   * Called after every chunk settles. Emits 'segment' once per utterance,
+   * after finalize AND after all chunks (including any fallback) have run.
+   */
+  private maybeEmitUtterance(utteranceId: string): void {
+    const u = this.utterances.get(utteranceId)
+    if (!u) return
+    if (u.cancelled) {
+      // Wait for all in-flight chunks to leave 'running' before deleting,
+      // so a late transcribe callback doesn't resurrect a deleted utterance.
+      const anyRunning = Array.from(u.chunks.values()).some(c => c.state === 'running')
+      if (!anyRunning) this.utterances.delete(utteranceId)
+      return
+    }
+    if (!u.finalized) return
+
+    const chunks = Array.from(u.chunks.values())
+    const anyUnsettled = chunks.some(c => c.state === 'pending' || c.state === 'running')
+    if (anyUnsettled) return
+
+    const anyFailed = chunks.some(c => c.state === 'failed' && !c.isFallback)
+    const fallbackChunk = chunks.find(c => c.isFallback)
+
+    // Fallback path: if a non-fallback chunk failed AND we have a raw shadow
+    // AND we haven't already tried the fallback, re-transcribe the whole
+    // utterance as a single shot. Same code path today's single-blob flow
+    // uses — guarantees "never worse than v1.0" when chunking derails.
+    if (anyFailed && u.rawPcm && !u.fallbackTriggered) {
+      u.fallbackTriggered = true
+      const seq = Math.max(...chunks.map(c => c.seq)) + 1
+      u.chunks.set(seq, {
+        seq, pcm: u.rawPcm, state: 'pending', text: '', isFallback: true,
+      })
+      this.pending.push({ utteranceId: u.id, seq })
+      if (!this.processing) void this.processNext()
+      return
+    }
+
+    // If we have a fallback chunk, its text IS the transcript. Otherwise
+    // stitch all successful non-fallback chunks in seq order.
+    let finalText = ''
+    if (fallbackChunk && fallbackChunk.state === 'done' && fallbackChunk.text) {
+      finalText = fallbackChunk.text
+    } else {
+      const ordered = chunks
+        .filter(c => !c.isFallback && c.state === 'done' && c.text)
+        .sort((a, b) => a.seq - b.seq)
+        .map(c => c.text)
+      finalText = stitch(ordered)
+    }
+
+    this.utterances.delete(utteranceId)
+
+    if (!finalText || this.isHallucination(finalText)) {
+      this.emit('empty')
+      return
+    }
+
+    const durationMs = Date.now() - u.startedAtMs
+    const model =
+      u.engine === 'voxlit' ? 'voxlit-cloud' :
+      u.engine === 'cloud'  ? 'whisper-1'    :
+      u.modelName
+    const entry = this.sessionStore.addEntry({
+      rawText: finalText, durationMs, engine: u.engine, model,
+    })
+    const segment: TranscriptSegment = {
+      text: finalText,
+      sessionId: entry.sessionId,
+      entryId: entry.id,
+      durationMs,
+      engine: u.engine,
+    }
+    this.emit('segment', segment)
   }
 
   /**

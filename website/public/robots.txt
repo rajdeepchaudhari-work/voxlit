@@ -1,2 +1,32 @@
+# Voxlit — robots.txt
+# Open-source macOS voice dictation. https://voxlit.co
+
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /*.json$
+
+# AI training crawlers — allowed (Voxlit content is open source and shareable)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Host directive
+Host: https://voxlit.co
+
+# Sitemap
+Sitemap: https://voxlit.co/sitemap.xml
