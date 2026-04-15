@@ -11,39 +11,39 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: <CloudIcon />,
-    heading: 'Cloud mode, if you want it',
-    body: 'My MacBook Air could not handle the large models, so I built a Cloud lane for people with older Macs.\n\nNo API key. No credit card. Free during beta — and if you outgrow it, swap in your own OpenAI key and skip me entirely.',
+    heading: 'Cloud mode if you want it',
+    body: "My old MacBook Air choked on the large models, so I added a Cloud lane for people with older Macs.\n\nNo API key. No credit card. Free during beta. Outgrow it, swap in your own OpenAI key, skip me entirely.",
     bg: 'rgba(102,93,245,0.1)',
     badge: 'BETA · FREE',
   },
   {
     icon: <ShieldIcon />,
     heading: 'I never want your audio',
-    body: 'Local mode does not open a network socket. Not for telemetry, not for analytics, not for "product improvement". I built it this way so trust is not a promise — it is something you can verify with Little Snitch in thirty seconds.',
+    body: "Local mode never opens a network socket. Not for telemetry, not for analytics, not for 'product improvement.' Don't take my word for it. Open Little Snitch. Watch it for thirty seconds. See for yourself.",
     bg: '#FFEB3B',
   },
   {
     icon: <BoltIcon />,
-    heading: 'Fast enough to forget you are dictating',
-    body: 'Words appear as you speak. I spent two weeks tuning the VAD buffers so Voxlit does not cut you off at the end of a sentence. Apple Silicon Metal GPU. No upload delay, because there is no upload.',
+    heading: 'Fast enough to forget it is on',
+    body: 'Words show up as you speak. The VAD waits for you to actually finish a thought, so Voxlit does not clip your sentences. Runs on the Neural Engine and Metal GPU. No upload delay, because nothing gets uploaded.',
     bg: '#FFFFFF',
   },
   {
     icon: <CodeIcon />,
     heading: 'Read every line yourself',
-    body: 'Every line — app, Swift helper, Cloud server — is MIT licensed on GitHub. Nothing proprietary, no vendored SDKs, no hidden endpoints. You can fork it today and still be using your fork in five years.',
+    body: "The app, the Swift helper, the Cloud server. All MIT licensed, all on GitHub. Nothing proprietary, no vendored SDKs, no hidden endpoints. Fork it today and you'll still be running your fork in five years.",
     bg: '#FFFFFF',
   },
   {
     icon: <AppsIcon />,
     heading: 'Works in every app I use',
-    body: 'Slack, Notion, Cursor, VS Code, Mail, Terminal, iTerm, Ghostty, iMessage, Gmail. If your Mac will let you type in it, Voxlit will dictate into it. One hotkey, universal injection via the Accessibility API.',
+    body: 'Slack, Notion, Cursor, VS Code, Mail, Terminal, iTerm, Ghostty, iMessage, Gmail. If your Mac lets you type in it, Voxlit can dictate into it. One hotkey, universal injection through the Accessibility API.',
     bg: '#FFFFFF',
   },
   {
     icon: <GlobeIcon />,
     heading: 'Not just English',
-    body: 'The bundled model covers 40+ languages. Download the large whisper model from Settings and you are at 100+. Offline. Free. My aunt in Delhi uses it for Hindi — that was the moment I knew this had to ship.',
+    body: 'The bundled model handles 40+ languages. The large whisper model pushes that past 100. Offline. Free. My aunt in Delhi uses it for Hindi. That was when I knew this had to ship.',
     bg: '#FFFFFF',
   },
 ]
@@ -72,10 +72,9 @@ export default function FeatureGrid() {
             marginTop: 16,
             lineHeight: 1.65,
           }}>
-            Every dictation app I tried asked me to give something up — my privacy,
-            my wallet, my ability to use it offline, my trust in a company that might
-            not exist next year. Voxlit is the version I built when I stopped
-            compromising.
+            Every dictation app I tried asked me to give something up. Privacy. Money.
+            The ability to use it offline. Trust in a company that might not exist
+            next year. Voxlit is what I built when I stopped compromising.
           </p>
         </div>
 

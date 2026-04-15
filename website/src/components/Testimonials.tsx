@@ -50,8 +50,8 @@ export default function Testimonials() {
           }}>
             Voxlit is not a venture-backed launch. It is a free tool a few
             thousand people quietly started relying on. Here is what some
-            of them have said — and if you end up using it, I would love
-            to hear from you too.
+            of them have said. If you end up using it, I would love to
+            hear from you too.
           </p>
         </div>
 

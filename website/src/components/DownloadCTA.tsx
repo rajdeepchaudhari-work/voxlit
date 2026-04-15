@@ -88,9 +88,9 @@ export default function DownloadCTA() {
             maxWidth: 520,
             marginInline: 'auto',
           }}>
-            One download, one Mac, no sign-up, no subscription, no catch.
-            If it saves you time, send it to a friend. That is the only thing
-            I will ever ask from you.
+            One download. No sign-up, no subscription, no catch.
+            If it saves you time, pass it along to a friend. That is all
+            I am asking.
           </p>
 
           <p style={{

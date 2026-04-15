@@ -6,39 +6,39 @@ const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
 const faqs = [
   {
     q: 'Does Voxlit send my audio anywhere?',
-    a: 'No — and that was the whole reason I built it. In Local mode, every word is transcribed on your Mac using whisper.cpp. No telemetry, no analytics, no background connections, no "anonymous usage stats". The code is MIT licensed — you can verify this yourself in under a minute.',
+    a: "No. That was the whole point. In Local mode, every word is transcribed on your Mac using whisper.cpp. No telemetry, no analytics, no background connections, no 'anonymous usage stats.' The code is MIT licensed. You can verify any of this yourself in under a minute.",
   },
   {
     q: 'What are the system requirements?',
-    a: 'macOS 13 Ventura or later. Works on both Apple Silicon (M1/M2/M3/M4) and Intel, but M-series Macs are where it really sings — the Neural Engine and Metal GPU make transcription feel instant.',
+    a: 'macOS 13 Ventura or later. Works on both Apple Silicon and Intel, but M-series Macs are where it really sings. The Neural Engine and Metal GPU make transcription feel instant.',
   },
   {
     q: 'How do I install Voxlit?',
-    a: 'Fastest path: run `curl -fsSL https://voxlit.co/install.sh | bash` in Terminal. It grabs the latest DMG, drops Voxlit.app into /Applications, and clears the macOS quarantine flag so Gatekeeper does not block it. You can also use `brew install --cask voxlit` (after `brew tap rajdeepchaudhari-work/voxlit`), or download the .dmg from GitHub Releases and right-click → Open the first time.',
+    a: 'Fastest path: run `curl -fsSL https://voxlit.co/install.sh | bash` in Terminal. It grabs the latest DMG, drops Voxlit.app into /Applications, and clears the macOS quarantine flag so Gatekeeper does not block it. You can also use `brew install --cask voxlit` (after `brew tap rajdeepchaudhari-work/voxlit`), or download the .dmg from GitHub Releases and right-click Open the first time.',
   },
   {
     q: 'Which apps does it work with?',
-    a: 'If you can type in it, you can dictate into it. Notion, Slack, Cursor, VS Code, Terminal, iTerm, Ghostty, Mail, Gmail, iMessage, Discord, Linear — basically any native or Electron app that accepts keyboard input. Voxlit uses the macOS Accessibility API, so coverage is as wide as macOS itself.',
+    a: 'If you can type in it, you can dictate into it. Notion, Slack, Cursor, VS Code, Terminal, iTerm, Ghostty, Mail, Gmail, iMessage, Discord, Linear. Basically any native or Electron app that accepts keyboard input. Voxlit uses the macOS Accessibility API, so coverage is as wide as macOS itself.',
   },
   {
     q: 'How accurate is the transcription?',
-    a: 'On an M-series Mac with the default base model, accuracy is good enough for everyday messages, emails, and AI prompts. If you need more — for long-form writing, medical terminology, or technical jargon — download the small, medium, or large whisper model from Settings. All of them are offline and free.',
+    a: 'On an M-series Mac with the default base model, accuracy is good for everyday messages, emails, and AI prompts. Need more, for long-form writing, medical terminology, or technical jargon? Download the small, medium, or large whisper model from Settings. All of them are offline and all of them are free.',
   },
   {
     q: 'Is Voxlit really free forever?',
-    a: 'Yes. I am not building this to flip it to a VC in two years. MIT licensed means even if I got hit by a bus tomorrow, every copy of Voxlit that already exists keeps working, and anyone can fork the repo and ship a new version. No paid tier. No freemium gate. No subscription hiding behind "Pro features".',
+    a: "Yes. I am not building this to flip it to a VC in two years. MIT licensed means even if I got hit by a bus tomorrow, every copy of Voxlit that already exists keeps working, and anyone can fork the repo and ship a new version. No paid tier. No freemium gate. No subscription hiding behind 'Pro features.'",
   },
   {
     q: 'Does cloud mode compromise my privacy?',
-    a: "Cloud mode is opt-in, and it is not me looking at your audio — it is OpenAI, using your own API key. Audio goes directly from your Mac to OpenAI's API. It never passes through any Voxlit server, because I do not want that liability and you do not want that middleman. Your API key is encrypted on disk with macOS Keychain.",
+    a: "Cloud mode is opt-in, and it is not me looking at your audio. It is OpenAI, using your own API key. Audio goes directly from your Mac to OpenAI's API. It never passes through any Voxlit server, because I do not want that liability and you do not want that middleman. Your API key is encrypted on disk with macOS Keychain.",
   },
   {
     q: 'Why does macOS ask for permissions?',
-    a: 'Two permissions, both essential and both honest: Microphone (so Voxlit can actually hear you) and Accessibility (so it can type the result into your focused app). The onboarding wizard walks you through granting both in about 30 seconds. If you ever want to revoke them, System Settings → Privacy & Security is one click away.',
+    a: 'Two permissions, both essential. Microphone, so Voxlit can actually hear you. Accessibility, so it can type the result into your focused app. The onboarding wizard walks you through granting both in about 30 seconds. If you ever want to revoke them, System Settings > Privacy & Security is one click away.',
   },
   {
     q: 'Who are you and why should I trust this?',
-    a: "I'm Rajdeep Chaudhari. I built Voxlit alone, in public, at github.com/rajdeepchaudhari-work/voxlit. Every commit is signed. Every release has checksums and an SBOM. CodeQL and OpenSSF run on every push. You do not have to trust me — you can trust the code, because the code is right there.",
+    a: "I'm Rajdeep Chaudhari. I built Voxlit alone and in public at github.com/rajdeepchaudhari-work/voxlit. Every commit is signed. Every release ships with checksums and an SBOM. CodeQL and OpenSSF run on every push. You do not have to trust me. You can trust the code, because the code is right there.",
   },
 ]
 

@@ -120,9 +120,9 @@ export default function Hero() {
               marginBottom: 36,
             }}>
               I got tired of paying <strong style={{ color: '#0A0A0A' }}>$20 a month</strong> to
-              talk to my own Mac, so I built Voxlit. One hotkey. Speak. Words land anywhere
-              you type — Slack, Cursor, Notion, Terminal, Gmail. Runs entirely on your
-              machine. Free, open source, and built to stay that way.
+              talk to my own Mac. So I built Voxlit. One hotkey, speak, and your words
+              show up wherever you type. Slack. Cursor. Notion. Terminal. Gmail.
+              Runs on your own Mac. Free, open source, going to stay that way.
             </p>
 
             {/* Homebrew */}
