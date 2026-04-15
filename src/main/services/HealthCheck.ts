@@ -143,27 +143,41 @@ export class HealthCheck {
     // Reachability probe. Any HTTP response (even 4xx like 405 Method Not Allowed)
     // means the server is up. Only a network error or 5xx is a real failure.
     return new Promise((resolve) => {
-      const req = https.request(url, { method: 'GET', timeout: 2000 }, (res) => {
-        const code = res.statusCode ?? 0
-        res.resume()  // drain so the socket can close cleanly
-        if (code === 0) resolve({ name: 'Voxlit Server', status: 'fail', message: 'No response' })
-        else if (code >= 500) resolve({ name: 'Voxlit Server', status: 'fail', message: `Server error (${code})` })
-        else resolve({ name: 'Voxlit Server', status: 'ok', message: 'Reachable' })
-      })
-      req.on('error', (err) => resolve({ name: 'Voxlit Server', status: 'fail', message: `Unreachable: ${err.message}` }))
-      req.on('timeout', () => { req.destroy(); resolve({ name: 'Voxlit Server', status: 'fail', message: 'Timed out' }) })
-      req.end()
+      // https.request throws synchronously on a malformed URL. Wrap it so the
+      // promise resolves with a clear error instead of hanging forever.
+      try {
+        const req = https.request(url, { method: 'GET', timeout: 2000 }, (res) => {
+          const code = res.statusCode ?? 0
+          res.resume()  // drain so the socket can close cleanly
+          if (code === 0) resolve({ name: 'Voxlit Server', status: 'fail', message: 'No response' })
+          else if (code >= 500) resolve({ name: 'Voxlit Server', status: 'fail', message: `Server error (${code})` })
+          else resolve({ name: 'Voxlit Server', status: 'ok', message: 'Reachable' })
+        })
+        req.on('error', (err) => resolve({ name: 'Voxlit Server', status: 'fail', message: `Unreachable: ${err.message}` }))
+        req.on('timeout', () => { req.destroy(); resolve({ name: 'Voxlit Server', status: 'fail', message: 'Timed out' }) })
+        req.end()
+      } catch (err) {
+        resolve({ name: 'Voxlit Server', status: 'fail', message: `Invalid URL: ${(err as Error).message}` })
+      }
     })
   }
 
   private checkOpenAIKey(): SubsystemHealth {
     const key = this.store.get('openaiApiKey')
-    if (key && key.length > 20) return { name: 'OpenAI key', status: 'ok', message: 'Configured' }
-    return {
+    if (!key || key.length <= 20) return {
       name: 'OpenAI key',
       status: 'fail',
       message: 'Not set',
       action: { label: 'Open settings', kind: 'open-settings' },
     }
+    // Length-only check passes garbage like "nottherealkey_but_long_enough".
+    // Real OpenAI keys start with "sk-" (covers both "sk-..." and "sk-proj-...").
+    if (!key.startsWith('sk-')) return {
+      name: 'OpenAI key',
+      status: 'warn',
+      message: 'Key format looks wrong — should start with "sk-"',
+      action: { label: 'Open settings', kind: 'open-settings' },
+    }
+    return { name: 'OpenAI key', status: 'ok', message: 'Configured' }
   }
 }

@@ -59,26 +59,31 @@ export class SessionStore {
     // The actual provider is preserved in session.model ('voxlit-cloud' etc).
     const dbEngine: 'local' | 'cloud' = params.engine === 'local' ? 'local' : 'cloud'
 
-    this.db.insert(entries).values({
-      id,
-      sessionId,
-      createdAt: Date.now(),
-      rawText: params.rawText,
-      durationMs: params.durationMs ?? null,
-      confidence: params.confidence ?? null,
-      engine: dbEngine
-    }).run()
+    // Wrap the insert + counter update in a single transaction. Without this,
+    // a crash between the two writes (rare but real in WAL mode alongside a
+    // concurrent deleteSession) leaves entryCount / totalWords inconsistent
+    // with the actual entry rows.
+    this.db.transaction((tx) => {
+      tx.insert(entries).values({
+        id,
+        sessionId,
+        createdAt: Date.now(),
+        rawText: params.rawText,
+        durationMs: params.durationMs ?? null,
+        confidence: params.confidence ?? null,
+        engine: dbEngine
+      }).run()
 
-    // Increment session counters in-place — accumulates words across entries.
-    // Previous code overwrote totalWords with the current entry's count, losing history.
-    this.db
-      .update(sessions)
-      .set({
-        entryCount: sql`${sessions.entryCount} + 1`,
-        totalWords: sql`${sessions.totalWords} + ${wordCount}`
-      })
-      .where(eq(sessions.id, sessionId))
-      .run()
+      // Increment session counters in-place — accumulates words across entries.
+      // Previous code overwrote totalWords with the current entry's count, losing history.
+      tx.update(sessions)
+        .set({
+          entryCount: sql`${sessions.entryCount} + 1`,
+          totalWords: sql`${sessions.totalWords} + ${wordCount}`
+        })
+        .where(eq(sessions.id, sessionId))
+        .run()
+    })
 
     this.resetInactivityTimer()
 

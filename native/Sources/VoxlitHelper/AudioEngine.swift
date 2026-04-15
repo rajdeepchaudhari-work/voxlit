@@ -76,7 +76,13 @@ class AudioEngine {
     /// or AirPods UID from AVAudioDevices). Empty/nil uses system default.
     func setPreferredDevice(uid: String?) {
         let newUID = (uid?.isEmpty == false) ? uid : nil
-        if newUID != preferredDeviceUID { needsReconfigure = true }
+        if newUID != preferredDeviceUID {
+            needsReconfigure = true
+            // User picked a new device — the old "we already warned the user"
+            // dedupe state is irrelevant. If THIS device later vanishes, we
+            // want the user to see a fresh audio_error event.
+            fellBackToDefault = false
+        }
         preferredDeviceUID = newUID
         print("[AudioEngine] Preferred device UID: \(preferredDeviceUID ?? "(system default)")")
     }
