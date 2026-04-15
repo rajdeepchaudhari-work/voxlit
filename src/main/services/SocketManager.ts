@@ -25,6 +25,8 @@ export class SocketManager extends EventEmitter {
   private socket: net.Socket | null = null
   private restartAttempts = 0
   private restartScheduled = false
+  private restartTimer: NodeJS.Timeout | null = null
+  private stopped = false
   private readonly MAX_RESTART_ATTEMPTS = 5
   /** Last status we broadcast — lets late subscribers (renderer) query current value. */
   private lastStatus: { status: HelperStatus; error?: string } = { status: 'disconnected' }
@@ -41,6 +43,15 @@ export class SocketManager extends EventEmitter {
   }
 
   stop() {
+    // Mark stopped FIRST so socket 'close' → scheduleRestart() is a no-op.
+    // Otherwise a pending setTimeout can fire during app quit (e.g. during an
+    // auto-update install) and call back into destroyed BrowserWindows.
+    this.stopped = true
+    if (this.restartTimer) {
+      clearTimeout(this.restartTimer)
+      this.restartTimer = null
+      this.restartScheduled = false
+    }
     this.socket?.destroy()
     this.server?.close()
     // SIGKILL so the helper exits immediately — SIGTERM gave it too much time to
@@ -57,6 +68,15 @@ export class SocketManager extends EventEmitter {
   /// (e.g. before autoUpdater.quitAndInstall, so file descriptors into the
   /// .app bundle are released before Squirrel.Mac tries to replace it).
   async stopAndWait(timeoutMs = 1500): Promise<void> {
+    // Same ordering as stop(): flip stopped + cancel pending restart BEFORE
+    // destroying the socket, so the socket 'close' handler can't re-arm a timer
+    // that will fire after quitAndInstall has destroyed our windows.
+    this.stopped = true
+    if (this.restartTimer) {
+      clearTimeout(this.restartTimer)
+      this.restartTimer = null
+      this.restartScheduled = false
+    }
     const helper = this.helper
     this.socket?.destroy()
     this.server?.close()
@@ -248,6 +268,9 @@ export class SocketManager extends EventEmitter {
   }
 
   private scheduleRestart() {
+    // Never schedule after stop() — otherwise a pending timer fires during app
+    // quit (auto-update install) and emits into destroyed BrowserWindows.
+    if (this.stopped) return
     // Deduplicate: socket 'close' and helper 'exit' both call this on a crash
     if (this.restartScheduled) return
     if (this.restartAttempts >= this.MAX_RESTART_ATTEMPTS) {
@@ -264,8 +287,10 @@ export class SocketManager extends EventEmitter {
     const delay = Math.min(1000 * 2 ** this.restartAttempts, 30_000)
     this.restartAttempts++
     this.restartScheduled = true
-    setTimeout(() => {
+    this.restartTimer = setTimeout(() => {
+      this.restartTimer = null
       this.restartScheduled = false
+      if (this.stopped) return
       this.spawnHelper()
     }, delay)
   }
