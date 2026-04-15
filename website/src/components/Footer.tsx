@@ -113,8 +113,8 @@ export default function Footer() {
           </div>
 
           {/* Column 2 — Navigation */}
-          <div>
-            <div className="overline" style={{ marginBottom: 16 }}>Navigate</div>
+          <nav aria-label="Footer site navigation">
+            <h2 className="overline" style={{ marginBottom: 16, fontSize: '0.6875rem', fontWeight: 700 }}>Navigate</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
                 { label: 'Features', href: '#features' },
@@ -139,11 +139,12 @@ export default function Footer() {
                 </a>
               ))}
             </div>
-          </div>
+          </nav>
 
           {/* Column 3 — Project + Support */}
           <div>
-            <div className="overline" style={{ marginBottom: 16 }}>Project</div>
+            <nav aria-label="Project links">
+            <h2 className="overline" style={{ marginBottom: 16, fontSize: '0.6875rem', fontWeight: 700 }}>Project</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
               {[
                 { label: 'GitHub ↗', href: GITHUB_URL, external: true },
@@ -170,9 +171,10 @@ export default function Footer() {
                 </a>
               ))}
             </div>
+            </nav>
 
             {/* Support */}
-            <div className="overline" style={{ marginBottom: 12 }}>Support</div>
+            <h2 className="overline" style={{ marginBottom: 12, fontSize: '0.6875rem', fontWeight: 700 }}>Support</h2>
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
               style={{
@@ -203,6 +205,81 @@ export default function Footer() {
               <MailIcon />
               {SUPPORT_EMAIL}
             </a>
+          </div>
+        </div>
+      </div>
+
+      {/* About / SEO content block */}
+      <div style={{ borderTop: '2px solid #0A0A0A', background: '#FFFDF7' }}>
+        <div className="page-container">
+          <div style={{ padding: '28px 0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24 }}>
+            <div>
+              <h3 style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.6875rem',
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: '#0A0A0A',
+                marginBottom: 10,
+              }}>About Voxlit</h3>
+              <p style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '0.8125rem',
+                lineHeight: 1.65,
+                color: '#555',
+              }}>
+                Voxlit is a free, open-source voice dictation app for macOS. Built on
+                whisper.cpp, it runs 100% offline on your Mac — no cloud, no account, no
+                subscription. Dictate into Slack, Notion, Cursor, VS Code, Terminal, Gmail,
+                iMessage, Discord, or any macOS app that accepts keyboard input. MIT licensed
+                and auditable on GitHub.
+              </p>
+            </div>
+            <div>
+              <h3 style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.6875rem',
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: '#0A0A0A',
+                marginBottom: 10,
+              }}>Features</h3>
+              <p style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '0.8125rem',
+                lineHeight: 1.65,
+                color: '#555',
+              }}>
+                Global hotkey activation, Silero VAD voice detection, Apple Silicon Metal
+                acceleration, universal text injection via the macOS Accessibility API, optional
+                OpenAI cloud mode with bring-your-own API key, downloadable whisper model tiers
+                (base, small, medium, large), and a local SQLite transcript history.
+              </p>
+            </div>
+            <div>
+              <h3 style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.6875rem',
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: '#0A0A0A',
+                marginBottom: 10,
+              }}>System Requirements</h3>
+              <p style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '0.8125rem',
+                lineHeight: 1.65,
+                color: '#555',
+              }}>
+                macOS 13 Ventura or later. Apple Silicon (M1, M2, M3, M4) recommended; Intel
+                Macs supported. Universal binary (arm64 + x64). Requires Microphone and
+                Accessibility permissions. Installer available via Homebrew,
+                curl one-liner, or signed DMG from GitHub Releases.
+              </p>
+            </div>
           </div>
         </div>
       </div>

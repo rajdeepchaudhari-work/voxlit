@@ -15,10 +15,13 @@ export default function TrustBar() {
   const downloads = useDownloadCount()
 
   return (
-    <div style={{
+    <section aria-label="Voxlit trust indicators and download count" style={{
       borderBottom: '3px solid #0A0A0A',
       background: '#FFFFFF',
     }}>
+      <h2 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        Voxlit at a glance
+      </h2>
       <div className="page-container">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
           {items.map((item, i) => (
@@ -72,7 +75,7 @@ export default function TrustBar() {
           .trust-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
       `}</style>
-    </div>
+    </section>
   )
 }
 

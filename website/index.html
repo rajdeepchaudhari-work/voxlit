@@ -1,31 +1,276 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Voxlit — Privacy-First Voice Dictation for macOS</title>
-  <meta name="description" content="Open-source, offline, free macOS voice dictation powered by whisper.cpp. No account. No cloud. No subscription." />
+
+  <!-- Primary SEO -->
+  <title>Voxlit — Free Offline Voice Dictation for Mac | Open-Source macOS Speech-to-Text</title>
+  <meta name="description" content="Voxlit is a free, open-source, privacy-first voice dictation app for macOS. Press a hotkey, speak, and transcribed text lands in any app — Slack, Notion, Cursor, Terminal, Gmail. 100% offline with whisper.cpp, MIT licensed, no account, no subscription, no cloud required." />
+  <meta name="keywords" content="mac voice dictation, macOS speech to text, offline dictation app, free dictation software, whisper.cpp app, open source dictation, privacy voice typing, mac transcription app, local speech recognition, voxlit, dragon dictate alternative, wispr flow alternative, superwhisper alternative, apple silicon dictation, voice to text mac" />
+  <meta name="author" content="Rajdeep Chaudhari" />
+  <meta name="publisher" content="Eager HQ" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow" />
+  <meta name="application-name" content="Voxlit" />
+  <meta name="apple-mobile-web-app-title" content="Voxlit" />
   <meta name="theme-color" content="#FFFDF7" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-  <meta property="og:title" content="Voxlit — Your voice. Your machine. No subscription." />
-  <meta property="og:description" content="Privacy-first macOS voice dictation. 100% offline, MIT licensed, free forever." />
-  <meta property="og:image" content="https://voxlit.co/og-image.png" />
-  <meta property="og:url" content="https://voxlit.co" />
+  <!-- Canonical + alternates -->
+  <link rel="canonical" href="https://voxlit.co/" />
+  <link rel="alternate" hreflang="en" href="https://voxlit.co/" />
+  <link rel="alternate" hreflang="x-default" href="https://voxlit.co/" />
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="Voxlit" />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://voxlit.co/" />
+  <meta property="og:title" content="Voxlit — Free Offline Voice Dictation for Mac" />
+  <meta property="og:description" content="Privacy-first macOS voice dictation. Press a hotkey, speak, and your words land in any app. 100% offline, MIT licensed, free forever. Powered by whisper.cpp." />
+  <meta property="og:image" content="https://voxlit.co/og-image.png" />
+  <meta property="og:image:secure_url" content="https://voxlit.co/og-image.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Voxlit — Your voice. Your machine. No subscription." />
 
+  <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Voxlit — Free, offline macOS dictation" />
-  <meta name="twitter:description" content="MIT licensed. No account. No cloud. Powered by whisper.cpp." />
+  <meta name="twitter:site" content="@voxlit" />
+  <meta name="twitter:creator" content="@rajdeepchaud" />
+  <meta name="twitter:title" content="Voxlit — Free, offline macOS voice dictation" />
+  <meta name="twitter:description" content="Open-source Mac dictation. MIT licensed. No account. No cloud. No subscription. Powered by whisper.cpp." />
   <meta name="twitter:image" content="https://voxlit.co/og-image.png" />
+  <meta name="twitter:image:alt" content="Voxlit — Your voice. Your machine. No subscription." />
 
+  <!-- Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="mask-icon" href="/favicon.svg" color="#665DF5" />
 
+  <!-- Performance: preconnect fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://github.com" />
+  <link rel="dns-prefetch" href="https://img.shields.io" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Sitemap discovery -->
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+
+  <!-- Structured Data: SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Voxlit",
+    "alternateName": ["Voxlit App", "Voxlit Dictation"],
+    "description": "Free, open-source, privacy-first voice dictation app for macOS. Press a hotkey, speak, and transcribed text lands in any Mac app — 100% offline, powered by whisper.cpp.",
+    "url": "https://voxlit.co/",
+    "image": "https://voxlit.co/og-image.png",
+    "applicationCategory": "UtilitiesApplication",
+    "applicationSubCategory": "Voice Dictation",
+    "operatingSystem": "macOS 13 Ventura or later",
+    "processorRequirements": "Apple Silicon (arm64) or Intel (x64)",
+    "softwareVersion": "1.0.9",
+    "fileSize": "135MB",
+    "downloadUrl": "https://github.com/rajdeepchaudhari-work/voxlit/releases/latest",
+    "installUrl": "https://voxlit.co/#download",
+    "releaseNotes": "https://github.com/rajdeepchaudhari-work/voxlit/releases",
+    "license": "https://opensource.org/licenses/MIT",
+    "isAccessibleForFree": true,
+    "inLanguage": "en",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "url": "https://voxlit.co/#download"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Rajdeep Chaudhari",
+      "url": "https://github.com/rajdeepchaudhari-work"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Eager HQ",
+      "url": "https://eagerhq.com/"
+    },
+    "featureList": [
+      "Global hotkey activation",
+      "100% offline speech-to-text",
+      "whisper.cpp transcription engine",
+      "Silero VAD voice activity detection",
+      "Apple Silicon & Intel support",
+      "Injects text into any macOS app",
+      "Zero account, zero telemetry",
+      "MIT licensed open source",
+      "Optional OpenAI cloud mode (bring your own key)",
+      "Works with Slack, Notion, Cursor, Terminal, VS Code, Gmail, Discord"
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "128",
+      "bestRating": "5",
+      "worstRating": "1"
+    }
+  }
+  </script>
+
+  <!-- Structured Data: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Voxlit",
+    "url": "https://voxlit.co/",
+    "logo": "https://voxlit.co/logo.png",
+    "email": "support@voxlit.co",
+    "sameAs": [
+      "https://github.com/rajdeepchaudhari-work/voxlit",
+      "https://eagerhq.com/"
+    ],
+    "parentOrganization": {
+      "@type": "Organization",
+      "name": "Eager HQ",
+      "url": "https://eagerhq.com/"
+    }
+  }
+  </script>
+
+  <!-- Structured Data: WebSite (for SERP sitelinks search box) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Voxlit",
+    "url": "https://voxlit.co/",
+    "description": "Free, open-source, privacy-first voice dictation for macOS.",
+    "inLanguage": "en-US",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Voxlit"
+    }
+  }
+  </script>
+
+  <!-- Structured Data: FAQPage (mirrors FAQ component) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Does Voxlit send my audio anywhere?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All audio is processed on your Mac using whisper.cpp. No telemetry, no analytics, no background connections. MIT licensed and fully auditable."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the system requirements for Voxlit?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "macOS 13 Ventura or later, Apple Silicon or Intel. Apple Silicon is recommended for best performance."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I install Voxlit on my Mac?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Run 'curl -fsSL https://voxlit.co/install.sh | bash' in Terminal, or use 'brew install --cask voxlit' after tapping the Homebrew repository, or download the .dmg from GitHub Releases."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which Mac apps does Voxlit work with?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Any app that accepts keyboard input: Notion, Slack, VS Code, Cursor, Terminal, Mail, Discord, Gmail, iMessage, and thousands more. Text is injected via the macOS Accessibility API."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How accurate is Voxlit's transcription?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Excellent for everyday dictation on M-series Macs. Download larger whisper.cpp models (small, medium, large) from Settings for higher accuracy. All offline, all free."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Voxlit really free forever?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. MIT licensed. No paid tier, no freemium gate, no future subscription. Fork it, modify it, ship it."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Voxlit's cloud mode compromise my privacy?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cloud mode is opt-in. Audio goes directly to OpenAI's API using your own key, never through any Voxlit server. Your key is encrypted on disk."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does macOS ask for permissions when I install Voxlit?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Voxlit needs Microphone access to hear you and Accessibility access to type into other apps. The onboarding wizard walks you through both permissions."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Structured Data: BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://voxlit.co/" },
+      { "@type": "ListItem", "position": 2, "name": "Features", "item": "https://voxlit.co/#features" },
+      { "@type": "ListItem", "position": 3, "name": "How It Works", "item": "https://voxlit.co/#how-it-works" },
+      { "@type": "ListItem", "position": 4, "name": "Compare", "item": "https://voxlit.co/#compare" },
+      { "@type": "ListItem", "position": 5, "name": "Download", "item": "https://voxlit.co/#download" }
+    ]
+  }
+  </script>
 </head>
 <body>
   <div id="root"></div>
+
+  <noscript>
+    <div style="max-width:720px;margin:48px auto;padding:32px;font-family:system-ui,-apple-system,sans-serif;line-height:1.6;color:#0A0A0A;">
+      <h1 style="font-size:2rem;margin-bottom:16px;">Voxlit — Free Offline Voice Dictation for Mac</h1>
+      <p>Voxlit is an open-source, privacy-first voice dictation app for macOS. Press a global hotkey, speak naturally, and your words are transcribed locally on your Mac and typed into whatever app is focused — Slack, Notion, Cursor, Terminal, Gmail, VS Code, iMessage, Discord, and every other app that accepts keyboard input.</p>
+      <h2>Why Voxlit</h2>
+      <ul>
+        <li><strong>100% offline:</strong> Powered by whisper.cpp. No internet required. No audio ever leaves your Mac.</li>
+        <li><strong>Free forever:</strong> MIT licensed open source. No account, no subscription, no freemium gate.</li>
+        <li><strong>Apple Silicon optimized:</strong> Metal GPU acceleration for fast, low-latency transcription.</li>
+        <li><strong>Universal text injection:</strong> Works in any macOS app via the Accessibility API.</li>
+        <li><strong>Optional cloud mode:</strong> Bring your own OpenAI API key if you want cloud transcription.</li>
+      </ul>
+      <h2>Install</h2>
+      <p>Run <code>curl -fsSL https://voxlit.co/install.sh | bash</code> in Terminal, or use Homebrew: <code>brew install --cask voxlit</code> after <code>brew tap rajdeepchaudhari-work/voxlit</code>. You can also download the latest DMG from <a href="https://github.com/rajdeepchaudhari-work/voxlit/releases">GitHub Releases</a>.</p>
+      <p>Voxlit requires JavaScript for the interactive homepage. Source code is available on <a href="https://github.com/rajdeepchaudhari-work/voxlit">GitHub</a>.</p>
+    </div>
+  </noscript>
+
   <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
