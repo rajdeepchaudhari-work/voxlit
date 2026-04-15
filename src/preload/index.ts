@@ -5,6 +5,7 @@ import type {
   RecordingStateChange,
   TranscriptSegment,
   HelperStatusChange,
+  AudioErrorEvent,
   VoxlitSettings,
   Session,
   Entry,
@@ -42,6 +43,12 @@ contextBridge.exposeInMainWorld('voxlit', {
     const listener = (_: Electron.IpcRendererEvent, data: HelperStatusChange) => cb(data)
     ipcRenderer.on(IPC.HELPER_STATUS, listener)
     return () => ipcRenderer.removeListener(IPC.HELPER_STATUS, listener)
+  },
+
+  onAudioError: (cb: (err: AudioErrorEvent) => void) => {
+    const listener = (_: Electron.IpcRendererEvent, err: AudioErrorEvent) => cb(err)
+    ipcRenderer.on(IPC.AUDIO_ERROR, listener)
+    return () => ipcRenderer.removeListener(IPC.AUDIO_ERROR, listener)
   },
 
   // ─── Invoke (renderer → main) ────────────────────────────────────────────────

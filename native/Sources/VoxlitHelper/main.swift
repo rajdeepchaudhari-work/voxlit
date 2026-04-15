@@ -41,7 +41,14 @@ class SocketClient: SocketWriter {
         while true {
             var chunk = [UInt8](repeating: 0, count: 4096)
             let n = Darwin.read(fd, &chunk, chunk.count)
-            guard n > 0 else { print("[SocketClient] Disconnected"); break }
+            guard n > 0 else {
+                // Socket broke (Electron closed it, sleep/wake, or a crash).
+                // Exit the helper so Electron's helper.on('exit') respawns a
+                // clean one instead of leaving this zombie holding stale HAL
+                // state and fighting the newly-spawned helper for the socket.
+                print("[SocketClient] Disconnected — exiting helper for clean respawn")
+                exit(0)
+            }
             buf.append(contentsOf: chunk.prefix(n))
             let (frames, remaining) = SocketProtocol.parse(buffer: buf)
             buf = Data(remaining)  // copy to reset startIndex to 0 — suffix(from:) keeps original indices
@@ -127,9 +134,18 @@ func installFnKeyTap(client: SocketClient) {
     // to show the orange mic indicator in the menu bar (same as Glaido).
     NotificationCenter.default.addObserver(forName: .fnDown, object: nil, queue: .main) { _ in
         TextInjector.captureFocusedApp()
-        do { try audioEngine.start() }
-        catch { print("[AudioEngine] Start failed: \(error)") }
-        client.sendJSON(["type": "hotkey", "action": "start"])
+        do {
+            try audioEngine.start()
+            client.sendJSON(["type": "hotkey", "action": "start"])
+        } catch {
+            // Tell Electron — otherwise the renderer shows 'listening' forever
+            // and the user has no signal that the mic simply isn't capturing.
+            print("[AudioEngine] Start failed: \(error)")
+            client.sendJSON([
+                "type": "audio_error",
+                "message": "\(error)",
+            ])
+        }
     }
     NotificationCenter.default.addObserver(forName: .fnUp, object: nil, queue: .main) { _ in
         audioEngine.stop()
@@ -179,6 +195,17 @@ guard connected else { print("[VoxlitHelper] Could not connect — exiting"); ex
 
 installFnKeyTap(client: client)
 // Note: Carbon hotkey disabled — Fn is the only trigger (push-to-talk via CGEventTap)
+
+// ─── Sleep / wake handling ────────────────────────────────────────────────────
+// AVAudioEngine's HAL bindings go stale across sleep (especially with Bluetooth
+// or USB mics that disappear/reappear). Force a full reconfigure on the next
+// start() so the tap is rebuilt against the post-wake device state.
+NSWorkspace.shared.notificationCenter.addObserver(
+    forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+) { _ in
+    print("[VoxlitHelper] System woke — forcing AudioEngine reconfigure")
+    audioEngine.handleSystemWake()
+}
 
 // Audio engine is now started on-demand (Fn press) rather than always-on.
 // This matches Glaido and ensures macOS shows the orange mic indicator

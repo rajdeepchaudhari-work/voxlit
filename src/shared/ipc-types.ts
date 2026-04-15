@@ -7,6 +7,7 @@ export const IPC = {
   TRANSCRIPT_SEGMENT: 'voxlit:transcript-segment',
   AMPLITUDE_UPDATE: 'voxlit:amplitude-update',
   HELPER_STATUS: 'voxlit:helper-status',
+  AUDIO_ERROR: 'voxlit:audio-error',
 
   // Renderer → Main (ipcRenderer.invoke / ipcMain.handle)
   GET_SETTINGS: 'voxlit:get-settings',
@@ -50,6 +51,15 @@ export type RecordingState = 'idle' | 'listening' | 'processing' | 'error'
 export interface RecordingStateChange {
   state: RecordingState
   error?: string
+}
+
+// Emitted by the native helper when it can't start audio capture — a gone
+// Bluetooth mic, stale HAL state after sleep/wake, etc. `kind` is machine-
+// readable; `message` is human-readable.
+export interface AudioErrorEvent {
+  kind: 'device_fallback' | 'unknown'
+  message: string
+  preferredUid?: string
 }
 
 // ─── Transcription ────────────────────────────────────────────────────────────
