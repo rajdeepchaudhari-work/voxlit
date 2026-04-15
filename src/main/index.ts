@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, nativeImage, shell, ipcMain, powerMonitor } from 'electron'
+import { app, BrowserWindow, Tray, Menu, nativeImage, shell, ipcMain, powerMonitor, dialog } from 'electron'
 import { join } from 'path'
 import { randomUUID } from 'crypto'
 import Store from 'electron-store'
@@ -10,6 +10,36 @@ import { TranscriptManager } from './services/TranscriptManager'
 import { UtteranceChunker, type UtteranceChunk } from './services/UtteranceChunker'
 import { registerHandlers } from './ipc/handlers'
 import { initAutoUpdater, setSocketManagerForUpdater } from './services/UpdateManager'
+import { resetAllUserData, resetAndRelaunch } from './services/DataReset'
+
+// ─── CLI flags ────────────────────────────────────────────────────────────────
+// Handled BEFORE constructing any services so we clear the DB + electron-store
+// before they try to read from the directory we're about to delete. Essential
+// for users upgrading from an incompatible past version whose app won't launch.
+//
+// Usage:
+//   /Applications/Voxlit.app/Contents/MacOS/Voxlit --reset
+// Exits immediately after the wipe — user relaunches by clicking the icon.
+if (process.argv.includes('--reset')) {
+  // No teardown here: services/DB/electron-store haven't been constructed yet,
+  // so nothing is holding open handles on the directory we're deleting.
+  //
+  // Wrap in try/catch + force process.exit on any error. Without this, a
+  // throw (permission denied on a locked file, disk full, etc.) would fall
+  // through to the service construction below and we'd try to boot on a
+  // partially-deleted userData dir — worse than the state the user ran
+  // --reset to escape.
+  //
+  // process.exit (not app.exit) because at module-eval time app.whenReady()
+  // hasn't fired; app.exit is not yet safe.
+  try {
+    const ok = resetAllUserData()
+    process.exit(ok ? 0 : 1)
+  } catch (err) {
+    console.error('[Voxlit --reset] failed:', err)
+    process.exit(1)
+  }
+}
 
 // ─── App-level singletons ─────────────────────────────────────────────────────
 
@@ -138,6 +168,48 @@ function createTray() {
       click: () => {
         mainWindow?.show()
         mainWindow?.focus()
+      }
+    },
+    { type: 'separator' },
+    {
+      label: 'Reset All Data…',
+      click: () => {
+        // Kill the helper BEFORE showing the dialog. showMessageBoxSync blocks
+        // the main process; if recording is in flight, PCM keeps arriving
+        // from the helper and the in-flight utterance hangs. Stopping the
+        // helper up front guarantees no more audio arrives while the user is
+        // reading the confirmation, and means teardown isn't racing an
+        // in-progress transcribe. If the user cancels the dialog, the boot
+        // sequence's respawn path restarts the helper on the next hotkey.
+        socketManager.stop()
+        broadcastToAll(IPC.RECORDING_STATE, { state: 'idle' as RecordingState })
+        pillWindow?.hide()
+
+        // Native modal — survives even if the React UI is broken, which is
+        // the exact scenario this command exists to rescue.
+        const result = dialog.showMessageBoxSync({
+          type: 'warning',
+          buttons: ['Reset and Relaunch', 'Cancel'],
+          defaultId: 1,
+          cancelId: 1,
+          title: 'Reset Voxlit',
+          message: 'Reset all Voxlit data?',
+          detail: 'This will delete your history, settings, API key, and downloaded models, then relaunch Voxlit. Bundled app files and system permissions (microphone, accessibility) are not affected. This cannot be undone.',
+        })
+        if (result === 0) {
+          isQuitting = true
+          // Teardown order: flush electron-store (clear in-memory state so
+          // nothing gets written back during process exit) → close SQLite
+          // (WAL checkpoint + release fds so the rmSync actually unlinks
+          // inodes instead of orphaning them) → ensure helper is stopped
+          // (idempotent; we already called .stop() above, but guarding
+          // against a cancel → re-open → confirm retry).
+          resetAndRelaunch(() => {
+            try { store.clear() } catch (e) { console.warn('[DataReset] store.clear failed:', e) }
+            try { sessionStore.close() } catch (e) { console.warn('[DataReset] sessionStore.close failed:', e) }
+            try { socketManager.stop() } catch (e) { console.warn('[DataReset] socketManager.stop failed:', e) }
+          })
+        }
       }
     },
     { type: 'separator' },
