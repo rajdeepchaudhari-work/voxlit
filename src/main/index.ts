@@ -11,6 +11,7 @@ import { UtteranceChunker, type UtteranceChunk } from './services/UtteranceChunk
 import { registerHandlers } from './ipc/handlers'
 import { initAutoUpdater, setSocketManagerForUpdater } from './services/UpdateManager'
 import { resetAllUserData, resetAndRelaunch } from './services/DataReset'
+import { detectAgentTrigger, processAgentCommand } from './services/VoxlitAgent'
 
 // ─── CLI flags ────────────────────────────────────────────────────────────────
 // Handled BEFORE constructing any services so we clear the DB + electron-store
@@ -378,6 +379,33 @@ function wireServices() {
   transcriptManager.on('segment', (segment) => {
     currentState = 'idle'
     broadcastToAll(IPC.RECORDING_STATE, { state: currentState })
+
+    // Voxlit Agent: detect trigger phrases like "Hey Voxlit, optimize this prompt..."
+    // and route the command through GPT-4o-mini instead of injecting raw text.
+    const { triggered, command } = detectAgentTrigger(segment.text)
+    if (triggered && command) {
+      broadcastToAll(IPC.RECORDING_STATE, { state: 'processing' as RecordingState })
+      processAgentCommand(command, {
+        openaiApiKey: store.get('openaiApiKey'),
+        voxlitServerUrl: store.get('voxlitServerUrl'),
+        voxlitServerToken: store.get('voxlitServerToken'),
+      }).then((result) => {
+        const agentSegment = { ...segment, text: result }
+        broadcastToAll(IPC.RECORDING_STATE, { state: 'idle' as RecordingState })
+        broadcastToAll(IPC.TRANSCRIPT_SEGMENT, agentSegment)
+        pillWindow?.hide()
+        socketManager.sendInject(result)
+      }).catch((err) => {
+        console.error('[VoxlitAgent] failed:', err.message)
+        // Fall back to injecting the raw transcript
+        broadcastToAll(IPC.RECORDING_STATE, { state: 'idle' as RecordingState })
+        broadcastToAll(IPC.TRANSCRIPT_SEGMENT, segment)
+        pillWindow?.hide()
+        socketManager.sendInject(segment.text)
+      })
+      return
+    }
+
     broadcastToAll(IPC.TRANSCRIPT_SEGMENT, segment)
     pillWindow?.hide()
     socketManager.sendInject(segment.text)

@@ -794,6 +794,69 @@ const HOTKEY_OPTIONS = [
   { value: 'Ctrl+Shift+F', label: '⌃ ⇧ F',        desc: 'Control + Shift + F' },
 ]
 
+// ─── Step: Voxlit Agent intro ─────────────────────────────────────────────────
+
+function AgentIntroStep({ onNext }: { onNext: () => void }) {
+  return (
+    <div>
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <div style={{ fontSize: 32, marginBottom: 8 }}>🤖</div>
+        <h2 style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '-0.02em', color: '#0A0A0A', textTransform: 'uppercase', marginBottom: 4 }}>Meet Voxlit Agent</h2>
+        <p style={{ fontSize: 11, color: '#666', fontFamily: 'var(--font-mono)' }}>Your voice-activated AI assistant</p>
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <p style={{ fontSize: 12, color: '#333', lineHeight: 1.7, fontFamily: 'var(--font-body)', marginBottom: 16 }}>
+          Voxlit Cloud is your default engine — powered by Whisper + GPT-4o-mini for
+          accurate, punctuated transcription. No setup needed.
+        </p>
+
+        <div style={{
+          border: '2px solid #665DF5', background: 'rgba(102,93,245,0.06)',
+          padding: '14px 16px', marginBottom: 16,
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#665DF5', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+            NEW · Voxlit Agent
+          </p>
+          <p style={{ fontSize: 12, color: '#333', lineHeight: 1.7, fontFamily: 'var(--font-body)', marginBottom: 10 }}>
+            Say <strong>"Hey Voxlit"</strong> before your command and the AI will execute your
+            intent instead of just transcribing. Try it:
+          </p>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#0A0A0A', lineHeight: 1.8 }}>
+            <div>🎙 "Hey Voxlit, optimize this prompt: build a login page"</div>
+            <div>🎙 "Hey Voxlit, write an email declining this meeting"</div>
+            <div>🎙 "Hey Voxlit, explain what this error means"</div>
+          </div>
+        </div>
+
+        <div style={{
+          border: '2px solid #FFEB3B', background: 'rgba(255,235,59,0.1)',
+          padding: '12px 14px',
+        }}>
+          <p style={{ fontSize: 10, color: '#666', lineHeight: 1.6, fontFamily: 'var(--font-mono)' }}>
+            ⚠ Offline / local mode is currently being optimized and may not work
+            reliably on all devices. You can still enable it in Settings → Transcription.
+          </p>
+        </div>
+      </div>
+
+      <button
+        onClick={onNext}
+        style={{
+          width: '100%', padding: '14px 0',
+          background: '#0A0A0A', color: '#FFFFFF',
+          border: '3px solid #0A0A0A', cursor: 'pointer',
+          fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700,
+          letterSpacing: '0.08em', textTransform: 'uppercase',
+          boxShadow: '4px 4px 0px #665DF5',
+        }}
+      >
+        Try it out →
+      </button>
+    </div>
+  )
+}
+
 // ─── Step: Test ───────────────────────────────────────────────────────────────
 
 function TestStep({ settings, onNext, onSkip }: {
@@ -1044,7 +1107,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
 
 // ─── Wizard root ──────────────────────────────────────────────────────────────
 
-const STEPS = ['welcome', 'microphone', 'accessibility', 'automation', 'engine', 'apikey', 'localsetup', 'test', 'done'] as const
+const STEPS = ['welcome', 'microphone', 'accessibility', 'automation', 'agent', 'test', 'done'] as const
 type Step = typeof STEPS[number]
 
 export default function OnboardingWizard() {
@@ -1098,9 +1161,8 @@ export default function OnboardingWizard() {
         <ProgressDots total={STEPS.length} current={stepIndex} />
       </div>
 
-      {/* Content card. Engine step is wider so the 3 engine cards fit horizontally. */}
       <div style={{
-        width: '100%', maxWidth: step === 'engine' ? 720 : 380,
+        width: '100%', maxWidth: 420,
         padding: '0 24px',
         WebkitAppRegion: 'no-drag',
         transition: 'max-width 0.2s ease',
@@ -1121,9 +1183,7 @@ export default function OnboardingWizard() {
           {step === 'automation' && (
             <AutomationStep perms={perms} onRefresh={refreshPerms} onNext={goNext} onSkip={goNext} />
           )}
-          {step === 'engine' && <EngineStep onNext={() => setOnboardingStep('test')} onApiKey={() => setOnboardingStep('apikey')} onLocalSetup={() => setOnboardingStep('localsetup')} />}
-          {step === 'apikey' && <ApiKeyStep onNext={() => setOnboardingStep('test')} onSkip={() => setOnboardingStep('test')} />}
-          {step === 'localsetup' && <LocalSetupStep onNext={() => setOnboardingStep('test')} />}
+          {step === 'agent' && <AgentIntroStep onNext={goNext} />}
           {step === 'test' && <TestStep settings={settings} onNext={() => setOnboardingStep('done')} onSkip={() => setOnboardingStep('done')} />}
           {step === 'done' && <DoneStep settings={settings} onFinish={completeOnboarding} />}
         </div>
