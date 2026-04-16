@@ -83,6 +83,21 @@ def needs_polish(text: str) -> bool:
     return False
 
 
+# ─── "Voxlit" word correction ────────────────────────────────────────────────
+# Whisper doesn't know "Voxlit" — it guesses phonetically. Correct all known
+# variants server-side so the client always receives the right spelling.
+VOXLIT_MISSPELLINGS = re.compile(
+    r'\b(Voxelit|Voxelet|Voxlet|Voxlid|Voxlead|Voxlite|Voxlight|'
+    r'Vox\s*Lit|Vox\s*Lead|Vox\s*Let|Vox\s*Lid|Boxlit|Box\s*Lit|'
+    r'Foxlit|Fox\s*Lit|Woxlit|Vocklit|Voclit|Voclite|Foxelet|'
+    r'Boxelet|Vox\s*Elite|Voxe\s*Lit)\b',
+    re.IGNORECASE
+)
+
+def fix_voxlit_spelling(text: str) -> str:
+    return VOXLIT_MISSPELLINGS.sub('Voxlit', text)
+
+
 # Known Whisper hallucinations from subtitle training data — never real dictation
 WHISPER_PHANTOMS = {
     'thank you', 'thank you.', 'thanks', 'thanks.',
@@ -279,6 +294,7 @@ async def transcribe(
                 'language': 'en',
                 'response_format': 'json',
                 'temperature': '0',
+                'prompt': 'Voxlit. Hey Voxlit. Voxlit Agent. Dictation of spoken words using the Voxlit app.',
             },
         )
         whisper_ms = int((time.time() - t0) * 1000)
@@ -308,4 +324,5 @@ async def transcribe(
         # The polish step was rewriting names and adding hallucinated content,
         # so we trust Whisper's transcription as-is.
         log.info('ok ip=%s whisper=%dms len=%d', ip, whisper_ms, len(raw_text))
+        raw_text = fix_voxlit_spelling(raw_text)
         return {'text': raw_text, 'whisper_ms': whisper_ms, 'polish_ms': 0, 'polished': False}

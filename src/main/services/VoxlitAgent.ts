@@ -1,9 +1,12 @@
 import * as https from 'https'
 
+// Whisper mangles "Voxlit" in many ways — match all known phonetic variants
+// so the agent trigger still fires even when transcription is imperfect.
+const V = '(?:voxlit|voxelit|voxelet|voxlet|voxlite|voxlight|vox\\s*lit|boxlit|box\\s*lit|foxlit|fox\\s*lit|woxlit|vocklit|voclit|voclite|foxelet|boxelet|vox\\s*elite|voxe\\s*lit|vox\\s*lead|vox\\s*let|vox\\s*lid)'
 const TRIGGER_PATTERNS = [
-  /^hey\s+voxlit\b[,.]?\s*/i,
-  /^voxlit\s+agent\b[,.]?\s*/i,
-  /^voxlit[,.]?\s+/i,
+  new RegExp(`^hey\\s+${V}\\b[,.]?\\s*`, 'i'),
+  new RegExp(`^${V}\\s+agent\\b[,.]?\\s*`, 'i'),
+  new RegExp(`^${V}[,.]?\\s+`, 'i'),
 ]
 
 const SYSTEM_PROMPT = `You are Voxlit Agent — a voice-activated AI assistant for developers. The user dictated a command via voice. Your job is to execute their intent and return the result they want to paste into their current app.
