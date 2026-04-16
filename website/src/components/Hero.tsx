@@ -17,6 +17,9 @@ export default function Hero() {
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* 3D floating shapes */}
+      <FloatingShapes />
+
       {/* Dot pattern */}
       <div className="bg-dot-grid" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
 
@@ -509,6 +512,68 @@ function DownloadIcon() {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path d="M8 2v8M5 7l3 3 3-3M2 12h12" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
     </svg>
+  )
+}
+
+/* ── Lightweight 3D floating shapes (CSS only, no Three.js) ─────────────── */
+
+const SHAPES = [
+  // Square — top left, slow drift
+  { type: 'square', size: 48, x: '8%', y: '15%', delay: 0, duration: 18, rotateAxis: '1, 0.5, 0', border: '#665DF5' },
+  // Circle — top right
+  { type: 'circle', size: 32, x: '85%', y: '10%', delay: 2, duration: 22, rotateAxis: '0.5, 1, 0.3', border: '#22D3EE' },
+  // Square — mid left
+  { type: 'square', size: 24, x: '12%', y: '65%', delay: 4, duration: 15, rotateAxis: '0, 1, 0.5', border: '#0A0A0A' },
+  // Diamond — right side
+  { type: 'diamond', size: 36, x: '78%', y: '55%', delay: 1, duration: 20, rotateAxis: '1, 0, 0.5', border: '#665DF5' },
+  // Small circle — bottom left
+  { type: 'circle', size: 18, x: '20%', y: '80%', delay: 6, duration: 25, rotateAxis: '0.3, 0.7, 1', border: '#FFEB3B' },
+  // Tiny square — top center
+  { type: 'square', size: 16, x: '55%', y: '8%', delay: 3, duration: 16, rotateAxis: '1, 1, 0', border: '#0A0A0A' },
+]
+
+function FloatingShapes() {
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        perspective: 800, perspectiveOrigin: '50% 50%',
+        zIndex: 0,
+      }}
+    >
+      {SHAPES.map((s, i) => (
+        <div
+          key={i}
+          className="float-3d"
+          style={{
+            position: 'absolute',
+            left: s.x,
+            top: s.y,
+            width: s.size,
+            height: s.size,
+            border: `2px solid ${s.border}`,
+            borderRadius: s.type === 'circle' ? '50%' : 0,
+            transform: s.type === 'diamond' ? 'rotate(45deg)' : undefined,
+            opacity: 0.25,
+            animation: `float3d-${i} ${s.duration}s ease-in-out ${s.delay}s infinite`,
+            // Each shape gets a unique animation via inline @keyframes injected below
+            ['--rotate-axis' as string]: s.rotateAxis,
+          }}
+        />
+      ))}
+
+      {/* Inject unique keyframes for each shape */}
+      <style>{SHAPES.map((s, i) => `
+        @keyframes float3d-${i} {
+          0%   { transform: ${s.type === 'diamond' ? 'rotate(45deg) ' : ''}translate3d(0, 0, 0) rotate3d(${s.rotateAxis}, 0deg); }
+          25%  { transform: ${s.type === 'diamond' ? 'rotate(45deg) ' : ''}translate3d(8px, -12px, 20px) rotate3d(${s.rotateAxis}, 90deg); }
+          50%  { transform: ${s.type === 'diamond' ? 'rotate(45deg) ' : ''}translate3d(-5px, -20px, 10px) rotate3d(${s.rotateAxis}, 180deg); }
+          75%  { transform: ${s.type === 'diamond' ? 'rotate(45deg) ' : ''}translate3d(10px, -8px, 25px) rotate3d(${s.rotateAxis}, 270deg); }
+          100% { transform: ${s.type === 'diamond' ? 'rotate(45deg) ' : ''}translate3d(0, 0, 0) rotate3d(${s.rotateAxis}, 360deg); }
+        }
+      `).join('')}</style>
+    </div>
   )
 }
 
