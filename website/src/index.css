@@ -2,23 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── CSS Custom Properties ─────────────────────────────────────────── */
+/* ── CSS Custom Properties — matches app globals.css exactly ──────── */
 :root {
   /* Surfaces */
   --c-base:      #FFFDF7;
   --c-surface-1: #FFFFFF;
   --c-surface-2: #F5F0E8;
+  --c-surface-3: #EDE8DE;
 
-  /* Borders */
+  /* Borders — always thick, always near-black */
   --c-border:        #0A0A0A;
   --c-border-subtle: rgba(10,10,10,0.15);
 
-  /* Brand purple */
+  /* Brand purple — matches app --color-accent */
   --c-accent:       #665DF5;
+  --c-accent-dim:   #4F49CC;
   --c-accent-muted: rgba(102,93,245,0.12);
+  --c-accent-text:  #665DF5;
 
-  /* Yellow */
+  /* Yellow punch — matches app --color-amber */
   --c-amber:       #FFEB3B;
+  --c-amber-muted: rgba(255,235,59,0.25);
 
   /* Text */
   --c-text:   #0A0A0A;
@@ -27,18 +31,21 @@
 
   /* Semantic */
   --c-success: #00C853;
+  --c-error:   #FF1744;
 
-  /* Shadows */
+  /* Brutalist shadows — zero blur, hard offset, always black */
   --shadow:        4px 4px 0px #0A0A0A;
   --shadow-hover:  6px 6px 0px #0A0A0A;
   --shadow-active: 2px 2px 0px #0A0A0A;
+  --shadow-accent: 4px 4px 0px #665DF5;
+  --shadow-amber:  4px 4px 0px #0A0A0A;
 
-  /* Typography */
-  --font-display: 'Space Grotesk', -apple-system, system-ui, sans-serif;
-  --font-body:    'Inter', -apple-system, system-ui, sans-serif;
-  --font-mono:    'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  /* Typography — matches app font stack */
+  --font-display: 'Space Grotesk', 'Geist', -apple-system, system-ui, sans-serif;
+  --font-body:    'Inter', 'Geist', -apple-system, system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Geist Mono', 'SF Mono', Menlo, monospace;
 
-  /* Motion */
+  /* Brutalist motion — snappy, mechanical */
   --t: 0.1s;
   --ease: cubic-bezier(0,0,1,1);
 }
@@ -68,21 +75,24 @@
     color: var(--c-text);
   }
 
+  /* Scrollbar — matches app */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--c-surface-2); border-left: 2px solid var(--c-border); }
   ::-webkit-scrollbar-thumb { background: var(--c-border); }
   ::-webkit-scrollbar-thumb:hover { background: var(--c-accent); }
 }
 
-/* ── Components ───────────────────────────────────────────────────── */
+/* ── Brutalist Component Classes ───────────────────────────────────── */
 @layer components {
 
+  /* ── Layout ── */
   .page-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 24px;
   }
 
+  /* ── Typography ── */
   .overline {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
@@ -92,7 +102,116 @@
     color: var(--c-text-3);
   }
 
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--c-text);
+  }
+
+  /* Purple accent text */
+  .accent-text {
+    color: var(--c-accent);
+  }
+
+  /* Yellow underline highlight — key word emphasis */
+  .highlight {
+    background: var(--c-amber);
+    padding: 0 4px;
+    display: inline;
+  }
+
+  /* ── Cards ── */
+  /* Standard white card — black border, black hard shadow */
+  .brut-card {
+    border: 3px solid var(--c-border);
+    background: var(--c-surface-1);
+    box-shadow: var(--shadow);
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .brut-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+  .brut-card:active {
+    box-shadow: var(--shadow-active);
+    transform: translate(2px, 2px);
+  }
+
+  /* Purple-accented card */
+  .brut-card-accent {
+    border: 3px solid var(--c-border);
+    background: var(--c-amber-muted);
+    box-shadow: var(--shadow);
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .brut-card-accent:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+
+  /* Yellow-filled hero card */
+  .brut-card-yellow {
+    border: 3px solid var(--c-border);
+    background: var(--c-amber);
+    box-shadow: var(--shadow);
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .brut-card-yellow:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+
+  /* Purple-filled card */
+  .brut-card-purple {
+    border: 3px solid var(--c-border);
+    background: var(--c-accent);
+    box-shadow: var(--shadow);
+    color: #FFFFFF;
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .brut-card-purple:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+
   /* ── Buttons ── */
+  /* Primary — black bg, white text, hard shadow — matches app pattern */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #FFFFFF;
+    background: var(--c-text);
+    border: 3px solid var(--c-text);
+    border-radius: 0;
+    box-shadow: var(--shadow-accent);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease), background var(--t) var(--ease);
+  }
+  .btn-primary:hover {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    box-shadow: var(--shadow-hover);
+    transform: translate(-2px, -2px);
+  }
+  .btn-primary:active {
+    box-shadow: var(--shadow-active);
+    transform: translate(2px, 2px);
+  }
+
+  /* Ghost — white bg, black border, hover inverts */
   .btn-ghost {
     display: inline-flex;
     align-items: center;
@@ -124,6 +243,7 @@
     transform: translate(2px, 2px);
   }
 
+  /* Yellow CTA button — matches stat card yellow */
   .btn-yellow {
     display: inline-flex;
     align-items: center;
@@ -154,7 +274,7 @@
     transform: translate(2px, 2px);
   }
 
-  /* ── Terminal ── */
+  /* ── Terminal Window — stays dark contextually ── */
   .terminal-window {
     border: 3px solid var(--c-border);
     background: #1A1A1A;
@@ -183,7 +303,52 @@
     min-height: 200px;
   }
 
-  /* ── Trust Pill ── */
+  /* ── Comparison Table ── */
+  .brut-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 3px solid var(--c-border);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    background: var(--c-surface-1);
+  }
+
+  .brut-table th {
+    padding: 12px 16px;
+    text-align: left;
+    border: 2px solid var(--c-border);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-text-3);
+    background: var(--c-surface-2);
+  }
+
+  .brut-table td {
+    padding: 12px 16px;
+    border: 2px solid var(--c-border-subtle);
+    color: var(--c-text-2);
+    vertical-align: middle;
+  }
+
+  .brut-table tr:hover td {
+    background: var(--c-surface-2);
+  }
+
+  /* Voxlit column highlight — yellow, matching stat card */
+  .brut-table .col-voxlit {
+    color: var(--c-text);
+    background: var(--c-amber-muted);
+  }
+
+  .brut-table thead .col-voxlit {
+    color: var(--c-text);
+    background: var(--c-amber);
+    border-color: var(--c-border);
+  }
+
+  /* ── Trust Pill — matches app badge style ── */
   .trust-pill {
     display: inline-flex;
     align-items: center;
@@ -200,7 +365,23 @@
     white-space: nowrap;
   }
 
-  /* ── Badge ── */
+  /* ── Spec Chip ── */
+  .spec-chip {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 2px solid var(--c-border);
+    background: var(--c-surface-1);
+    transition: background var(--t) var(--ease), box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
+  }
+  .spec-chip:hover {
+    background: var(--c-surface-2);
+    box-shadow: var(--shadow);
+    transform: translate(-2px, -2px);
+  }
+
+  /* ── Badge — matches app session badge ── */
   .badge {
     display: inline-flex;
     align-items: center;
@@ -212,6 +393,18 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+
+  .badge-purple {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+    background: var(--c-accent-muted);
+  }
+
+  .badge-yellow {
+    color: var(--c-text);
+    border-color: var(--c-border);
+    background: var(--c-amber);
   }
 
   .badge-green {
@@ -237,10 +430,36 @@
   50% { transform: scale(1.5); opacity: 0.5; }
 }
 
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Scroll reveal */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hero stagger — fires on page load */
 @keyframes hero-in {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Scroll Reveal ─────────────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+}
+.reveal.in-view {
+  animation: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.reveal.delay-1 { animation-delay: 0.08s; }
+.reveal.delay-2 { animation-delay: 0.16s; }
+.reveal.delay-3 { animation-delay: 0.24s; }
+.reveal.delay-4 { animation-delay: 0.32s; }
+.reveal.delay-5 { animation-delay: 0.40s; }
+.reveal.delay-6 { animation-delay: 0.48s; }
 
 /* ── Hero stagger ──────────────────────────────────────────────────── */
 .hero-stagger {
@@ -263,6 +482,7 @@
     animation: pulse-rec 1200ms linear infinite;
   }
 
+  /* Waveform bars — green like the app success color */
   .waveform-bar {
     width: 3px;
     background: var(--c-accent);
@@ -275,14 +495,13 @@
   .waveform-bar:nth-child(5) { animation: waveform 700ms linear 0ms infinite; }
 }
 
-/* ── Layout Grids ──────────────────────────────────────────────────── */
-
-.nav-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
+/* ── Subtle dot pattern — for section backgrounds ─────────────────── */
+.bg-dot-grid {
+  background-image: radial-gradient(circle, rgba(10,10,10,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
+
+/* ── Responsive Grid Classes ─────────────────────────────────────────── */
 
 .hero-grid {
   display: grid;
@@ -291,23 +510,66 @@
   align-items: center;
 }
 
-.features-cols {
+.how-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px 64px;
+  grid-template-columns: repeat(3, 1fr);
+  border: 3px solid #0A0A0A;
+  box-shadow: 6px 6px 0px #0A0A0A;
+}
+
+.how-grid > * + * {
+  border-left: 3px solid #0A0A0A;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 3px solid #0A0A0A;
+  box-shadow: 6px 6px 0px #0A0A0A;
+  background: #FFFFFF;
+}
+
+.feature-grid > * {
+  border-right: 3px solid #0A0A0A;
+  border-top: 3px solid #0A0A0A;
+}
+
+.feature-grid > *:nth-child(-n+3) {
+  border-top: none;
+}
+
+.feature-grid > *:nth-child(3n) {
+  border-right: none;
+}
+
+.techspecs-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr;
   gap: 48px;
-  align-items: start;
+  padding: 52px 0 44px;
 }
 
-/* ── Breakpoints ───────────────────────────────────────────────────── */
+/* ── Breakpoints ─────────────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
   .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .techspecs-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -317,33 +579,74 @@
     padding: 0 16px;
   }
 
-  .features-cols {
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .mobile-menu-btn {
+    display: block !important;
+  }
+
+  .how-grid {
     grid-template-columns: 1fr;
-    gap: 0;
+  }
+
+  .how-grid > * + * {
+    border-left: none;
+    border-top: 3px solid #0A0A0A;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-grid > * {
+    border-right: none;
+    border-top: 3px solid #0A0A0A;
+  }
+
+  .feature-grid > *:first-child {
+    border-top: none;
+  }
+
+  .testimonials-grid {
+    grid-template-columns: 1fr;
   }
 
   .footer-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 32px;
+    padding: 40px 0 32px;
   }
 
-  .footer-grid > div:last-child {
-    justify-content: flex-start !important;
-  }
-
+  /* Section padding tighter on mobile */
   section {
     padding-top: 64px !important;
     padding-bottom: 64px !important;
   }
 
-  .btn-ghost, .btn-yellow {
+  /* Section headings smaller on mobile */
+  .section-heading {
+    font-size: clamp(1.75rem, 8vw, 3rem) !important;
+  }
+
+  /* Buttons full-width on small mobile */
+  .btn-primary, .btn-ghost, .btn-yellow {
     width: 100%;
     justify-content: center;
   }
 
+  /* Trust pills wrap tighter */
   .trust-pill {
     font-size: 0.625rem;
     padding: 4px 8px;
+  }
+
+  /* Comparison table smaller text */
+  .brut-table th,
+  .brut-table td {
+    padding: 10px 10px;
+    font-size: 0.75rem;
   }
 }
 
@@ -352,6 +655,7 @@
     padding: 0 12px;
   }
 
+  /* Hero padding on very small screens */
   .hero-grid {
     gap: 36px;
   }

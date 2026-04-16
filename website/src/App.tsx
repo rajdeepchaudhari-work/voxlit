@@ -1,8 +1,15 @@
 import Nav from './components/Nav'
 import Hero from './components/Hero'
-import WhatsNew from './components/WhatsNew'
-import Features from './components/Features'
-import Install from './components/Install'
+import TrustBar from './components/TrustBar'
+import VoxlitCloudPush from './components/VoxlitCloudPush'
+import AppLogoStrip from './components/AppLogoStrip'
+import FeatureGrid from './components/FeatureGrid'
+import HowItWorks from './components/HowItWorks'
+import FromTheMaker from './components/FromTheMaker'
+import ComparisonTable from './components/ComparisonTable'
+import FAQ from './components/FAQ'
+import InstallGuide from './components/InstallGuide'
+import DownloadCTA from './components/DownloadCTA'
 import Footer from './components/Footer'
 
 export default function App() {
@@ -11,9 +18,16 @@ export default function App() {
       <Nav />
       <main>
         <Hero />
-        <WhatsNew />
-        <Features />
-        <Install />
+        <TrustBar />
+        <VoxlitCloudPush />
+        <AppLogoStrip />
+        <FeatureGrid />
+        <HowItWorks />
+        <FromTheMaker />
+        <ComparisonTable />
+        <FAQ />
+        <InstallGuide />
+        <DownloadCTA />
       </main>
       <Footer />
     </>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTerminalAnim } from '../hooks/useTerminalAnim'
 
+const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
 const VERSION = '2.0.0'
 const DOWNLOAD_URL = `https://github.com/rajdeepchaudhari-work/voxlit/releases/download/v${VERSION}/voxlit-${VERSION}-arm64.dmg`
 
@@ -10,17 +11,91 @@ export default function Hero() {
   return (
     <section style={{
       paddingTop: 120,
-      paddingBottom: 100,
+      paddingBottom: 80,
       borderBottom: '3px solid #0A0A0A',
       background: '#FFFDF7',
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* Dot pattern */}
+      <div className="bg-dot-grid" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+
+      {/* Large decorative background letter */}
+      <div style={{
+        position: 'absolute',
+        right: -40,
+        top: -20,
+        fontFamily: 'var(--font-display)',
+        fontWeight: 800,
+        fontSize: 'clamp(280px, 30vw, 480px)',
+        lineHeight: 1,
+        color: 'transparent',
+        WebkitTextStroke: '2px rgba(10,10,10,0.05)',
+        userSelect: 'none',
+        pointerEvents: 'none',
+        letterSpacing: '-0.06em',
+      }}>V</div>
+
       <div className="page-container" style={{ position: 'relative' }}>
         <div className="hero-grid">
 
-          {/* Left — Text */}
+          {/* Left — Text with stagger */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+            {/* Beta announcement */}
+            <a
+              href="#features"
+              className="hero-stagger beta-pill"
+              style={{
+                alignSelf: 'flex-start',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '6px 6px 6px 14px',
+                marginBottom: 18,
+                background: '#FFFFFF',
+                border: '2px solid #0A0A0A',
+                boxShadow: '3px 3px 0px #665DF5',
+                textDecoration: 'none',
+                transition: 'transform 0.1s, box-shadow 0.1s',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#0A0A0A',
+                letterSpacing: '0.02em',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translate(-1px,-1px)'; e.currentTarget.style.boxShadow = '4px 4px 0px #665DF5' }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '3px 3px 0px #665DF5' }}
+            >
+              <span style={{
+                background: '#FFEB3B', border: '2px solid #0A0A0A',
+                padding: '2px 6px', fontSize: '0.625rem', fontWeight: 800,
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+              }}>
+                v2.0.0
+              </span>
+              <span>Voxlit Cloud is the default engine — free beta</span>
+              <span style={{
+                background: '#665DF5', color: '#FFFFFF',
+                border: '2px solid #0A0A0A',
+                padding: '3px 10px', fontSize: '0.6875rem', fontWeight: 700,
+                letterSpacing: '0.04em',
+              }}>
+                Try it →
+              </span>
+            </a>
+
+            {/* Overline */}
+            <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+              {['Open Source', 'macOS', 'Free Forever'].map((t, i, arr) => (
+                <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span className="overline">{t}</span>
+                  {i < arr.length - 1 && (
+                    <span style={{ color: '#CCC', fontFamily: 'var(--font-mono)', fontSize: '0.6875rem' }}>·</span>
+                  )}
+                </span>
+              ))}
+            </div>
 
             {/* Headline */}
             <h1 className="hero-stagger" style={{
@@ -28,42 +103,49 @@ export default function Hero() {
               fontWeight: 800,
               letterSpacing: '-0.04em',
               lineHeight: 0.95,
-              marginBottom: 28,
+              marginBottom: 24,
               fontSize: 'clamp(48px, 7vw, 88px)',
             }}>
-              <span style={{ display: 'block', color: '#0A0A0A' }}>Your voice.</span>
-              <span style={{ display: 'block', color: '#665DF5' }}>Your machine.</span>
+              <span style={{ display: 'block', color: '#0A0A0A' }}>Stop paying.</span>
+              <span style={{ display: 'block', color: '#665DF5' }}>Start dictating.</span>
             </h1>
 
             {/* Subhead */}
             <p className="hero-stagger" style={{
               fontFamily: 'var(--font-body)',
               fontSize: '1.0625rem',
-              lineHeight: 1.7,
+              lineHeight: 1.65,
               color: '#333333',
-              maxWidth: 520,
+              maxWidth: 500,
               marginBottom: 36,
             }}>
-              Free, open-source voice dictation for macOS. Hold a key, speak, text
-              appears in any app. No cloud. No subscription. No account.
+              I got tired of paying <strong style={{ color: '#0A0A0A' }}>$20 a month</strong> to
+              talk to my own Mac. So I built Voxlit. One hotkey, speak, and your words
+              show up wherever you type. Slack. Cursor. Notion. Terminal. Gmail.
+              v2 ships with <strong style={{ color: '#665DF5' }}>Voxlit Cloud</strong> on by default —
+              no API keys, no model downloads, just install and go.
             </p>
 
-            {/* Homebrew install */}
+            {/* Homebrew */}
             <div className="hero-stagger">
               <BrewBlock />
             </div>
 
-            {/* Secondary CTA */}
-            <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 14, marginBottom: 24 }}>
+            {/* Secondary CTAs */}
+            <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 20, marginTop: 12 }}>
               <a href={DOWNLOAD_URL} download className="btn-ghost" style={{ fontSize: '0.8125rem', padding: '10px 20px' }}>
                 <DownloadIcon />
                 Download .dmg
               </a>
+              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ fontSize: '0.8125rem', padding: '10px 20px' }}>
+                <GitHubIcon />
+                GitHub
+              </a>
             </div>
 
             {/* Trust Pills */}
-            <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {['MIT Licensed', '100% Offline', 'macOS Only'].map(pill => (
+            <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+              {['MIT License', 'Zero Account', '100% Offline', 'Apple Silicon'].map(pill => (
                 <span key={pill} className="trust-pill">{pill}</span>
               ))}
             </div>
@@ -122,6 +204,12 @@ export default function Hero() {
                 </div>
               </div>
             </div>
+
+            <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {['v2.0.0', 'arm64', '.dmg', '~135 MB'].map(t => (
+                <span key={t} className="trust-pill">{t}</span>
+              ))}
+            </div>
           </div>
 
         </div>
@@ -132,6 +220,9 @@ export default function Hero() {
 
 type InstallTab = 'curl' | 'brew'
 
+// Hoisted OUT of BrewBlock — if this were declared inside, React would treat it
+// as a brand-new component type on every parent render and unmount/remount the
+// buttons. That teardown is what was making the toggle feel laggy.
 function TabButton({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
   return (
     <button
@@ -145,7 +236,7 @@ function TabButton({ active, label, onClick }: { active: boolean; label: string;
         fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
         letterSpacing: '0.08em', textTransform: 'uppercase',
         color: active ? '#FFFFFF' : '#888',
-        transition: 'none',
+        transition: 'none',  // instant swap — no transition jitter during the switch
       }}
     >
       {label}
@@ -154,11 +245,14 @@ function TabButton({ active, label, onClick }: { active: boolean; label: string;
 }
 
 function BrewBlock() {
-  const [tab, setTab] = useState<InstallTab>('brew')
+  const [tab, setTab] = useState<InstallTab>('curl')
 
   const curlLine = 'curl -fsSL https://voxlit.co/install.sh | bash'
-  const brewLine = 'brew install --cask voxlit'
-  const lines = tab === 'curl' ? [curlLine] : [brewLine]
+  const brewLines = [
+    'brew tap rajdeepchaudhari-work/voxlit',
+    'brew install --cask voxlit',
+  ]
+  const lines = tab === 'curl' ? [curlLine] : brewLines
 
   const handleCopy = () => {
     navigator.clipboard.writeText(lines.join('\n'))
@@ -172,8 +266,8 @@ function BrewBlock() {
         gap: 8,
       }}>
         <div style={{ display: 'flex', gap: 6 }}>
-          <TabButton active={tab === 'brew'} label="brew" onClick={() => setTab('brew')} />
           <TabButton active={tab === 'curl'} label="curl" onClick={() => setTab('curl')} />
+          <TabButton active={tab === 'brew'} label="brew" onClick={() => setTab('brew')} />
         </div>
         <button
           onClick={handleCopy}
@@ -222,6 +316,14 @@ function DownloadIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path d="M8 2v8M5 7l3 3 3-3M2 12h12" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+    </svg>
+  )
+}
+
+function GitHubIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
     </svg>
   )
 }
