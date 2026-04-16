@@ -1,7 +1,7 @@
 import * as https from 'https'
 
 // Whisper mangles "Voxlit" — match all known phonetic variants
-const V = '(?:voxlit|voxelit|voxelet|voxlet|voxlite|voxlight|vox\\s*lit|boxlit|box\\s*lit|foxlit|fox\\s*lit|woxlit|vocklit|voclit|voclite|foxelet|boxelet|vox\\s*elite|voxe\\s*lit|vox\\s*lead|vox\\s*let|vox\\s*lid)'
+const V = '(?:voxlit|voxelit|voxelid|voxelet|voxlet|voxlid|voxlite|voxlight|voxalid|voxolid|vox\\s*lit|vox\\s*elid|boxlit|box\\s*lit|foxlit|fox\\s*lit|woxlit|vocklit|voclit|voclite|foxelet|boxelet|foxelid|boxelid|vox\\s*elite|voxe\\s*lit|voxe\\s*lead|vox\\s*lead|vox\\s*let|vox\\s*lid)'
 const TRIGGER_PATTERNS = [
   new RegExp(`^hey\\s+${V}\\b[,.]?\\s*`, 'i'),
   new RegExp(`^${V}\\s+agent\\b[,.]?\\s*`, 'i'),

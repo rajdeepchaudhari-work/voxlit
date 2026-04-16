@@ -405,7 +405,7 @@ export class TranscriptManager extends EventEmitter {
       .replace(PAREN_NOISE, '')
       // Fix common Whisper misspellings of "Voxlit" — the word isn't in
       // Whisper's vocabulary so it guesses phonetically.
-      .replace(/\b(Voxelit|Voxelet|Voxlet|Voxlid|Voxlead|Voxlite|Voxlight|Vox Lit|Vox lit|Vox Lead|Vox Let|Vox Lid|Boxlit|Box Lit|Foxlit|Fox Lit|Woxlit|Vocklit|Voclit|Voclite|Voxlit|voxlit|VOXLIT|Foxelet|Boxelet|Vox Elite|Voxe Lit)\b/gi, 'Voxlit')
+      .replace(/\b(Voxelit|Voxelid|Voxelet|Voxlet|Voxlid|Voxlead|Voxlite|Voxlight|Voxalid|Voxolid|Vox Lit|Vox lit|Vox Lead|Vox Let|Vox Lid|Vox Elid|Boxlit|Box Lit|Foxlit|Fox Lit|Woxlit|Vocklit|Voclit|Voclite|Voxlit|voxlit|VOXLIT|Foxelet|Boxelet|Vox Elite|Voxe Lit|Voxe Lead|Foxelid|Boxelid)\b/gi, 'Voxlit')
       // Collapse multiple spaces
       .replace(/\s+/g, ' ')
       .trim()
