@@ -340,16 +340,16 @@ function EngineStep({ onNext, onLocalSetup, onApiKey }: { onNext: () => void; on
     {
       value: 'voxlit' as const,
       title: 'Voxlit Cloud',
-      meta: 'Free · No setup',
-      tagline: 'Fastest and most accurate. Whisper plus AI cleanup. Recommended.',
+      meta: 'Free · Voxlit Agent included',
+      tagline: 'Fastest and most accurate. Voxlit Agent — "Hey Voxlit" voice commands for emails, code, writing. Recommended.',
       badge: 'RECOMMENDED',
       icon: <CloudIcon />,
     },
     {
       value: 'local' as const,
       title: 'Local',
-      meta: 'Offline · ~500 MB',
-      tagline: 'Runs 100% on your Mac. Zero network. Maximum privacy.',
+      meta: 'Offline · Models up to 3.1 GB',
+      tagline: 'Runs 100% on your Mac. Zero network. Maximum privacy. No Agent.',
       badge: null,
       icon: <DiskIcon />,
     },
@@ -357,7 +357,7 @@ function EngineStep({ onNext, onLocalSetup, onApiKey }: { onNext: () => void; on
       value: 'cloud' as const,
       title: 'OpenAI Whisper',
       meta: 'Bring your own key',
-      tagline: 'Direct to Whisper, no post-processing. You pay OpenAI per request.',
+      tagline: 'Direct to Whisper, no post-processing. You pay OpenAI per request. No Agent.',
       badge: 'BYOK',
       icon: <KeyIcon />,
     },
@@ -620,8 +620,10 @@ function ApiKeyStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void
 // ─── Step: Local Setup (system check + model download) ────────────────────────
 
 const MODEL_OPTIONS = [
-  { name: 'ggml-base.en',  label: 'Base EN',  size: '142 MB', desc: 'Fast, lower accuracy' },
-  { name: 'ggml-small.en', label: 'Small EN', size: '466 MB', desc: 'Balanced — recommended' },
+  { name: 'ggml-base.en',    label: 'Base EN',    size: '142 MB', desc: 'Fastest · Any Mac · ~1s latency' },
+  { name: 'ggml-small.en',   label: 'Small EN',   size: '466 MB', desc: 'Balanced · 8 GB RAM · ~2s · Recommended' },
+  { name: 'ggml-medium.en',  label: 'Medium EN',  size: '1.5 GB', desc: 'Accurate · 8 GB RAM · ~5s' },
+  { name: 'ggml-large-v3',   label: 'Large v3',   size: '3.1 GB', desc: 'Best accuracy · 16 GB RAM · ~10s' },
 ]
 
 function LocalSetupStep({ onNext }: { onNext: () => void }) {
@@ -853,11 +855,6 @@ function AgentIntroStep({ onNext }: { onNext: () => void }) {
       {/* Cloud info */}
       <p style={{ marginTop: 16, fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.6, maxWidth: 300 }}>
         Powered by Voxlit Cloud. Free during beta. No setup needed.
-      </p>
-
-      {/* Offline note */}
-      <p style={{ marginTop: 8, fontSize: 10, color: '#999', lineHeight: 1.5, fontFamily: 'var(--font-mono)' }}>
-        Offline mode available in Settings. Currently in optimization.
       </p>
 
       <PrimaryButton onClick={onNext}>Try it out →</PrimaryButton>
@@ -1115,7 +1112,12 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
 
 // ─── Wizard root ──────────────────────────────────────────────────────────────
 
-const STEPS = ['welcome', 'microphone', 'accessibility', 'automation', 'agent', 'test', 'done'] as const
+// Linear order the progress dots use. Actual routing through engine/apikey/
+// localsetup depends on which engine the user picks:
+//   - voxlit (Cloud)  → engine → agent
+//   - cloud  (BYOK)   → engine → apikey → agent
+//   - local  (offline)→ engine → localsetup → agent
+const STEPS = ['welcome', 'microphone', 'accessibility', 'automation', 'engine', 'apikey', 'localsetup', 'agent', 'test', 'done'] as const
 type Step = typeof STEPS[number]
 
 export default function OnboardingWizard() {
@@ -1170,7 +1172,7 @@ export default function OnboardingWizard() {
       </div>
 
       <div style={{
-        width: '100%', maxWidth: 380,
+        width: '100%', maxWidth: step === 'engine' ? 720 : 380,
         padding: '0 24px',
         WebkitAppRegion: 'no-drag',
         transition: 'max-width 0.2s ease',
@@ -1191,7 +1193,23 @@ export default function OnboardingWizard() {
           {step === 'automation' && (
             <AutomationStep perms={perms} onRefresh={refreshPerms} onNext={goNext} onSkip={goNext} />
           )}
-          {step === 'agent' && <AgentIntroStep onNext={goNext} />}
+          {step === 'engine' && (
+            <EngineStep
+              onNext={() => setOnboardingStep('agent')}
+              onApiKey={() => setOnboardingStep('apikey')}
+              onLocalSetup={() => setOnboardingStep('localsetup')}
+            />
+          )}
+          {step === 'apikey' && (
+            <ApiKeyStep
+              onNext={() => setOnboardingStep('agent')}
+              onSkip={() => setOnboardingStep('agent')}
+            />
+          )}
+          {step === 'localsetup' && (
+            <LocalSetupStep onNext={() => setOnboardingStep('agent')} />
+          )}
+          {step === 'agent' && <AgentIntroStep onNext={() => setOnboardingStep('test')} />}
           {step === 'test' && <TestStep settings={settings} onNext={() => setOnboardingStep('done')} onSkip={() => setOnboardingStep('done')} />}
           {step === 'done' && <DoneStep settings={settings} onFinish={completeOnboarding} />}
         </div>
