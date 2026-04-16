@@ -852,7 +852,7 @@ function AgentIntroStep({ onNext }: { onNext: () => void }) {
 
       {/* Cloud info */}
       <p style={{ marginTop: 16, fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.6, maxWidth: 300 }}>
-        Powered by Voxlit Cloud — Whisper + GPT-4o-mini. Free during beta. No API keys or setup needed.
+        Powered by Voxlit Cloud. Free during beta. No setup needed.
       </p>
 
       {/* Offline note */}
