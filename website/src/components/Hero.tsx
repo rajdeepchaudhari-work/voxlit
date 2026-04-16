@@ -341,7 +341,7 @@ export default function Hero() {
             <div style={{
               display: 'flex',
               justifyContent: 'center',
-              marginTop: -20,
+              marginTop: 8,
               position: 'relative',
               zIndex: 2,
             }}>
