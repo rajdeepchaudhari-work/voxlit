@@ -65,15 +65,18 @@ export class BootSequence extends EventEmitter {
       return this.finish(false)
     }
 
-    // 2. Native helper — wait up to 5s for socket connection
+    // 2. Native helper — wait up to 15s for socket connection.
+    // First launch is slower: macOS may prompt for permissions (mic,
+    // accessibility, Input Monitoring) which block the helper. The stale
+    // socket race was also fixed (sync unlink in SocketManager) but we
+    // keep a generous timeout as a safety margin.
     this.patchStep('helper', 'running')
     this.socketManager.start()
-    const connected = await this.waitForHelper(5000)
+    const connected = await this.waitForHelper(15_000)
     if (connected) {
       this.patchStep('helper', 'ok')
     } else {
-      this.patchStep('helper', 'fail', 'Timed out — run scripts/build-native.sh if not built')
-      // Don't bail — main UI still works without the helper (for settings, history, etc.)
+      this.patchStep('helper', 'fail', 'Timed out — try restarting Voxlit')
     }
 
     // 3. Health check — non-fatal, just informational

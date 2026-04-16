@@ -208,9 +208,11 @@ export class SocketManager extends EventEmitter {
   }
 
   private startSocketServer() {
-    const { unlink } = require('fs')
-    // Remove stale socket file
-    try { unlink.call(null, SOCKET_PATH, () => {}) } catch (_) {}
+    const { unlinkSync } = require('fs')
+    // Remove stale socket file SYNCHRONOUSLY — the async unlink was racing
+    // with server.listen on first launch, causing EADDRINUSE when a leftover
+    // /tmp/voxlit.socket existed from a previous install or crash.
+    try { unlinkSync(SOCKET_PATH) } catch (_) {}
 
     this.server = net.createServer((socket) => {
       this.socket = socket
@@ -228,6 +230,21 @@ export class SocketManager extends EventEmitter {
       socket.on('error', (err) => {
         this.emitStatus('error', err.message)
       })
+    })
+
+    this.server.on('error', (err: NodeJS.ErrnoException) => {
+      // If the socket file still exists despite our unlinkSync (rare race with
+      // another process), retry once after a short delay.
+      if (err.code === 'EADDRINUSE') {
+        console.warn('[SocketManager] EADDRINUSE on', SOCKET_PATH, '— retrying')
+        try { require('fs').unlinkSync(SOCKET_PATH) } catch (_) {}
+        setTimeout(() => {
+          if (this.stopped) return
+          this.server?.listen(SOCKET_PATH, () => this.spawnHelper())
+        }, 500)
+      } else {
+        this.emitStatus('error', `Socket server: ${err.message}`)
+      }
     })
 
     this.server.listen(SOCKET_PATH, () => {
