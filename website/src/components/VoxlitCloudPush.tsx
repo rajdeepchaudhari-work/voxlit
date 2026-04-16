@@ -53,9 +53,9 @@ export default function VoxlitCloudPush() {
             padding: '2px 6px', fontSize: '0.625rem', fontWeight: 800,
             letterSpacing: '0.08em', textTransform: 'uppercase',
           }}>
-            Beta
+            Default Engine
           </span>
-          <span>Free during beta. Grab it before limits kick in</span>
+          <span>Free beta — no setup, no limits yet</span>
         </div>
 
         <h2 className={`reveal delay-1${inView ? ' in-view' : ''}`} style={{
@@ -67,13 +67,13 @@ export default function VoxlitCloudPush() {
           marginBottom: 24,
           maxWidth: 900,
         }}>
-          <span style={{ color: '#F0EEFF' }}>Zero setup.<br /></span>
+          <span style={{ color: '#F0EEFF' }}>Voxlit Cloud.<br /></span>
           <span style={{
             background: 'linear-gradient(135deg, #A78BFA, #22D3EE)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}>
-            Start dictating in 10 seconds.
+            Install. Speak. Done.
           </span>
         </h2>
 
@@ -82,11 +82,24 @@ export default function VoxlitCloudPush() {
           fontSize: '1.125rem',
           lineHeight: 1.65,
           color: '#9B96B8',
+          maxWidth: 620,
+          marginBottom: 20,
+        }}>
+          Voxlit Cloud is the <strong style={{ color: '#F0EEFF' }}>default engine</strong> in v2.
+          No API keys. No model downloads. No credit card. Just install Voxlit and start talking.
+          Powered by Whisper + GPT-4o-mini for better accuracy than local-only transcription.
+        </p>
+
+        <p className={`reveal delay-2${inView ? ' in-view' : ''}`} style={{
+          fontFamily: 'var(--font-body)',
+          fontSize: '0.9375rem',
+          lineHeight: 1.65,
+          color: '#706C8A',
           maxWidth: 580,
           marginBottom: 40,
         }}>
-          Voxlit Cloud ships on by default. No API key. No credit card. No billing page to hate.
-          Download, open, press a hotkey. You're in.
+          Want full offline? Switch to Local mode in Settings anytime.
+          Want your own OpenAI key? That works too. Voxlit Cloud is just the fastest way to start.
         </p>
 
         <div className={`reveal delay-3${inView ? ' in-view' : ''}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 48 }}>
@@ -124,22 +137,23 @@ export default function VoxlitCloudPush() {
             textTransform: 'uppercase',
             color: '#665DF5',
           }}>
-            Or <a href="#features" style={{ color: '#22D3EE', textDecoration: 'underline' }}>pick a different engine →</a>
+            Or <a href="#features" style={{ color: '#22D3EE', textDecoration: 'underline' }}>explore all engines →</a>
           </span>
         </div>
 
-        {/* Three-point differentiator row */}
+        {/* Four-point differentiator row */}
         <div className={`reveal delay-3${inView ? ' in-view' : ''}`} style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
           gap: 24,
           paddingTop: 40,
           borderTop: '1px solid rgba(255,255,255,0.08)',
         }}>
           {[
-            { n: '0', label: 'API keys required' },
-            { n: '10s', label: 'from download to first word' },
-            { n: '$0', label: 'during beta, no credit card' },
+            { n: '0', label: 'API keys needed' },
+            { n: '0', label: 'models to download' },
+            { n: '10s', label: 'install to first word' },
+            { n: '$0', label: 'free beta, no card' },
           ].map((item) => (
             <div key={item.label}>
               <div style={{

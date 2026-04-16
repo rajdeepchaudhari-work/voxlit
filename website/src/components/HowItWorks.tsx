@@ -112,6 +112,57 @@ export default function HowItWorks() {
             </div>
           ))}
         </div>
+
+        {/* What's new in v2 */}
+        <div className={`reveal delay-3${inView ? ' in-view' : ''}`} style={{
+          marginTop: 56,
+          padding: 32,
+          border: '3px solid #0A0A0A',
+          background: '#FFFFFF',
+          boxShadow: '6px 6px 0px #0A0A0A',
+        }}>
+          <div className="overline" style={{ marginBottom: 12 }}>What's new in v2.0.0</div>
+          <h3 style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            fontSize: '1.25rem',
+            letterSpacing: '-0.02em',
+            color: '#0A0A0A',
+            marginBottom: 16,
+          }}>
+            Faster, more reliable, easier to start.
+          </h3>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 12,
+          }}>
+            {[
+              'Voxlit Cloud is the default engine — no setup',
+              'Chunked parallel transcription (faster results)',
+              'Sleep/wake recovery — close lid, reopen, keep going',
+              'Smart device fallback — auto-switches to default mic',
+              'Reset command for when things get stuck',
+              '16 bug fixes across the board',
+            ].map(item => (
+              <div key={item} style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <span style={{
+                  color: '#665DF5',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.75rem',
+                  flexShrink: 0,
+                  fontWeight: 700,
+                }}>+</span>
+                <span style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '0.875rem',
+                  lineHeight: 1.5,
+                  color: '#333',
+                }}>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   )

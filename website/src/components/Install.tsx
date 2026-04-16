@@ -2,33 +2,24 @@ import { useState } from 'react'
 
 const VERSION = '2.0.0'
 const REPO = 'rajdeepchaudhari-work/voxlit'
-const RELEASES_URL = `https://github.com/${REPO}/releases/latest`
-const GITHUB_URL = `https://github.com/${REPO}`
-const SUPPORT_EMAIL = 'support@voxlit.co'
-
-// Direct DMG download — skips the releases page entirely. When we bump VERSION
-// this URL updates automatically across every call site on the website.
 const DMG_URL = `https://github.com/${REPO}/releases/download/v${VERSION}/voxlit-${VERSION}-arm64.dmg`
+const SHA256 = '1308ed23f749d3c65d5737a964ad5fb4243dd464e99f279b5fe209841807cfd6'
 
 const CURL_LINE = 'curl -fsSL https://voxlit.co/install.sh | bash'
-const BREW_LINES = [
-  'brew tap rajdeepchaudhari-work/voxlit',
-  'brew install --cask voxlit',
-]
+const BREW_LINE = 'brew install --cask voxlit'
 
-type Tab = 'curl' | 'brew'
+type Tab = 'brew' | 'curl'
 
-// Hoisted — see Hero.tsx's TabButton for why.
-function TabButton({ active, label, accent, onClick }: {
-  active: boolean; label: string; accent: string; onClick: () => void
+function TabButton({ active, label, onClick }: {
+  active: boolean; label: string; onClick: () => void
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       style={{
-        background: active ? accent : 'transparent',
-        border: `1.5px solid ${active ? accent : '#444'}`,
+        background: active ? '#FFEB3B' : 'transparent',
+        border: `1.5px solid ${active ? '#0A0A0A' : '#444'}`,
         cursor: 'pointer',
         padding: '5px 14px',
         fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', fontWeight: 700,
@@ -41,71 +32,39 @@ function TabButton({ active, label, accent, onClick }: {
   )
 }
 
-export default function DownloadCTA() {
-  const [tab, setTab] = useState<Tab>('curl')
+export default function Install() {
+  const [tab, setTab] = useState<Tab>('brew')
 
-  const lines = tab === 'curl' ? [CURL_LINE] : BREW_LINES
+  const lines = tab === 'curl' ? [CURL_LINE] : [BREW_LINE]
   const handleCopy = () => navigator.clipboard.writeText(lines.join('\n'))
 
   return (
     <section
       id="download"
       style={{
-        padding: '104px 0',
+        padding: '100px 0',
         borderBottom: '3px solid #0A0A0A',
         background: '#FFEB3B',
         position: 'relative',
-        overflow: 'hidden',
       }}
     >
-      <div className="bg-dot-grid" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
-
       <div className="page-container" style={{ position: 'relative' }}>
         <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
-
-          <div className="overline" style={{ marginBottom: 16, color: '#666' }}>
-            Free Download · v{VERSION}
-          </div>
 
           <h2 style={{
             fontFamily: 'var(--font-display)',
             fontWeight: 800,
-            fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+            fontSize: 'clamp(2.25rem, 6vw, 4rem)',
             letterSpacing: '-0.04em',
             lineHeight: 1,
-            marginBottom: 20,
+            marginBottom: 32,
             color: '#0A0A0A',
           }}>
-            Your voice.<br />Your machine.
+            Get Voxlit
           </h2>
 
-          <p style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '1.0625rem',
-            lineHeight: 1.65,
-            color: '#222',
-            marginBottom: 12,
-            maxWidth: 520,
-            marginInline: 'auto',
-          }}>
-            One download. No sign-up, no subscription, no catch.
-            If it saves you time, pass it along to a friend. That is all
-            I am asking.
-          </p>
-
-          <p style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.75rem',
-            lineHeight: 1.65,
-            color: '#555',
-            marginBottom: 36,
-            letterSpacing: '0.04em',
-          }}>
-            macOS 13 Ventura or later · Apple Silicon · ~135 MB
-          </p>
-
-          {/* ── PRIMARY: Big DMG download button ── */}
-          <div style={{ marginBottom: 16 }}>
+          {/* Primary download button */}
+          <div style={{ marginBottom: 28 }}>
             <a
               href={DMG_URL}
               download
@@ -114,11 +73,11 @@ export default function DownloadCTA() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 10,
-                padding: '16px 28px',
+                padding: '16px 32px',
                 background: '#0A0A0A',
                 color: '#FFFFFF',
                 border: '3px solid #0A0A0A',
-                boxShadow: '6px 6px 0px #665DF5',
+                boxShadow: '4px 4px 0px rgba(0,0,0,0.3)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: '0.9375rem',
                 fontWeight: 700,
@@ -129,37 +88,24 @@ export default function DownloadCTA() {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translate(-2px, -2px)'
-                e.currentTarget.style.boxShadow = '8px 8px 0px #665DF5'
+                e.currentTarget.style.boxShadow = '6px 6px 0px rgba(0,0,0,0.3)'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'none'
-                e.currentTarget.style.boxShadow = '6px 6px 0px #665DF5'
+                e.currentTarget.style.boxShadow = '4px 4px 0px rgba(0,0,0,0.3)'
               }}
             >
               <DownloadIcon />
-              Download for macOS · v{VERSION}
+              Download DMG — v{VERSION}, 129 MB
             </a>
           </div>
 
-          <p style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.6875rem',
-            color: '#555',
-            letterSpacing: '0.04em',
-            marginBottom: 36,
-          }}>
-            Or grab the full <a href={RELEASES_URL} target="_blank" rel="noopener noreferrer"
-              style={{ color: '#0A0A0A', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 2 }}>
-              release page
-            </a>{' '}with checksums, signatures, and SBOM
-          </p>
-
-          {/* ── SECONDARY: one-liner installs (curl / brew tabs) ── */}
+          {/* Install commands */}
           <div style={{
             border: '3px solid #0A0A0A',
             background: '#1A1A1A',
-            boxShadow: '6px 6px 0px #0A0A0A',
-            marginBottom: 36,
+            boxShadow: '4px 4px 0px #0A0A0A',
+            marginBottom: 24,
             textAlign: 'left',
           }}>
             <div style={{
@@ -172,8 +118,8 @@ export default function DownloadCTA() {
               gap: 10,
             }}>
               <div style={{ display: 'flex', gap: 8 }}>
-                <TabButton active={tab === 'curl'} label="curl" accent="#FFEB3B" onClick={() => setTab('curl')} />
-                <TabButton active={tab === 'brew'} label="brew" accent="#FFEB3B" onClick={() => setTab('brew')} />
+                <TabButton active={tab === 'brew'} label="brew" onClick={() => setTab('brew')} />
+                <TabButton active={tab === 'curl'} label="curl" onClick={() => setTab('curl')} />
               </div>
               <button
                 onClick={handleCopy}
@@ -229,40 +175,27 @@ export default function DownloadCTA() {
             </div>
           </div>
 
-          {/* Links row */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 24, flexWrap: 'wrap', marginBottom: 28 }}>
-            {[
-              { label: 'GitHub ↗', href: GITHUB_URL },
-              { label: 'Docs ↗', href: `${GITHUB_URL}/wiki` },
-              { label: `support@voxlit.co`, href: `mailto:${SUPPORT_EMAIL}` },
-            ].map(link => (
-              <a
-                key={link.label}
-                href={link.href}
-                target={link.href.startsWith('mailto') ? undefined : '_blank'}
-                rel={link.href.startsWith('mailto') ? undefined : 'noopener noreferrer'}
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontWeight: 700,
-                  fontSize: '0.8125rem',
-                  letterSpacing: '0.02em',
-                  color: '#0A0A0A',
-                  textDecoration: 'underline',
-                  textUnderlineOffset: 3,
-                }}
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
+          {/* SHA */}
+          <p style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.625rem',
+            color: '#555',
+            letterSpacing: '0.02em',
+            marginBottom: 16,
+            wordBreak: 'break-all',
+          }}>
+            SHA256: {SHA256}
+          </p>
 
+          {/* Requirements */}
           <p style={{
             fontFamily: 'var(--font-mono)',
             fontSize: '0.6875rem',
+            color: '#555',
             letterSpacing: '0.04em',
-            color: '#666',
+            lineHeight: 1.7,
           }}>
-            MIT License · Copyright © 2026 Rajdeep Chaudhari · No account required
+            Requires macOS 13+. Apple Silicon (arm64). Adhoc-signed — right-click → Open on first launch.
           </p>
         </div>
       </div>

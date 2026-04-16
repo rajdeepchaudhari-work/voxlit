@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTerminalAnim } from '../hooks/useTerminalAnim'
 
 const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
-const VERSION = '1.0.9'
+const VERSION = '2.0.0'
 const DOWNLOAD_URL = `https://github.com/rajdeepchaudhari-work/voxlit/releases/download/v${VERSION}/voxlit-${VERSION}-arm64.dmg`
 
 export default function Hero() {
@@ -72,9 +72,9 @@ export default function Hero() {
                 padding: '2px 6px', fontSize: '0.625rem', fontWeight: 800,
                 letterSpacing: '0.08em', textTransform: 'uppercase',
               }}>
-                Beta
+                v2.0.0
               </span>
-              <span>Voxlit Cloud is free while in beta</span>
+              <span>Voxlit Cloud is the default engine — free beta</span>
               <span style={{
                 background: '#665DF5', color: '#FFFFFF',
                 border: '2px solid #0A0A0A',
@@ -122,7 +122,8 @@ export default function Hero() {
               I got tired of paying <strong style={{ color: '#0A0A0A' }}>$20 a month</strong> to
               talk to my own Mac. So I built Voxlit. One hotkey, speak, and your words
               show up wherever you type. Slack. Cursor. Notion. Terminal. Gmail.
-              Runs on your own Mac. Free, open source, going to stay that way.
+              v2 ships with <strong style={{ color: '#665DF5' }}>Voxlit Cloud</strong> on by default —
+              no API keys, no model downloads, just install and go.
             </p>
 
             {/* Homebrew */}
@@ -205,7 +206,7 @@ export default function Hero() {
             </div>
 
             <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {['v1.0.9', 'arm64', '.dmg', '~135 MB'].map(t => (
+              {['v2.0.0', 'arm64', '.dmg', '~135 MB'].map(t => (
                 <span key={t} className="trust-pill">{t}</span>
               ))}
             </div>

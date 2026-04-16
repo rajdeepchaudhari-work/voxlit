@@ -1,18 +1,15 @@
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import TrustBar from './components/TrustBar'
-import AppLogoStrip from './components/AppLogoStrip'
-import UseCases from './components/UseCases'
-import HowItWorks from './components/HowItWorks'
-import FeatureGrid from './components/FeatureGrid'
 import VoxlitCloudPush from './components/VoxlitCloudPush'
-import ComparisonTable from './components/ComparisonTable'
-import SecuritySignals from './components/SecuritySignals'
-import TechSpecs from './components/TechSpecs'
-import Testimonials from './components/Testimonials'
-import FAQ from './components/FAQ'
-import DownloadCTA from './components/DownloadCTA'
+import AppLogoStrip from './components/AppLogoStrip'
+import FeatureGrid from './components/FeatureGrid'
+import HowItWorks from './components/HowItWorks'
 import FromTheMaker from './components/FromTheMaker'
+import ComparisonTable from './components/ComparisonTable'
+import FAQ from './components/FAQ'
+import InstallGuide from './components/InstallGuide'
+import DownloadCTA from './components/DownloadCTA'
 import Footer from './components/Footer'
 
 export default function App() {
@@ -22,17 +19,14 @@ export default function App() {
       <main>
         <Hero />
         <TrustBar />
-        <AppLogoStrip />
-        <UseCases />
-        <FeatureGrid />
         <VoxlitCloudPush />
+        <AppLogoStrip />
+        <FeatureGrid />
         <HowItWorks />
         <FromTheMaker />
         <ComparisonTable />
-        <SecuritySignals />
-        <TechSpecs />
-        <Testimonials />
         <FAQ />
+        <InstallGuide />
         <DownloadCTA />
       </main>
       <Footer />

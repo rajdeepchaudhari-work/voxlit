@@ -11,10 +11,10 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: <CloudIcon />,
-    heading: 'Cloud mode if you want it',
-    body: "My old MacBook Air choked on the large models, so I added a Cloud lane for people with older Macs.\n\nNo API key. No credit card. Free during beta. Outgrow it, swap in your own OpenAI key, skip me entirely.",
+    heading: 'Voxlit Cloud — free and on by default',
+    body: "v2 ships with Cloud mode enabled. Powered by Whisper + GPT-4o-mini. No API key, no credit card, no model downloads. Free during beta. Want your own OpenAI key or full offline? Switch anytime in Settings.",
     bg: 'rgba(102,93,245,0.1)',
-    badge: 'BETA · FREE',
+    badge: 'DEFAULT · FREE',
   },
   {
     icon: <ShieldIcon />,
@@ -24,20 +24,20 @@ const features: Feature[] = [
   },
   {
     icon: <BoltIcon />,
-    heading: 'Fast enough to forget it is on',
-    body: 'Words show up as you speak. The VAD waits for you to actually finish a thought, so Voxlit does not clip your sentences. Runs on the Neural Engine and Metal GPU. No upload delay, because nothing gets uploaded.',
-    bg: '#FFFFFF',
-  },
-  {
-    icon: <CodeIcon />,
-    heading: 'Read every line yourself',
-    body: "The app, the Swift helper, the Cloud server. All MIT licensed, all on GitHub. Nothing proprietary, no vendored SDKs, no hidden endpoints. Fork it today and you'll still be running your fork in five years.",
+    heading: 'Fast and resilient',
+    body: 'v2 adds chunked parallel transcription — results come back faster on long utterances. Close the lid, reopen, keep dictating. Mic disconnects? Voxlit falls back to the default device automatically.',
     bg: '#FFFFFF',
   },
   {
     icon: <AppsIcon />,
     heading: 'Works in every app I use',
     body: 'Slack, Notion, Cursor, VS Code, Mail, Terminal, iTerm, Ghostty, iMessage, Gmail. If your Mac lets you type in it, Voxlit can dictate into it. One hotkey, universal injection through the Accessibility API.',
+    bg: '#FFFFFF',
+  },
+  {
+    icon: <CodeIcon />,
+    heading: 'Read every line yourself',
+    body: "The app, the Swift helper, the Cloud server. All MIT licensed, all on GitHub. Nothing proprietary, no vendored SDKs, no hidden endpoints. Fork it today and you'll still be running your fork in five years.",
     bg: '#FFFFFF',
   },
   {
