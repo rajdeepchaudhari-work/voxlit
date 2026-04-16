@@ -28,8 +28,7 @@ export default function UpdateBanner() {
     const offProgress = ipc.onUpdateProgress((p) => {
       setStage((prev) => {
         if (prev.kind === 'downloading' || prev.kind === 'available') {
-          const version = prev.kind === 'downloading' ? prev.version : prev.version
-          return { kind: 'downloading', version, progress: p }
+          return { kind: 'downloading', version: prev.version, progress: p }
         }
         return prev
       })
@@ -42,36 +41,34 @@ export default function UpdateBanner() {
 
   if (dismissed || stage.kind === 'idle') return null
 
-  const overlay = (
+  return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'rgba(10, 10, 15, 0.72)',
+      background: 'rgba(10, 10, 10, 0.6)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 50,
-      animation: 'fade-up 200ms ease-out',
     }}>
       {stage.kind === 'downloading'
         ? <DownloadingCard version={stage.version} progress={stage.progress} onDismiss={() => setDismissed(true)} />
         : stage.kind === 'ready'
-        ? <ReadyCard version={stage.version} installing={installing} onQuit={async () => { setInstalling(true); await ipc.installUpdate() }} onLater={() => setDismissed(true)} />
+        ? <ReadyCard version={stage.version} installing={installing} onUpdate={async () => { setInstalling(true); await ipc.installUpdate() }} onLater={() => setDismissed(true)} />
         : null}
     </div>
   )
-
-  return overlay
 }
+
+/* ── Brutalist card matching website style ─────────────────────────────────── */
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      width: 420, maxWidth: 'calc(100vw - 48px)',
-      background: 'var(--bg-1, #111118)',
-      border: '1px solid var(--border, #2E2E4A)',
-      borderRadius: 14,
-      boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.02) inset',
-      padding: '28px 28px 24px',
-      color: 'var(--text, #F0EEFF)',
-      fontFamily: 'var(--font-body, -apple-system, Inter, sans-serif)',
+      width: 380, maxWidth: 'calc(100vw - 48px)',
+      background: '#FFFFFF',
+      border: '3px solid #0A0A0A',
+      boxShadow: '6px 6px 0px #0A0A0A',
+      padding: '28px 24px 24px',
+      color: '#0A0A0A',
+      fontFamily: 'var(--font-body, Inter, -apple-system, sans-serif)',
     }}>
       {children}
     </div>
@@ -88,66 +85,56 @@ function DownloadingCard({ version, progress, onDismiss }: {
 
   return (
     <Card>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 10,
-          background: 'rgba(124, 58, 237, 0.12)',
-          border: '1px solid rgba(124, 58, 237, 0.35)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em' }}>
-            Downloading Voxlit {version}
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text-2, #9B96B8)', marginTop: 2 }}>
-            Update installs when you quit
-          </div>
-        </div>
+      {/* Header */}
+      <div style={{
+        fontFamily: 'var(--font-mono, JetBrains Mono, monospace)',
+        fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+        color: '#665DF5', textTransform: 'uppercase', marginBottom: 10,
+      }}>
+        DOWNLOADING UPDATE
       </div>
 
-      {/* Progress bar */}
+      <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display, Space Grotesk, sans-serif)', letterSpacing: '-0.02em', marginBottom: 4 }}>
+        Voxlit {version}
+      </div>
+      <div style={{ fontSize: 12, color: '#666', marginBottom: 20, fontFamily: 'var(--font-mono, monospace)' }}>
+        Installing automatically when ready
+      </div>
+
+      {/* Progress bar — brutalist: no border-radius, hard border */}
       <div style={{
-        height: 6, borderRadius: 3, overflow: 'hidden',
-        background: 'rgba(255,255,255,0.06)',
+        height: 8, border: '2px solid #0A0A0A', background: '#F5F0E8',
         marginBottom: 10,
       }}>
         <div style={{
           width: `${pct}%`, height: '100%',
-          background: 'linear-gradient(90deg, #7C3AED, #A78BFA)',
-          transition: 'width 240ms cubic-bezier(0.16, 1, 0.3, 1)',
+          background: '#665DF5',
+          transition: 'width 200ms linear',
         }} />
       </div>
 
       <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        fontSize: 12, color: 'var(--text-2, #9B96B8)',
-        fontFamily: 'var(--font-mono, JetBrains Mono, monospace)',
+        display: 'flex', justifyContent: 'space-between',
+        fontSize: 10, color: '#666',
+        fontFamily: 'var(--font-mono, monospace)', fontWeight: 700,
+        letterSpacing: '0.04em',
       }}>
         <span>{pct.toFixed(0)}%</span>
-        {hasTotal ? (
-          <span>{formatMB(progress.transferred)} / {formatMB(progress.total)} MB</span>
-        ) : (
-          <span>Preparing…</span>
-        )}
+        {hasTotal
+          ? <span>{formatMB(progress.transferred)} / {formatMB(progress.total)} MB</span>
+          : <span>PREPARING</span>
+        }
       </div>
 
       <div style={{ marginTop: 18, display: 'flex', justifyContent: 'flex-end' }}>
         <button
           onClick={onDismiss}
           style={{
-            background: 'transparent', border: 'none', color: 'var(--text-2, #9B96B8)',
-            fontSize: 13, fontWeight: 500, cursor: 'pointer', padding: '6px 10px',
-            borderRadius: 6, fontFamily: 'inherit',
+            background: 'transparent', border: '2px solid #0A0A0A',
+            color: '#0A0A0A', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+            padding: '6px 14px', fontFamily: 'var(--font-mono, monospace)',
+            letterSpacing: '0.08em', textTransform: 'uppercase',
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text, #F0EEFF)' }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-2, #9B96B8)' }}
         >
           Continue in background
         </button>
@@ -156,66 +143,64 @@ function DownloadingCard({ version, progress, onDismiss }: {
   )
 }
 
-function ReadyCard({ version, installing, onQuit, onLater }: {
+function ReadyCard({ version, installing, onUpdate, onLater }: {
   version: string
   installing: boolean
-  onQuit: () => void
+  onUpdate: () => void
   onLater: () => void
 }) {
   return (
     <Card>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 10,
-          background: 'rgba(16, 185, 129, 0.12)',
-          border: '1px solid rgba(16, 185, 129, 0.35)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>
-            Voxlit {version} is ready
-          </div>
-          <div style={{ fontSize: 13, color: 'var(--text-2, #9B96B8)', marginTop: 2 }}>
-            Quit and reopen to get the new version
-          </div>
-        </div>
+      {/* Header */}
+      <div style={{
+        fontFamily: 'var(--font-mono, JetBrains Mono, monospace)',
+        fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+        color: '#00C853', textTransform: 'uppercase', marginBottom: 10,
+      }}>
+        UPDATE READY
       </div>
 
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 22 }}>
+      <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display, Space Grotesk, sans-serif)', letterSpacing: '-0.02em', marginBottom: 4 }}>
+        Voxlit {version}
+      </div>
+      <div style={{ fontSize: 12, color: '#666', marginBottom: 24, fontFamily: 'var(--font-mono, monospace)' }}>
+        {installing ? 'Updating — Voxlit will relaunch automatically' : 'Click below to install and relaunch'}
+      </div>
+
+      <div style={{ display: 'flex', gap: 10 }}>
         <button
           onClick={onLater}
           disabled={installing}
           style={{
-            background: 'transparent',
-            border: '1px solid var(--border-strong, #3A3A55)',
-            color: 'var(--text, #F0EEFF)',
-            fontSize: 13, fontWeight: 500, padding: '8px 14px',
-            borderRadius: 8, cursor: installing ? 'default' : 'pointer',
-            opacity: installing ? 0.5 : 1, fontFamily: 'inherit',
+            flex: 1,
+            background: '#FFFFFF', border: '3px solid #0A0A0A',
+            color: '#0A0A0A', fontSize: 11, fontWeight: 700,
+            padding: '12px 0', cursor: installing ? 'default' : 'pointer',
+            opacity: installing ? 0.4 : 1,
+            fontFamily: 'var(--font-mono, monospace)',
+            letterSpacing: '0.08em', textTransform: 'uppercase',
           }}
         >
           Later
         </button>
         <button
-          onClick={onQuit}
+          onClick={onUpdate}
           disabled={installing}
           style={{
-            background: '#7C3AED', border: 'none',
-            color: '#FFFFFF', fontSize: 13, fontWeight: 600,
-            padding: '8px 18px', borderRadius: 8,
-            cursor: installing ? 'default' : 'pointer',
-            opacity: installing ? 0.7 : 1, fontFamily: 'inherit',
-            transition: 'background 140ms ease',
+            flex: 2,
+            background: '#0A0A0A', border: '3px solid #0A0A0A',
+            boxShadow: '4px 4px 0px #665DF5',
+            color: '#FFFFFF', fontSize: 11, fontWeight: 700,
+            padding: '12px 0', cursor: installing ? 'default' : 'pointer',
+            opacity: installing ? 0.7 : 1,
+            fontFamily: 'var(--font-mono, monospace)',
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            transition: 'transform 0.1s, box-shadow 0.1s',
           }}
-          onMouseEnter={(e) => { if (!installing) e.currentTarget.style.background = '#5B21B6' }}
-          onMouseLeave={(e) => { if (!installing) e.currentTarget.style.background = '#7C3AED' }}
+          onMouseEnter={(e) => { if (!installing) { e.currentTarget.style.transform = 'translate(-2px,-2px)'; e.currentTarget.style.boxShadow = '6px 6px 0px #665DF5' } }}
+          onMouseLeave={(e) => { if (!installing) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0px #665DF5' } }}
         >
-          {installing ? 'Quitting…' : 'Quit & Update'}
+          {installing ? 'Updating…' : 'Install & Relaunch'}
         </button>
       </div>
     </Card>
