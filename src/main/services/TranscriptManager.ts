@@ -105,17 +105,27 @@ export class TranscriptManager extends EventEmitter {
       return
     }
 
+    const binaryName = process.arch === 'arm64' ? 'whisper-cli-arm64' : 'whisper-cli-x64'
+    const binaryPath = app.isPackaged
+      ? join(process.resourcesPath, 'binaries', binaryName)
+      : join(app.getAppPath(), 'resources/binaries', binaryName)
+
+    const modelFile = model + '.bin'
+    const bundledModel = app.isPackaged
+      ? join(process.resourcesPath, 'models', modelFile)
+      : join(app.getAppPath(), 'resources/models', modelFile)
+    const downloadedModel = join(homedir(), 'Library', 'Application Support', 'Voxlit', 'models', modelFile)
+    const modelPath = existsSync(bundledModel) ? bundledModel : existsSync(downloadedModel) ? downloadedModel : null
+
+    if (!existsSync(binaryPath) || !modelPath) {
+      console.log(`[TranscriptManager] Skipping warmup — ${!existsSync(binaryPath) ? 'binary' : 'model'} not found`)
+      return
+    }
+
     const silence = this.pcmToWav(Buffer.alloc(16000 * 4)) // 1s silence
     const wavPath = join(tmpdir(), 'voxlit_warmup.wav')
     try {
       writeFileSync(wavPath, silence)
-      const binaryName = process.arch === 'arm64' ? 'whisper-cli-arm64' : 'whisper-cli-x64'
-      const binaryPath = app.isPackaged
-        ? join(process.resourcesPath, 'binaries', binaryName)
-        : join(app.getAppPath(), 'resources/binaries', binaryName)
-      const modelPath = app.isPackaged
-        ? join(process.resourcesPath, 'models', model + '.bin')
-        : join(app.getAppPath(), 'resources/models', model + '.bin')
       const threads = String(Math.min(8, require('os').cpus().length))
 
       this.warmupDone = new Promise<void>((resolve) => {

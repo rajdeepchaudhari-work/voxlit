@@ -13,8 +13,10 @@ import { HealthCheck } from '../services/HealthCheck'
 import type { VoxlitSettings, SystemInfo, ModelStatus } from '@shared/ipc-types'
 
 const MODEL_URLS: Record<string, string> = {
-  'ggml-base.en': 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin',
-  'ggml-small.en': 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin',
+  'ggml-base.en':   'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin',
+  'ggml-small.en':  'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin',
+  'ggml-medium.en': 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.en.bin',
+  'ggml-large-v3':  'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin',
 }
 
 function modelsDir(): string {

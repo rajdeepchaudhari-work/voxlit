@@ -88,6 +88,7 @@ export default function HistoryPanel() {
         const modelLabel =
           model === 'voxlit-cloud' ? 'Cloud' :
           model === 'whisper-1'    ? 'OpenAI' :
+          model === 'unknown'      ? 'Cloud' :
           model.startsWith('ggml') ? model.replace('ggml-', '').replace('.en', '').toUpperCase() :
           model
 

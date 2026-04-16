@@ -88,11 +88,14 @@ export const useAppStore = create<AppState>((set, get) => ({
             sessions.unshift(updated)
           } else {
             // New session — prepend a stub, loadSessions will reconcile later
+            const modelLabel = segment.engine === 'voxlit' ? 'voxlit-cloud'
+              : segment.engine === 'cloud' ? 'whisper-1'
+              : segment.engine ?? 'local'
             sessions.unshift({
               id: segment.sessionId,
               startedAt: Date.now(),
               endedAt: Date.now(),
-              model: 'unknown',
+              model: modelLabel,
               entryCount: 1,
               totalWords: segment.text.trim().split(/\s+/).length,
             })
