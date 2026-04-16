@@ -3,16 +3,17 @@ import { useInView } from '../hooks/useInView'
 const rows = [
   { feature: 'Price', voxlit: 'Free, forever', glaido: 'Free / $20/mo', dragon: '$600 one-time', cloud: '$8–$30/mo' },
   { feature: 'Open Source', voxlit: 'MIT', glaido: 'Proprietary', dragon: 'Proprietary', cloud: 'Proprietary' },
-  { feature: 'Processes Audio', voxlit: 'On device', glaido: 'Off device', dragon: 'On device', cloud: 'Off device' },
-  { feature: 'Internet Required', voxlit: 'Never', glaido: 'Always', dragon: 'Rarely', cloud: 'Always' },
+  { feature: 'Processes Audio', voxlit: 'Both (your choice)', glaido: 'Off device', dragon: 'On device', cloud: 'Off device' },
+  { feature: 'Internet Required', voxlit: 'Optional', glaido: 'Always', dragon: 'Rarely', cloud: 'Always' },
   { feature: 'Account Required', voxlit: 'No', glaido: 'Yes', dragon: 'No', cloud: 'Yes' },
   { feature: 'Apple Silicon', voxlit: 'Optimized', glaido: 'Unknown', dragon: 'No', cloud: 'N/A' },
   { feature: 'Vendor Risk', voxlit: 'Zero', glaido: 'Medium', dragon: 'Medium', cloud: 'High' },
   { feature: 'Can Self-host', voxlit: 'Yes (fork it)', glaido: 'No', dragon: 'N/A', cloud: 'No' },
+  { feature: 'Voice AI Agent', voxlit: 'Built in', glaido: 'No', dragon: 'No', cloud: 'No' },
 ]
 
 function cellStyle(val: string): React.CSSProperties {
-  const good = ['Free, forever', 'MIT', 'On device', 'Never', 'No', 'Optimized', 'Zero', 'Yes (fork it)']
+  const good = ['Free, forever', 'MIT', 'Both (your choice)', 'Optional', 'No', 'Optimized', 'Zero', 'Yes (fork it)', 'Built in']
   const bad = ['Off device', 'Always', 'Yes', 'High', 'Proprietary', '$600 one-time', '$8–$30/mo']
   if (good.includes(val)) return { color: '#00C853', fontWeight: 700 }
   if (bad.includes(val)) return { color: '#999' }

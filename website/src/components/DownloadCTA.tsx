@@ -262,7 +262,7 @@ export default function DownloadCTA() {
             letterSpacing: '0.04em',
             color: '#666',
           }}>
-            MIT License · Copyright © 2026 Rajdeep Chaudhari · No account required
+            MIT License · Copyright © 2026 Eager HQ · No account required
           </p>
         </div>
       </div>

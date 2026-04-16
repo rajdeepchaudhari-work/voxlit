@@ -4,7 +4,7 @@ import { useScrollSpy, useNavScrolled } from '../hooks/useScrollSpy'
 const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
 
 export default function Nav() {
-  const activeSection = useScrollSpy(['use-cases', 'features', 'how-it-works', 'compare'])
+  const activeSection = useScrollSpy(['use-cases', 'features', 'agent', 'how-it-works', 'compare'])
   const isScrolled = useNavScrolled()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -43,6 +43,7 @@ export default function Nav() {
           {[
             { label: 'Use Cases', href: '#use-cases', id: 'use-cases' },
             { label: 'Features', href: '#features', id: 'features' },
+            { label: 'Agent', href: '#agent', id: 'agent' },
             { label: 'How It Works', href: '#how-it-works', id: 'how-it-works' },
             { label: 'GitHub', href: GITHUB_URL, id: '' },
           ].map(link => {
@@ -122,6 +123,7 @@ export default function Nav() {
           {[
             { label: 'Use Cases', href: '#use-cases' },
             { label: 'Features', href: '#features' },
+            { label: 'Agent', href: '#agent' },
             { label: 'How It Works', href: '#how-it-works' },
             { label: 'GitHub', href: GITHUB_URL },
           ].map(link => (

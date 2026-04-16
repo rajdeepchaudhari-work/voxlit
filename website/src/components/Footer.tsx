@@ -65,7 +65,7 @@ export default function Footer() {
               letterSpacing: '0.02em',
               marginBottom: 16,
             }}>
-              MIT License · Copyright © 2026 Rajdeep Chaudhari
+              MIT License · Copyright © 2026 Eager HQ
             </p>
 
             {/* Parent company */}
@@ -229,11 +229,11 @@ export default function Footer() {
                 lineHeight: 1.65,
                 color: '#555',
               }}>
-                Voxlit is a free, open-source voice dictation app for macOS. Built on
-                whisper.cpp, it runs 100% offline on your Mac. No cloud, no account, no
-                subscription. Dictate into Slack, Notion, Cursor, VS Code, Terminal, Gmail,
-                iMessage, Discord, or any macOS app that accepts keyboard input. MIT licensed
-                and auditable on GitHub.
+                Voxlit is a free, open-source voice dictation app for macOS with a
+                built-in AI agent. Cloud-powered by default for speed and Agent features.
+                Offline mode always available via whisper.cpp. Dictate or command by voice
+                into Slack, Notion, Cursor, VS Code, Terminal, Gmail, iMessage, Discord,
+                or any macOS app. MIT licensed and auditable on GitHub.
               </p>
             </div>
             <div>

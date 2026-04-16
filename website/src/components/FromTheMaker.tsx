@@ -91,7 +91,7 @@ export default function FromTheMaker() {
                     letterSpacing: '-0.01em',
                   }}
                 >
-                  Rajdeep Chaudhari
+                  Eager HQ
                 </div>
                 <div
                   style={{
@@ -102,7 +102,7 @@ export default function FromTheMaker() {
                     marginTop: 3,
                   }}
                 >
-                  Building Voxlit in public
+                  The team behind Voxlit
                 </div>
               </div>
 

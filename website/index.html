@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Primary SEO -->
-  <title>Voxlit · Free Offline Voice Dictation for Mac · Open-Source macOS Speech-to-Text</title>
-  <meta name="description" content="I got tired of paying $20/month to talk to my own Mac, so I built Voxlit: a free, open-source, privacy-first voice dictation app for macOS. Press a hotkey, speak, and the words show up in any app. Slack, Notion, Cursor, Terminal, Gmail. Runs 100% offline on whisper.cpp. MIT licensed. No account. No subscription. No cloud required." />
-  <meta name="keywords" content="mac voice dictation, macOS speech to text, offline dictation app, free dictation software, whisper.cpp app, open source dictation, privacy voice typing, mac transcription app, local speech recognition, voxlit, dragon dictate alternative, wispr flow alternative, superwhisper alternative, apple silicon dictation, voice to text mac" />
-  <meta name="author" content="Rajdeep Chaudhari" />
+  <title>Voxlit · Free Voice Dictation + AI Agent for Mac · Open-Source macOS Speech-to-Text</title>
+  <meta name="description" content="Voxlit is a free, open-source voice dictation app for macOS with a built-in AI agent. Press a hotkey to dictate, or say 'Hey Voxlit' to write emails, fix code, optimize prompts, and more by voice. Cloud-powered by default, offline mode always available. MIT licensed. No account. No subscription." />
+  <meta name="keywords" content="mac voice dictation, macOS speech to text, voice ai agent, free dictation software, whisper.cpp app, open source dictation, privacy voice typing, mac transcription app, voxlit agent, voxlit, dragon dictate alternative, wispr flow alternative, superwhisper alternative, apple silicon dictation, voice to text mac, voice assistant mac, ai voice commands mac" />
+  <meta name="author" content="Eager HQ" />
   <meta name="publisher" content="Eager HQ" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="googlebot" content="index, follow" />
@@ -70,7 +70,7 @@
     "@type": "SoftwareApplication",
     "name": "Voxlit",
     "alternateName": ["Voxlit App", "Voxlit Dictation"],
-    "description": "Free, open-source, privacy-first voice dictation app for macOS. Press a hotkey, speak, and transcribed text shows up in any Mac app. 100% offline, powered by whisper.cpp.",
+    "description": "Free, open-source voice dictation app for macOS with a built-in AI agent. Press a hotkey to dictate, or say 'Hey Voxlit' to write emails, fix code, and more by voice. Cloud-powered by default, offline always available.",
     "url": "https://voxlit.co/",
     "image": "https://voxlit.co/og-image.png",
     "applicationCategory": "UtilitiesApplication",
@@ -94,8 +94,8 @@
     },
     "author": {
       "@type": "Person",
-      "name": "Rajdeep Chaudhari",
-      "url": "https://github.com/rajdeepchaudhari-work"
+      "name": "Eager HQ",
+      "url": "https://eagerhq.com/"
     },
     "publisher": {
       "@type": "Organization",
@@ -104,14 +104,16 @@
     },
     "featureList": [
       "Global hotkey activation",
-      "100% offline speech-to-text",
-      "whisper.cpp transcription engine",
+      "Voxlit Agent: voice-to-action AI (write emails, fix code, translate, summarize)",
+      "Cloud-powered transcription by default (Voxlit Cloud, free beta)",
+      "Offline mode via whisper.cpp always available",
       "Silero VAD voice activity detection",
       "Apple Silicon & Intel support",
       "Injects text into any macOS app",
       "Zero account, zero telemetry",
       "MIT licensed open source",
-      "Optional OpenAI cloud mode (bring your own key)",
+      "25+ AI intent categories (emails, code, writing, git, translations)",
+      "Bring your own OpenAI key as alternative",
       "Works with Slack, Notion, Cursor, Terminal, VS Code, Gmail, Discord"
     ],
     "aggregateRating": {
@@ -172,7 +174,7 @@
         "name": "Does Voxlit send my audio anywhere?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No. That was the whole point. In Local mode, every word is transcribed on your Mac using whisper.cpp. No telemetry, no analytics, no background connections. The code is MIT licensed and fully auditable on GitHub."
+          "text": "In Cloud mode (the default), audio is sent to Voxlit Cloud for transcription and Agent processing. In Local mode, everything stays on your Mac. You choose. Either way, Voxlit never stores your recordings, never runs telemetry, and never sells data. The code is MIT licensed and fully auditable on GitHub."
         }
       },
       {
@@ -217,10 +219,26 @@
       },
       {
         "@type": "Question",
+        "name": "What is Voxlit Agent?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Voxlit Agent is a voice-to-action feature built into v2. Say 'Hey Voxlit' before a command and the AI executes your intent instead of just transcribing your words. Write emails, fix code, optimize prompts, draft commit messages, translate text, all by voice. Powered by GPT-4o-mini through Voxlit Cloud. Free during beta."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What can I do with Voxlit Agent?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Over 25 categories including: write or reply to emails, explain errors, generate code, optimize prompts, summarize text, translate between languages, write commit messages, draft PR descriptions, create bug reports, compare tools, and more. Output is paste-ready and lands directly in your focused app."
+        }
+      },
+      {
+        "@type": "Question",
         "name": "Does Voxlit's cloud mode compromise my privacy?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Cloud mode is opt-in. Audio goes directly from your Mac to OpenAI's API using your own API key. It never passes through any Voxlit server. Your key is encrypted on disk using macOS Keychain."
+          "text": "Cloud mode sends audio to Voxlit Cloud for transcription and Agent processing. If you bring your own OpenAI key, audio goes directly to OpenAI's API, skipping Voxlit entirely. Local mode keeps everything on-device. Your API key is encrypted on disk using macOS Keychain."
         }
       },
       {
@@ -236,7 +254,7 @@
         "name": "Who built Voxlit and why should I trust it?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Voxlit is built by Rajdeep Chaudhari, alone and in public at github.com/rajdeepchaudhari-work/voxlit. Every commit is signed. Every release ships with checksums and an SBOM. CodeQL and OpenSSF Scorecard run on every push. You do not have to trust the maintainer. You can trust the code, because the code is open."
+          "text": "Voxlit is built by Eager HQ and developed in the open at github.com/rajdeepchaudhari-work/voxlit. Every commit is signed. Every release ships with checksums and an SBOM. CodeQL and OpenSSF Scorecard run on every push. You do not have to trust us. You can trust the code, because the code is open."
         }
       }
     ]
@@ -263,15 +281,15 @@
 
   <noscript>
     <div style="max-width:720px;margin:48px auto;padding:32px;font-family:system-ui,-apple-system,sans-serif;line-height:1.6;color:#0A0A0A;">
-      <h1 style="font-size:2rem;margin-bottom:16px;">Voxlit · Free Offline Voice Dictation for Mac</h1>
-      <p>Voxlit is an open-source, privacy-first voice dictation app for macOS. Press a global hotkey, speak naturally, and your words are transcribed locally on your Mac and typed into whatever app is focused: Slack, Notion, Cursor, Terminal, Gmail, VS Code, iMessage, Discord, and every other app that accepts keyboard input.</p>
+      <h1 style="font-size:2rem;margin-bottom:16px;">Voxlit · Free Voice Dictation + AI Agent for Mac</h1>
+      <p>Voxlit is an open-source voice dictation app for macOS with a built-in AI agent. Press a global hotkey to dictate, or say "Hey Voxlit" to write emails, fix code, optimize prompts, and more by voice. Words are typed into whatever app is focused: Slack, Notion, Cursor, Terminal, Gmail, VS Code, iMessage, Discord, and more.</p>
       <h2>Why Voxlit</h2>
       <ul>
-        <li><strong>100% offline:</strong> Powered by whisper.cpp. No internet required. No audio ever leaves your Mac.</li>
+        <li><strong>Voxlit Agent:</strong> Say "Hey Voxlit" and give a command. Write emails, explain errors, translate text, draft commits. 25+ intent categories, all by voice.</li>
+        <li><strong>Cloud + Offline:</strong> Cloud-powered by default for speed and Agent features. Switch to fully offline Local mode anytime.</li>
         <li><strong>Free forever:</strong> MIT licensed open source. No account, no subscription, no freemium gate.</li>
         <li><strong>Apple Silicon optimized:</strong> Metal GPU acceleration for fast, low-latency transcription.</li>
         <li><strong>Universal text injection:</strong> Works in any macOS app via the Accessibility API.</li>
-        <li><strong>Optional cloud mode:</strong> Bring your own OpenAI API key if you want cloud transcription.</li>
       </ul>
       <h2>Install</h2>
       <p>Run <code>curl -fsSL https://voxlit.co/install.sh | bash</code> in Terminal, or use Homebrew: <code>brew install --cask voxlit</code> after <code>brew tap rajdeepchaudhari-work/voxlit</code>. You can also download the latest DMG from <a href="https://github.com/rajdeepchaudhari-work/voxlit/releases">GitHub Releases</a>.</p>

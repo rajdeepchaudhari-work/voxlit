@@ -3,7 +3,7 @@ import { useDownloadCount } from '../hooks/useDownloadCount'
 const items = [
   { icon: <LockIcon />, label: 'MIT License' },
   { icon: <UserOffIcon />, label: 'Zero Account' },
-  { icon: <WifiOffIcon />, label: '100% Offline' },
+  { icon: <WifiOffIcon />, label: 'Offline Available' },
 ]
 
 function formatCount(n: number): string {

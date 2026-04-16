@@ -11,15 +11,15 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: <CloudIcon />,
-    heading: 'Voxlit Cloud — free and on by default',
-    body: "v2 ships with Cloud mode enabled. Powered by Whisper + GPT-4o-mini. No API key, no credit card, no model downloads. Free during beta. Want your own OpenAI key or full offline? Switch anytime in Settings.",
+    heading: 'Voxlit Agent: voice to action',
+    body: 'Say "Hey Voxlit" and give a command. Write an email, explain an error, optimize a prompt, draft a commit message. The AI processes your intent and drops the result right where you are typing.\n\nFree during beta. No API key. No setup.',
     bg: 'rgba(102,93,245,0.1)',
-    badge: 'DEFAULT · FREE',
+    badge: 'NEW IN V2',
   },
   {
     icon: <ShieldIcon />,
-    heading: 'I never want your audio',
-    body: "Local mode never opens a network socket. Not for telemetry, not for analytics, not for 'product improvement.' Don't take my word for it. Open Little Snitch. Watch it for thirty seconds. See for yourself.",
+    heading: 'Your audio, your choice',
+    body: "Cloud mode gives you speed and Agent features. Local mode keeps everything on your Mac, no network socket opened, ever. Switch between them anytime in Settings. Either way, Voxlit never stores your audio and never runs telemetry.",
     bg: '#FFEB3B',
   },
   {

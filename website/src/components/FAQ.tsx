@@ -6,7 +6,7 @@ const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
 const faqs = [
   {
     q: 'Does Voxlit send my audio anywhere?',
-    a: "No. That was the whole point. In Local mode, every word is transcribed on your Mac using whisper.cpp. No telemetry, no analytics, no background connections, no 'anonymous usage stats.' The code is MIT licensed. You can verify any of this yourself in under a minute.",
+    a: "In Cloud mode (the default), audio is sent to Voxlit Cloud for transcription and Agent processing. In Local mode, everything stays on your Mac. You choose. Either way, Voxlit never stores your recordings, never runs telemetry, and never sells data. The code is MIT licensed, so you can verify any of this yourself.",
   },
   {
     q: 'What are the system requirements?',
@@ -29,16 +29,24 @@ const faqs = [
     a: "Yes. I am not building this to flip it to a VC in two years. MIT licensed means even if I got hit by a bus tomorrow, every copy of Voxlit that already exists keeps working, and anyone can fork the repo and ship a new version. No paid tier. No freemium gate. No subscription hiding behind 'Pro features.'",
   },
   {
+    q: 'What is Voxlit Agent?',
+    a: 'Voxlit Agent is a voice-to-action feature built into v2. Say "Hey Voxlit" before a command and the AI executes your intent instead of just transcribing your words. Write emails, fix code, optimize prompts, draft commit messages, translate text, all by voice. Powered by GPT-4o-mini through Voxlit Cloud. Free during beta, no API key needed.',
+  },
+  {
+    q: 'What can I do with the Agent?',
+    a: 'Over 25 categories: write or reply to emails, explain errors, generate code, optimize prompts, summarize text, translate between languages, write commit messages, draft PR descriptions, create bug reports, compare tools, and more. The output is paste-ready and lands directly in whatever app you are typing in.',
+  },
+  {
     q: 'Does cloud mode compromise my privacy?',
-    a: "Cloud mode is opt-in, and it is not me looking at your audio. It is OpenAI, using your own API key. Audio goes directly from your Mac to OpenAI's API. It never passes through any Voxlit server, because I do not want that liability and you do not want that middleman. Your API key is encrypted on disk with macOS Keychain.",
+    a: "Cloud mode sends audio to Voxlit Cloud for transcription and Agent processing. If you bring your own OpenAI key, audio goes directly from your Mac to OpenAI's API, skipping Voxlit entirely. Local mode keeps everything on-device. Your API key is encrypted on disk with macOS Keychain.",
   },
   {
     q: 'Why does macOS ask for permissions?',
     a: 'Two permissions, both essential. Microphone, so Voxlit can actually hear you. Accessibility, so it can type the result into your focused app. The onboarding wizard walks you through granting both in about 30 seconds. If you ever want to revoke them, System Settings > Privacy & Security is one click away.',
   },
   {
-    q: 'Who are you and why should I trust this?',
-    a: "I'm Rajdeep Chaudhari. I built Voxlit alone and in public at github.com/rajdeepchaudhari-work/voxlit. Every commit is signed. Every release ships with checksums and an SBOM. CodeQL and OpenSSF run on every push. You do not have to trust me. You can trust the code, because the code is right there.",
+    q: 'Who builds Voxlit and why should I trust it?',
+    a: "Voxlit is built by Eager HQ and developed in the open at github.com/rajdeepchaudhari-work/voxlit. Every commit is signed. Every release ships with checksums and an SBOM. CodeQL and OpenSSF run on every push. You do not have to trust us. You can trust the code, because the code is right there.",
   },
 ]
 

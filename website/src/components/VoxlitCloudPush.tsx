@@ -2,12 +2,21 @@ import { useInView } from '../hooks/useInView'
 
 const DOWNLOAD_URL = 'https://github.com/rajdeepchaudhari-work/voxlit/releases/latest'
 
+const EXAMPLES = [
+  { trigger: 'Hey Voxlit,', command: 'write a decline email for this meeting', category: 'Email' },
+  { trigger: 'Hey Voxlit,', command: 'explain this error and tell me how to fix it', category: 'Code' },
+  { trigger: 'Hey Voxlit,', command: 'optimize this prompt for better results', category: 'AI' },
+  { trigger: 'Hey Voxlit,', command: 'summarize this into three bullet points', category: 'Writing' },
+  { trigger: 'Hey Voxlit,', command: 'write a commit message for these changes', category: 'Git' },
+  { trigger: 'Hey Voxlit,', command: 'translate this to Spanish', category: 'Language' },
+]
+
 export default function VoxlitCloudPush() {
   const { ref, inView } = useInView()
 
   return (
     <section
-      id="voxlit-cloud-push"
+      id="agent"
       ref={ref as React.RefObject<HTMLElement>}
       style={{
         padding: '96px 0',
@@ -49,13 +58,13 @@ export default function VoxlitCloudPush() {
           letterSpacing: '0.04em',
         }}>
           <span style={{
-            background: '#FFEB3B', border: '2px solid #0A0A0A',
+            background: '#22D3EE', border: '2px solid #0A0A0A',
             padding: '2px 6px', fontSize: '0.625rem', fontWeight: 800,
             letterSpacing: '0.08em', textTransform: 'uppercase',
           }}>
-            Default Engine
+            New in v2
           </span>
-          <span>Free beta — no setup, no limits yet</span>
+          <span>Voxlit Agent is live and free during beta</span>
         </div>
 
         <h2 className={`reveal delay-1${inView ? ' in-view' : ''}`} style={{
@@ -67,13 +76,13 @@ export default function VoxlitCloudPush() {
           marginBottom: 24,
           maxWidth: 900,
         }}>
-          <span style={{ color: '#F0EEFF' }}>Voxlit Cloud.<br /></span>
+          <span style={{ color: '#F0EEFF' }}>Say "Hey Voxlit"<br /></span>
           <span style={{
             background: 'linear-gradient(135deg, #A78BFA, #22D3EE)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}>
-            Install. Speak. Done.
+            and the AI does the rest.
           </span>
         </h2>
 
@@ -85,9 +94,9 @@ export default function VoxlitCloudPush() {
           maxWidth: 620,
           marginBottom: 20,
         }}>
-          Voxlit Cloud is the <strong style={{ color: '#F0EEFF' }}>default engine</strong> in v2.
-          No API keys. No model downloads. No credit card. Just install Voxlit and start talking.
-          Powered by Whisper + GPT-4o-mini for better accuracy than local-only transcription.
+          Voxlit Agent turns your voice into action. Say "Hey Voxlit" before any
+          command and the AI processes your <em style={{ color: '#F0EEFF' }}>intent</em>,
+          not just your words. The result lands in your focused app, ready to send or commit.
         </p>
 
         <p className={`reveal delay-2${inView ? ' in-view' : ''}`} style={{
@@ -98,9 +107,48 @@ export default function VoxlitCloudPush() {
           maxWidth: 580,
           marginBottom: 40,
         }}>
-          Want full offline? Switch to Local mode in Settings anytime.
-          Want your own OpenAI key? That works too. Voxlit Cloud is just the fastest way to start.
+          Powered by GPT-4o-mini through Voxlit Cloud. No API key needed,
+          no setup, free during beta. Bring your own OpenAI key if you want.
         </p>
+
+        {/* Example commands */}
+        <div className={`reveal delay-3${inView ? ' in-view' : ''}`} style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: 12,
+          marginBottom: 40,
+        }}>
+          {EXAMPLES.map((ex) => (
+            <div key={ex.command} style={{
+              padding: '14px 18px',
+              border: '2px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.03)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}>
+              <div style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.625rem',
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: '#22D3EE',
+              }}>
+                {ex.category}
+              </div>
+              <div style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.8125rem',
+                color: '#D4D0E8',
+                lineHeight: 1.5,
+              }}>
+                <span style={{ color: '#A78BFA', fontWeight: 700 }}>{ex.trigger}</span>{' '}
+                {ex.command}
+              </div>
+            </div>
+          ))}
+        </div>
 
         <div className={`reveal delay-3${inView ? ' in-view' : ''}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 48 }}>
           <a
@@ -127,7 +175,7 @@ export default function VoxlitCloudPush() {
             onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0px #22D3EE' }}
           >
             <DownloadIcon />
-            Download for macOS
+            Try Voxlit Agent
           </a>
           <span style={{
             alignSelf: 'center',
@@ -137,11 +185,11 @@ export default function VoxlitCloudPush() {
             textTransform: 'uppercase',
             color: '#665DF5',
           }}>
-            Or <a href="#features" style={{ color: '#22D3EE', textDecoration: 'underline' }}>explore all engines →</a>
+            Or <a href="#features" style={{ color: '#22D3EE', textDecoration: 'underline' }}>see all features</a>
           </span>
         </div>
 
-        {/* Four-point differentiator row */}
+        {/* Stats row */}
         <div className={`reveal delay-3${inView ? ' in-view' : ''}`} style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
@@ -150,10 +198,10 @@ export default function VoxlitCloudPush() {
           borderTop: '1px solid rgba(255,255,255,0.08)',
         }}>
           {[
-            { n: '0', label: 'API keys needed' },
-            { n: '0', label: 'models to download' },
-            { n: '10s', label: 'install to first word' },
-            { n: '$0', label: 'free beta, no card' },
+            { n: '25+', label: 'intent categories' },
+            { n: '0', label: 'setup required' },
+            { n: '<2s', label: 'voice to result' },
+            { n: '$0', label: 'free during beta' },
           ].map((item) => (
             <div key={item.label}>
               <div style={{
@@ -181,15 +229,6 @@ export default function VoxlitCloudPush() {
           ))}
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 640px) {
-          #voxlit-cloud-push .page-container > div:last-child {
-            grid-template-columns: 1fr !important;
-            gap: 24px !important;
-          }
-        }
-      `}</style>
     </section>
   )
 }

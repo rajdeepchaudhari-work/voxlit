@@ -44,7 +44,7 @@ export default function Hero() {
 
             {/* Beta announcement */}
             <a
-              href="#features"
+              href="#agent"
               className="hero-stagger beta-pill"
               style={{
                 alignSelf: 'flex-start',
@@ -72,9 +72,9 @@ export default function Hero() {
                 padding: '2px 6px', fontSize: '0.625rem', fontWeight: 800,
                 letterSpacing: '0.08em', textTransform: 'uppercase',
               }}>
-                v2.0.0
+                New
               </span>
-              <span>Voxlit Cloud is the default engine — free beta</span>
+              <span>Voxlit Agent: say "Hey Voxlit" and the AI acts</span>
               <span style={{
                 background: '#665DF5', color: '#FFFFFF',
                 border: '2px solid #0A0A0A',
@@ -122,8 +122,9 @@ export default function Hero() {
               I got tired of paying <strong style={{ color: '#0A0A0A' }}>$20 a month</strong> to
               talk to my own Mac. So I built Voxlit. One hotkey, speak, and your words
               show up wherever you type. Slack. Cursor. Notion. Terminal. Gmail.
-              v2 ships with <strong style={{ color: '#665DF5' }}>Voxlit Cloud</strong> on by default —
-              no API keys, no model downloads, just install and go.
+              Cloud-powered by default with <strong style={{ color: '#665DF5' }}>Voxlit Agent</strong> built
+              in. Say "Hey Voxlit" and the AI writes, fixes, or translates for you.
+              Offline mode always there if you want it.
             </p>
 
             {/* Homebrew */}
@@ -145,7 +146,7 @@ export default function Hero() {
 
             {/* Trust Pills */}
             <div className="hero-stagger" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-              {['MIT License', 'Zero Account', '100% Offline', 'Apple Silicon'].map(pill => (
+              {['MIT License', 'Zero Account', 'Cloud + Offline', 'Apple Silicon'].map(pill => (
                 <span key={pill} className="trust-pill">{pill}</span>
               ))}
             </div>
