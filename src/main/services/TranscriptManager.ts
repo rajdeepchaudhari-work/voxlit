@@ -405,7 +405,7 @@ export class TranscriptManager extends EventEmitter {
       .replace(PAREN_NOISE, '')
       // Fix common Whisper misspellings of "Voxlit" — the word isn't in
       // Whisper's vocabulary so it guesses phonetically.
-      .replace(/\b(Voxelit|Voxelet|Vox Lit|Vox lit|vox lit|Boxlit|Foxlit|Voxlite|voxlit)\b/gi, 'Voxlit')
+      .replace(/\b(Voxelit|Voxelet|Voxlet|Voxlid|Voxlead|Voxlite|Voxlight|Vox Lit|Vox lit|Vox Lead|Vox Let|Vox Lid|Boxlit|Box Lit|Foxlit|Fox Lit|Woxlit|Vocklit|Voclit|Voclite|Voxlit|voxlit|VOXLIT|Foxelet|Boxelet|Vox Elite|Voxe Lit)\b/gi, 'Voxlit')
       // Collapse multiple spaces
       .replace(/\s+/g, ' ')
       .trim()
@@ -530,7 +530,7 @@ export class TranscriptManager extends EventEmitter {
         // adds ~100ms on base/small which is acceptable for dictation quality.
         '--beam-size', '5',
         // Initial prompt primes the model to expect natural spoken sentences, not subtitles.
-        '--prompt', 'Dictation of spoken words. Voxlit is a voice dictation app. Voxlit Agent is a voice command feature.',
+        '--prompt', 'Voxlit. Hey Voxlit. Voxlit Agent. Dictation of spoken words using the Voxlit app.',
         // Suppress blank outputs and single-token noise from silence.
         '--suppress-blank',
         ...(!isLarge ? ['--best-of', '5'] : []),
@@ -674,7 +674,7 @@ export class TranscriptManager extends EventEmitter {
       `--${boundary}\r\n` +
       // Prompt primes the model with context — significantly reduces hallucinations
       // and improves punctuation/capitalization on cloud whisper-1.
-      `Content-Disposition: form-data; name="prompt"\r\n\r\nDictation of spoken words. Voxlit is a voice dictation app. Voxlit Agent is a voice command feature.\r\n` +
+      `Content-Disposition: form-data; name="prompt"\r\n\r\nVoxlit. Hey Voxlit. Voxlit Agent. Dictation of spoken words using the Voxlit app.\r\n` +
       `--${boundary}\r\n` +
       `Content-Disposition: form-data; name="file"; filename="audio.wav"\r\n` +
       `Content-Type: audio/wav\r\n\r\n`
