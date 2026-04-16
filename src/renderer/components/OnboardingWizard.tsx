@@ -836,9 +836,9 @@ function AgentIntroStep({ onNext }: { onNext: () => void }) {
           </span>
         </div>
         {[
-          'Hey Voxlit, optimize this prompt: build a login page',
-          'Hey Voxlit, write an email declining this meeting',
-          'Hey Voxlit, explain what this error means',
+          'Hey Voxlit, optimize this prompt',
+          'Hey Voxlit, write a decline email',
+          'Hey Voxlit, explain this error',
         ].map((ex, i) => (
           <div key={i} style={{
             padding: '10px 14px',
@@ -1170,7 +1170,7 @@ export default function OnboardingWizard() {
       </div>
 
       <div style={{
-        width: '100%', maxWidth: 420,
+        width: '100%', maxWidth: 380,
         padding: '0 24px',
         WebkitAppRegion: 'no-drag',
         transition: 'max-width 0.2s ease',
