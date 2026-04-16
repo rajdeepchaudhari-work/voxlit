@@ -57,8 +57,14 @@ export default function HealthIndicator() {
 
   useEffect(() => {
     refresh()
-    const interval = setInterval(refresh, 30_000)
-    return () => clearInterval(interval)
+    // Refresh frequently at startup (helper may still be connecting),
+    // then settle to a longer interval once things stabilize.
+    const fast = setInterval(refresh, 5_000)
+    const settle = setTimeout(() => {
+      clearInterval(fast)
+    }, 30_000)
+    const slow = setInterval(refresh, 30_000)
+    return () => { clearInterval(fast); clearInterval(slow); clearTimeout(settle) }
   }, [])
 
   if (!health) return null

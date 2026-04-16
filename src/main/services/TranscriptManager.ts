@@ -482,8 +482,17 @@ export class TranscriptManager extends EventEmitter {
 
     // Trim silence — reduces audio length sent to whisper, speeds up processing
     const trimmed = this.trimSilence(pcm)
-    // If trimming left less than 0.1s of audio, nothing meaningful was said
-    if (trimmed.length < 16000 * 4 * 0.1) return ''
+    // If trimming left less than 0.1s of audio, nothing meaningful was said.
+    // Common cause: mic is shared with a call app (Zoom/Teams/FaceTime) that
+    // changed the audio route, or the mic gain is too low.
+    if (trimmed.length < 16000 * 4 * 0.1) {
+      // Check if the ENTIRE original buffer was near-silent — suggests mic issue
+      const originalRms = this.audioRms(pcm)
+      if (originalRms < 0.005) {
+        this.emit('error', 'Microphone captured silence — if you\'re on a call, try selecting a different mic in Settings or wait until the call ends.')
+      }
+      return ''
+    }
 
     const wavPath = join(tmpdir(), `voxlit_${Date.now()}.wav`)
 
@@ -578,8 +587,11 @@ export class TranscriptManager extends EventEmitter {
    * Returns text that's already punctuated, capitalized, and filler-word-stripped.
    */
   private async transcribeVoxlit(pcm: Buffer): Promise<string> {
-    // Skip if audio is silence
-    if (this.audioRms(pcm) < 0.005) return ''
+    // Skip if audio is silence — likely mic in use by a call app
+    if (this.audioRms(pcm) < 0.005) {
+      this.emit('error', 'Microphone captured silence — if you\'re on a call, try selecting a different mic in Settings or wait until the call ends.')
+      return ''
+    }
 
     const { url, token } = this.getVoxlitServer()
     if (!url || !token) throw new Error('Voxlit Server not configured')

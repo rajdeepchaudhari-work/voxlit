@@ -42,6 +42,12 @@ class AudioEngine {
     /// because the preferred device was unavailable. Resets when the user picks
     /// a new device or when the preferred device reappears on next start().
     private var fellBackToDefault: Bool = false
+    /// Silence watchdog: counts consecutive near-silent buffers after start().
+    /// If a call app (Zoom/Teams) is consuming the mic, we get silence — after
+    /// a threshold, auto-switch to the system default device and reconfigure.
+    private var silentBufferCount: Int = 0
+    private var didAutoSwitchMic: Bool = false
+    private let silentBufferThreshold: Int = 12  // ~750ms of silence at 16kHz/4096
 
     private let targetFormat = AVAudioFormat(
         commonFormat: .pcmFormatFloat32,
@@ -171,6 +177,8 @@ class AudioEngine {
         }
 
         isRunning = true
+        silentBufferCount = 0
+        didAutoSwitchMic = false
         print("[AudioEngine] Started")
     }
 
@@ -320,6 +328,44 @@ class AudioEngine {
             }
         default:
             break
+        }
+
+        // Silence watchdog: if the mic is producing nothing (call app consuming
+        // the audio), auto-switch to a different available mic after ~750ms.
+        var bufferRms: Float = 0
+        for i in 0..<frameLength { bufferRms += channelData[i] * channelData[i] }
+        bufferRms = sqrtf(bufferRms / Float(frameLength))
+
+        if bufferRms < 0.003 {
+            silentBufferCount += 1
+            if silentBufferCount >= silentBufferThreshold && !didAutoSwitchMic && isRunning {
+                didAutoSwitchMic = true
+                print("[AudioEngine] \(silentBufferCount) silent buffers — mic may be shared with a call. Auto-switching.")
+                // Try switching to system default (which may differ from preferred)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self, self.isRunning else { return }
+                    self.engine.stop()
+                    self.isRunning = false
+                    self.needsReconfigure = true
+                    // Clear preferred device so reconfigure uses system default
+                    let savedUID = self.preferredDeviceUID
+                    self.preferredDeviceUID = nil
+                    do {
+                        try self.start()
+                        self.socket?.sendJSON([
+                            "type": "audio_error",
+                            "kind": "mic_auto_switch",
+                            "message": "Switched to default mic — your preferred mic was silent (possibly in use by a call).",
+                        ])
+                    } catch {
+                        // Restore preferred UID if auto-switch failed
+                        self.preferredDeviceUID = savedUID
+                        print("[AudioEngine] Auto-switch failed: \(error)")
+                    }
+                }
+            }
+        } else {
+            silentBufferCount = 0
         }
 
         let byteCount = frameLength * MemoryLayout<Float32>.size
