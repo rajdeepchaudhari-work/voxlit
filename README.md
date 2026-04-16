@@ -5,16 +5,17 @@
 <h1 align="center">Voxlit</h1>
 
 <p align="center">
-  <strong>Dictation on macOS, done right.</strong><br/>
-  Hold a key. Talk. The words land in whatever app you were already in.
+  <strong>Voice dictation + AI agent for macOS.</strong><br/>
+  Hold a key. Talk. The words land in whatever app you're in.<br/>
+  Say "Hey Voxlit" and the AI executes your intent.
 </p>
 
 <p align="center">
   <a href="https://voxlit.co"><strong>voxlit.co</strong></a> &nbsp;·&nbsp;
   <a href="https://github.com/rajdeepchaudhari-work/voxlit/releases/latest"><strong>Download</strong></a> &nbsp;·&nbsp;
-  <a href="#how-it-feels">How it feels</a> &nbsp;·&nbsp;
-  <a href="#under-the-hood">Under the hood</a> &nbsp;·&nbsp;
-  <a href="SECURITY.md">Security</a>
+  <a href="#voxlit-agent">Agent</a> &nbsp;·&nbsp;
+  <a href="#install">Install</a> &nbsp;·&nbsp;
+  <a href="#under-the-hood">Architecture</a>
 </p>
 
 <p align="center">
@@ -28,7 +29,6 @@
     <img src="https://img.shields.io/github/stars/rajdeepchaudhari-work/voxlit?style=flat-square&color=22D3EE&label=stars" alt="Stars" />
   </a>
   <img src="https://img.shields.io/badge/platform-macOS%2013%2B-black?style=flat-square" alt="macOS 13+" />
-  <img src="https://img.shields.io/badge/arch-Universal-black?style=flat-square" alt="Universal Binary" />
   <a href="LICENSE">
     <img src="https://img.shields.io/github/license/rajdeepchaudhari-work/voxlit?style=flat-square&color=22D3EE" alt="MIT License" />
   </a>
@@ -44,9 +44,6 @@
   <a href="https://securityscorecards.dev/viewer/?uri=github.com/rajdeepchaudhari-work/voxlit">
     <img src="https://api.securityscorecards.dev/projects/github.com/rajdeepchaudhari-work/voxlit/badge" alt="OpenSSF Scorecard" />
   </a>
-  <a href="https://github.com/rajdeepchaudhari-work/voxlit/releases">
-    <img src="https://img.shields.io/badge/signed-cosign-22D3EE?style=flat-square" alt="Signed with Cosign" />
-  </a>
 </p>
 
 <br/>
@@ -59,245 +56,158 @@
 
 ---
 
-## Why this exists
+## What Voxlit does
 
-Apple's built-in dictation is slow, wrong, and forgets you exist between words. The paid apps work — and then ask you to pay monthly rent on your own voice, pipe your audio through servers you can't audit, and marry you to one model from one vendor.
+Press `Fn`. Talk. A floating pill listens. Release. Text appears in Slack, VS Code, Terminal, Mail — wherever your cursor was. No window switching, no paste.
 
-Voxlit is the dictation app we wanted and couldn't find. Fast enough to trust mid-sentence. Private enough to run fully offline when it matters. Open enough that nobody — not us, not OpenAI, not a future acquirer — can take it away from you.
+**Voxlit Cloud** is the default engine — accurate, punctuated, zero setup. Free during beta.
 
-Every line of the app is MIT. Every transcription engine is swappable. Even the cloud server is in this repo ([`server/`](server/)) — audit it, fork it, or host it yourself in an afternoon.
-
----
-
-## How it feels
-
-You press `Fn`. You talk. A small pill appears and listens. You let go. The text is already in Slack, or VS Code, or the email draft you had open. You didn't switch windows. You didn't paste. You didn't look.
-
-That's it. That's the whole product.
-
-Everything else — the three engines, the health popover, the sleep/wake recovery, the signed helper — exists so that sentence stays true on your machine, on every machine, every time.
+**Local mode** runs whisper.cpp on your Mac. Fully offline. Audio never leaves the machine.
 
 ---
 
-## Three engines, one hotkey
+## Voxlit Agent
 
-One shortcut, three ways to transcribe. Switch whenever you want; nothing else changes.
+Say **"Hey Voxlit"** before any command and the AI executes your intent — not just transcription.
 
-**Voxlit Cloud** &nbsp;·&nbsp; *default, zero setup*
-Our hosted Whisper at `api.voxlit.co`, dictation-tuned for punctuation, contractions, and the "ums" you don't want in the transcript. No account. No API key. No retention. If you ever stop trusting us, the server code is [right here](server/).
+```
+🎙 "Hey Voxlit, write an email declining this meeting politely"
+→ Pastes a ready-to-send decline email into your Mail draft
 
-**Local** &nbsp;·&nbsp; *fully offline*
-`whisper.cpp` on-device with Metal acceleration. Audio never leaves your Mac. This is the mode for anything you'd rather not put on someone else's server.
+🎙 "Hey Voxlit, optimize this prompt: build a REST API for user profiles"
+→ Pastes a structured prompt with requirements, acceptance criteria, scope
 
-**OpenAI BYOK** &nbsp;·&nbsp; *pay-as-you-go*
-Your own `sk-…` key, straight to OpenAI. Voxlit never proxies the audio or stores the key — it's encrypted on disk and handed off as-is.
+🎙 "Hey Voxlit, fix the grammar in: me and him went to store yesterday"
+→ Pastes: "He and I went to the store yesterday."
 
----
+🎙 "Hey Voxlit, write a commit message for adding dark mode support"
+→ Pastes: "feat: add dark mode support with system preference detection"
 
-## What's actually in the box
+🎙 "Hey Voxlit, summarize this meeting notes"
+→ Pastes concise bullet points
 
-- **Works wherever `⌘V` works.** Notion, Slack, VS Code, Mail, Terminal, iTerm, Ghostty, Chrome. Universal paste via macOS System Events — no per-app integrations to rot.
-- **A pill that knows when to disappear.** Floats while you speak, gone when you don't.
-- **Your hotkey, your call.** `Fn`, `⌥Space`, `⌃Space`, `⌘⇧D`, or `⌃⇧F`.
-- **Every word, searchable.** Local SQLite archive of every transcript. Never phones home.
-- **A health popover that tells you the truth.** Mic, helper, socket, engine, updates — all green or all honest. One-click auto-fix for common breakage.
-- **Survives sleep, swapped AirPods, and yanked USB mics.** Reconnects, falls back to the default device, moves on.
-- **Signed end-to-end.** Developer ID, notarized by Apple, release artifacts signed with Cosign against the GitHub workflow that built them.
+🎙 "Hey Voxlit, translate this to Spanish: the meeting is at 3pm"
+→ Pastes: "La reunión es a las 3 de la tarde."
+```
+
+Works with emails, code, writing, translations, bug reports, proposals, todo lists, and more. Powered by Voxlit Cloud.
 
 ---
 
 ## Install
 
-**Homebrew** — recommended. Tap auto-updates on every release.
+**Homebrew** (recommended)
 
 ```bash
 brew tap rajdeepchaudhari-work/voxlit
 brew install --cask voxlit
 ```
 
-**One-line installer** — downloads the latest DMG, copies `Voxlit.app` to `/Applications`, skips the Gatekeeper dance. No `sudo`.
+**Direct download** — grab the DMG from [Releases](https://github.com/rajdeepchaudhari-work/voxlit/releases/latest).
 
-```bash
-curl -fsSL https://voxlit.co/install.sh | bash
-```
+> **First launch on macOS:** The app is open-source and adhoc-signed. macOS will show "cannot verify developer." Right-click the app → Open → click Open. You only need to do this once.
 
-**Direct DMG** — grab it from [**Releases**](https://github.com/rajdeepchaudhari-work/voxlit/releases/latest), open it, drag it to Applications. Every DMG is code-signed, notarized, and Cosign-verified.
+### Permissions
 
----
+On first launch, grant these when prompted:
 
-## First run
-
-1. Launch Voxlit. The onboarding wizard walks you through mic and accessibility permissions.
-2. Pick an engine — Cloud if you just want it to work, Local if you want it private, OpenAI if you already pay them.
-3. Pick a hotkey — `Fn` by default.
-4. Hold it. Talk. Let go.
-
-On first launch, macOS will ask you to approve the signed Swift helper in **System Settings → Privacy & Security**. That's the only process that ever touches your mic or keyboard.
+| Permission | Why |
+|---|---|
+| Microphone | Captures your speech |
+| Accessibility | Injects text into the focused app |
+| Automation (System Events) | Sends Cmd+V paste keystroke |
 
 ---
 
 ## Under the hood
 
-Voxlit is three processes in a trench coat. They cooperate because macOS won't let any single process own the mic, the hotkey, and the keystroke injection cleanly.
+Three processes cooperating over a Unix socket:
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  Swift native helper          (signed, own process)     │
-│  HotkeyManager · AudioEngine · TextInjector             │
-│           │ Unix socket (/tmp/voxlit.socket)            │
-├─────────────────────────────────────────────────────────┤
-│  Electron main process                                  │
-│  SocketManager · TranscriptManager · SessionStore       │
-│           │ contextBridge IPC                           │
-├─────────────────────────────────────────────────────────┤
-│  React renderer                                         │
-│  StatusPill · HistoryPanel · SettingsPanel · Onboarding │
-└─────────────────────────────────────────────────────────┘
-                         │ HTTPS (cloud engines only)
-                         ▼
-┌─────────────────────────────────────────────────────────┐
-│  Voxlit server   (server/, FastAPI on api.voxlit.co)    │
-│  Whisper transcription + dictation post-processing      │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│  Swift helper          (signed, own process)     │
+│  HotkeyManager · AudioEngine · TextInjector      │
+│          │ Unix socket (/tmp/voxlit.socket)       │
+├──────────────────────────────────────────────────┤
+│  Electron main process                           │
+│  SocketManager · TranscriptManager · VoxlitAgent │
+│          │ contextBridge IPC                      │
+├──────────────────────────────────────────────────┤
+│  React renderer                                  │
+│  StatusPill · History · Settings · Onboarding    │
+└──────────────────────────────────────────────────┘
 ```
 
-- **The Swift helper** is the only component with microphone and accessibility permissions. Small, signed, easy to audit.
-- **The audio pipeline** is 16 kHz mono float32 PCM over a Unix socket. VAD trims the silence before transcription, so you're not shipping dead air to a model.
-- **Local transcription** shells out to `whisper-cli` with Metal GPU acceleration.
-- **Cloud transcription** uploads multipart to `api.voxlit.co/v1/transcribe` **from the main process** — the renderer has no network access at all, by design.
-- **History** is `better-sqlite3` + Drizzle ORM, stored under `~/Library/Application Support/Voxlit/`.
+- **Audio:** 16 kHz mono float32 PCM over Unix socket. Silence-trimmed before transcription.
+- **Local engine:** shells out to `whisper-cli` with Metal GPU acceleration.
+- **Voxlit Cloud:** HTTPS from main process only — renderer has no network access by design.
+- **Agent:** detects "Hey Voxlit" trigger → routes command to GPT-4o-mini → injects result.
+- **History:** SQLite via better-sqlite3 + Drizzle ORM in `~/Library/Application Support/Voxlit/`.
 
-Deeper architectural notes live in [`CLAUDE.md`](CLAUDE.md).
+Architecture details in [`CLAUDE.md`](CLAUDE.md).
 
 ---
 
-## Build it yourself
+## Build from source
 
-You'll need macOS 13+ (Apple Silicon recommended), Node 22+, Xcode CLT, and Python 3 with setuptools (`pip3 install setuptools --break-system-packages`).
+Requires macOS 13+, Node 22+, Xcode CLT.
 
 ```bash
 git clone https://github.com/rajdeepchaudhari-work/voxlit.git
 cd voxlit
-npm install                     # auto-rebuilds better-sqlite3 for Electron
+npm install
 ./scripts/build-native.sh       # Swift helper
-./scripts/build-whisper.sh      # whisper.cpp binaries
+./scripts/build-whisper.sh      # whisper.cpp binaries (local mode only)
 npm run dev                     # start with HMR
-npm run build:mac               # production universal DMG
+npm run build:mac               # production DMG
 ```
 
-For Local mode, drop a model in place:
-
-```bash
-mkdir -p ~/Library/Application\ Support/Voxlit/models
-curl -L https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin \
-  -o ~/Library/Application\ Support/Voxlit/models/ggml-base.en.bin
-```
-
-> **macOS 26 (Darwin 25+):** Electron's adhoc-signed dev binary doesn't boot. `npm run dev` fails with `Cannot read properties of undefined (reading 'whenReady')`. Build a signed production DMG with `npm run build:mac`, or sign your local Electron binary with a Developer ID.
-
-### Commands cheatsheet
-
-| Command | Does |
+| Command | What |
 |---|---|
-| `npm run dev` | Electron with Vite HMR |
-| `npm run build:mac` | Universal macOS DMG |
-| `npm run test` · `npm run test:e2e` | Vitest unit · Playwright Electron |
-| `npm run lint` · `npm run typecheck` | ESLint · TS across node + web |
-| `npm run db:generate` | Drizzle migrations from schema |
-| `./scripts/build-native.sh` | Swift helper |
-| `./scripts/build-whisper.sh` | whisper.cpp |
-| `./scripts/record-demo.sh` | One-command GIF capture for the README |
-
-### Settings
-
-All configuration lives in `~/Library/Application Support/Voxlit/` and is editable from the Settings panel.
-
-| Setting | Default | What it does |
-|---|---|---|
-| Hotkey | `Fn` | Push-to-talk trigger |
-| Engine | `voxlit` | `voxlit` (cloud), `local` (offline), `cloud` (OpenAI BYOK) |
-| Local model | `ggml-small.en` | Whisper model for Local mode |
-| Mic device | System default | Any CoreAudio input |
-| VAD sensitivity | `0.5` | Voice-activity threshold |
-| Mic gain boost | `off` | Pre-amp for quiet mics |
-| Noise suppression | `off` | Capture-side denoiser |
-| Start/stop chimes | `on` | Subtle audio feedback |
+| `npm run dev` | Electron + Vite HMR |
+| `npm run build:mac` | Production DMG |
+| `npm run test` | Vitest unit tests |
+| `npm run typecheck` | TypeScript check |
+| `npm run lint` | ESLint |
 
 ---
 
-## Privacy, for real
+## Troubleshooting
 
-Voxlit treats privacy as an architectural property, not a policy promise.
+| Problem | Fix |
+|---|---|
+| "Cannot verify developer" | Right-click → Open, or: `xattr -d com.apple.quarantine /Applications/Voxlit.app` |
+| Hotkey does nothing | Menu bar → Health → Auto-fix |
+| No audio after sleep/wake | Fixed in v2.0. Update. |
+| Local mode fails | Download a model in Settings → Transcription first |
 
-- **Local mode** — your audio never leaves the machine. No telemetry, no analytics, no server.
-- **Voxlit Cloud** — audio streams over HTTPS to `api.voxlit.co`, gets transcribed, and is discarded. No account, no IP logging beyond per-minute rate limits, no retention. The whole server is in [`server/`](server/).
-- **OpenAI BYOK** — audio goes directly to OpenAI using your key. We never proxy it and never see the key; it's encrypted on disk via `electron-store`.
-- **The renderer process has no internet access.** Every network call is forced through the main process so it can be audited in one place.
-- **Supply chain** — CodeQL, OpenSSF Scorecard, Dependabot, SHA-pinned GitHub Actions, Cosign-signed releases, SBOM published per release.
-
-Security policy and how to report vulnerabilities: [`SECURITY.md`](SECURITY.md).
-
----
-
-## When something breaks
-
-- **"Apple cannot check this for malicious software"** — you downloaded via a browser. Use the `curl` installer, or right-click → Open, or run `xattr -d com.apple.quarantine /Applications/Voxlit.app`.
-- **Hotkey does nothing** — menu bar → Health → *Auto-fix*. Re-registers the hotkey and restarts the helper.
-- **Mic silent after sleep/wake** — fixed in v1.0.10. Update.
-- **Stuck "Restart to update"** — fixed in v1.0.7. Update.
-
-Still stuck? Open an issue with the output of **Health popover → Copy diagnostics**. It captures everything we need.
-
----
-
-## What's next
-
-Tracked in [Issues](https://github.com/rajdeepchaudhari-work/voxlit/issues) and [Discussions](https://github.com/rajdeepchaudhari-work/voxlit/discussions). In the pipe:
-
-- Streaming partial transcripts — live preview while you speak
-- Custom vocabulary and find/replace rules
-- Multi-language model picker
-- Per-app engine overrides (Local for Messages, Cloud for email)
-- A Windows port — contributors very much wanted
+Still stuck? [Open an issue](https://github.com/rajdeepchaudhari-work/voxlit/issues/new) with Health popover → Copy diagnostics.
 
 ---
 
 ## Contributing
 
-Show up. PRs welcome. For anything non-trivial, open an issue first so we can agree on the shape before you write the code.
+PRs welcome. For non-trivial changes, open an issue first.
 
 ```bash
 git checkout -b feat/your-thing
-npm install
 npm run lint && npm run typecheck && npm run test
-git commit -m "feat: your thing"
-git push origin feat/your-thing
 ```
 
-House rules:
-
-- TypeScript strict. `npm run typecheck` before pushing.
-- ESLint + Prettier (`npm run format`).
-- Conventional commits (`feat:`, `fix:`, `chore:`).
-- Swift changes under [`native/`](native/) — rebuild with `./scripts/build-native.sh`.
-- UI changes follow [`BRAND_IDENTITY.md`](BRAND_IDENTITY.md).
-
-Starting point: [**`good first issue`**](https://github.com/rajdeepchaudhari-work/voxlit/labels/good%20first%20issue).
+Conventional commits (`feat:`, `fix:`, `chore:`). TypeScript strict. UI follows [`BRAND_IDENTITY.md`](BRAND_IDENTITY.md).
 
 ---
 
-## Standing on shoulders
+## Acknowledgements
 
-Voxlit is MIT-licensed ([`LICENSE`](LICENSE)). It wouldn't exist without:
+MIT licensed ([`LICENSE`](LICENSE)). Built on:
 
-- [whisper.cpp](https://github.com/ggerganov/whisper.cpp) — Georgi Gerganov shipped this and changed what a small team can build
-- [Silero VAD](https://github.com/snakers4/silero-vad) — tiny, accurate, free
-- [Electron](https://www.electronjs.org) · [Vite](https://vitejs.dev) · [React](https://react.dev) · [Zustand](https://zustand-demo.pmnd.rs)
+- [whisper.cpp](https://github.com/ggerganov/whisper.cpp) by Georgi Gerganov
+- [Electron](https://www.electronjs.org) · [React](https://react.dev) · [Vite](https://vitejs.dev)
 - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) · [Drizzle ORM](https://orm.drizzle.team)
-- [electron-builder](https://www.electron.build) · [electron-updater](https://www.electron.build/auto-update)
 
 <br/>
 
 <p align="center">
-  Made on macOS, out in the open. &nbsp;·&nbsp; <a href="https://voxlit.co">voxlit.co</a>
+  © 2026 <a href="https://eagerhq.com">Eager HQ</a> &nbsp;·&nbsp; Maintained by Rajdeep Chaudhari &nbsp;·&nbsp; <a href="https://voxlit.co">voxlit.co</a>
 </p>
