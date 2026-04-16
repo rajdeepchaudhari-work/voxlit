@@ -798,61 +798,69 @@ const HOTKEY_OPTIONS = [
 
 function AgentIntroStep({ onNext }: { onNext: () => void }) {
   return (
-    <div>
-      <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <div style={{ fontSize: 32, marginBottom: 8 }}>🤖</div>
-        <h2 style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '-0.02em', color: '#0A0A0A', textTransform: 'uppercase', marginBottom: 4 }}>Meet Voxlit Agent</h2>
-        <p style={{ fontSize: 11, color: '#666', fontFamily: 'var(--font-mono)' }}>Your voice-activated AI assistant</p>
+    <div className="animate-onboarding-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 0 }}>
+      {/* Icon */}
+      <div style={{
+        width: 56, height: 56, borderRadius: 14,
+        background: 'var(--color-accent-muted)', border: '1px solid var(--color-border-active)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L4 7v10l8 5 8-5V7l-8-5z" stroke="#4F6BFF" strokeWidth="1.8" strokeLinejoin="round"/>
+          <circle cx="12" cy="12" r="3" stroke="#4F6BFF" strokeWidth="1.8"/>
+          <path d="M12 9v-3M12 18v-3M15 12h3M6 12h3" stroke="#4F6BFF" strokeWidth="1.2" strokeLinecap="round"/>
+        </svg>
       </div>
 
-      <div style={{ marginBottom: 20 }}>
-        <p style={{ fontSize: 12, color: '#333', lineHeight: 1.7, fontFamily: 'var(--font-body)', marginBottom: 16 }}>
-          Voxlit Cloud is your default engine — powered by Whisper + GPT-4o-mini for
-          accurate, punctuated transcription. No setup needed.
-        </p>
+      {/* Title */}
+      <h2 style={{ marginTop: 20, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
+        Voxlit Agent
+      </h2>
+      <p style={{ marginTop: 8, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.65, maxWidth: 300 }}>
+        Say <strong style={{ color: 'var(--color-text-primary)' }}>"Hey Voxlit"</strong> before
+        any command. The AI executes your intent — not just transcription.
+      </p>
 
+      {/* Examples */}
+      <div style={{
+        marginTop: 20, width: '100%', textAlign: 'left',
+        border: '2px solid var(--color-border)', background: '#FAFAF7',
+      }}>
         <div style={{
-          border: '2px solid #665DF5', background: 'rgba(102,93,245,0.06)',
-          padding: '14px 16px', marginBottom: 16,
+          padding: '8px 14px',
+          borderBottom: '2px solid var(--color-border)',
+          background: '#F5F0E8',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#665DF5', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
-            NEW · Voxlit Agent
-          </p>
-          <p style={{ fontSize: 12, color: '#333', lineHeight: 1.7, fontFamily: 'var(--font-body)', marginBottom: 10 }}>
-            Say <strong>"Hey Voxlit"</strong> before your command and the AI will execute your
-            intent instead of just transcribing. Try it:
-          </p>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#0A0A0A', lineHeight: 1.8 }}>
-            <div>🎙 "Hey Voxlit, optimize this prompt: build a login page"</div>
-            <div>🎙 "Hey Voxlit, write an email declining this meeting"</div>
-            <div>🎙 "Hey Voxlit, explain what this error means"</div>
+          <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#665DF5' }}>
+            Try saying
+          </span>
+        </div>
+        {[
+          'Hey Voxlit, optimize this prompt: build a login page',
+          'Hey Voxlit, write an email declining this meeting',
+          'Hey Voxlit, explain what this error means',
+        ].map((ex, i) => (
+          <div key={i} style={{
+            padding: '10px 14px',
+            borderBottom: i < 2 ? '1px solid rgba(10,10,10,0.08)' : 'none',
+            fontSize: 11, fontFamily: 'var(--font-mono)', color: '#333', lineHeight: 1.5,
+          }}>
+            <span style={{ color: '#665DF5', marginRight: 6 }}>$</span>{ex}
           </div>
-        </div>
-
-        <div style={{
-          border: '2px solid #FFEB3B', background: 'rgba(255,235,59,0.1)',
-          padding: '12px 14px',
-        }}>
-          <p style={{ fontSize: 10, color: '#666', lineHeight: 1.6, fontFamily: 'var(--font-mono)' }}>
-            ⚠ Offline / local mode is currently being optimized and may not work
-            reliably on all devices. You can still enable it in Settings → Transcription.
-          </p>
-        </div>
+        ))}
       </div>
 
-      <button
-        onClick={onNext}
-        style={{
-          width: '100%', padding: '14px 0',
-          background: '#0A0A0A', color: '#FFFFFF',
-          border: '3px solid #0A0A0A', cursor: 'pointer',
-          fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700,
-          letterSpacing: '0.08em', textTransform: 'uppercase',
-          boxShadow: '4px 4px 0px #665DF5',
-        }}
-      >
-        Try it out →
-      </button>
+      {/* Cloud info */}
+      <p style={{ marginTop: 16, fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.6, maxWidth: 300 }}>
+        Powered by Voxlit Cloud — Whisper + GPT-4o-mini. Free during beta. No API keys or setup needed.
+      </p>
+
+      {/* Offline note */}
+      <p style={{ marginTop: 8, fontSize: 10, color: '#999', lineHeight: 1.5, fontFamily: 'var(--font-mono)' }}>
+        Offline mode available in Settings. Currently in optimization.
+      </p>
+
+      <PrimaryButton onClick={onNext}>Try it out →</PrimaryButton>
     </div>
   )
 }
