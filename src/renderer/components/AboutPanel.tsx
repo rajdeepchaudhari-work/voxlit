@@ -1,41 +1,16 @@
 import { useEffect, useState } from 'react'
 import { ipc } from '../lib/ipc'
 
-const GITHUB_USER = 'RajdeepChaudhari'
-const GITHUB_PROFILE = `https://github.com/${GITHUB_USER}`
 const REPO = 'rajdeepchaudhari-work/voxlit'
 const REPO_URL = `https://github.com/${REPO}`
-
-interface GitHubProfile {
-  name?: string | null
-  bio?: string | null
-  blog?: string | null
-  location?: string | null
-  twitter_username?: string | null
-  followers?: number
-  public_repos?: number
-}
+const EAGER_HQ_URL = 'https://eagerhq.com'
 
 export default function AboutPanel() {
   const [version, setVersion] = useState<string>('')
-  const [profile, setProfile] = useState<GitHubProfile | null>(null)
 
   useEffect(() => {
     ipc.getAppVersion().then(setVersion)
-
-    // Best-effort fetch of live profile data. Falls back to static info.
-    // 5s timeout so a flaky network never hangs the panel.
-    const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), 5000)
-    fetch(`https://api.github.com/users/${GITHUB_USER}`, { signal: ctrl.signal })
-      .then(r => r.ok ? r.json() : null)
-      .then((p: GitHubProfile | null) => p && setProfile(p))
-      .catch(() => { /* offline / blocked / rate-limited — fine, we have defaults */ })
-      .finally(() => clearTimeout(timer))
   }, [])
-
-  const displayName = profile?.name ?? 'Rajdeep Chaudhari'
-  const bio = profile?.bio ?? 'Building privacy-first developer tools. Voxlit is the latest one — voice dictation that runs entirely on your Mac.'
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: '#FFFDF7' }}>
@@ -48,7 +23,7 @@ export default function AboutPanel() {
 
       <div style={{ padding: '24px 20px', maxWidth: 640 }}>
 
-        {/* ── Developer card ────────────────────────────────────────────── */}
+        {/* ── Organization card ─────────────────────────────────────────── */}
         <div style={{
           padding: 24,
           background: '#FFFFFF',
@@ -57,43 +32,27 @@ export default function AboutPanel() {
           marginBottom: 28,
         }}>
           <div style={{
-            fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
-            letterSpacing: '0.12em', color: '#665DF5', marginBottom: 6,
-          }}>
-            MAINTAINED BY
-          </div>
-          <div style={{
             fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 700,
             letterSpacing: '-0.02em', color: '#0A0A0A', lineHeight: 1.05,
           }}>
-            {displayName}
+            Voxlit
           </div>
           <div style={{
             marginTop: 10,
             fontFamily: 'var(--font-body, system-ui)', fontSize: 13,
             color: '#444', lineHeight: 1.55,
           }}>
-            {bio}
+            Privacy-first voice dictation for macOS. Open source, offline-capable, built for developers.
           </div>
 
-          {/* Profile stats — only shown if API responded */}
-          {profile && (
-            <div style={{ marginTop: 14, display: 'flex', gap: 18, flexWrap: 'wrap' }}>
-              {profile.location && <Stat label="Location" value={profile.location} />}
-              {typeof profile.public_repos === 'number' && <Stat label="Repos" value={String(profile.public_repos)} />}
-              {typeof profile.followers === 'number' && <Stat label="Followers" value={String(profile.followers)} />}
-            </div>
-          )}
+          <div style={{ marginTop: 16, display: 'flex', gap: 18, flexWrap: 'wrap' }}>
+            <Stat label="Copyright" value="© 2026 Eager HQ" />
+            <Stat label="Maintained by" value="Rajdeep Chaudhari" />
+          </div>
 
-          {/* Social links */}
           <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <SocialLink href={GITHUB_PROFILE} label="GitHub" />
-            {profile?.twitter_username && (
-              <SocialLink href={`https://twitter.com/${profile.twitter_username}`} label={`@${profile.twitter_username}`} />
-            )}
-            {profile?.blog && (
-              <SocialLink href={profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`} label="Website" />
-            )}
+            <SocialLink href={EAGER_HQ_URL} label="Eager HQ" />
+            <SocialLink href={REPO_URL} label="GitHub" />
           </div>
         </div>
 
@@ -102,6 +61,7 @@ export default function AboutPanel() {
         <InfoCard>
           <Row label="Version" value={version ? `v${version}` : '…'} />
           <Row label="License" value="MIT" />
+          <Row label="Publisher" value="Eager HQ" link={EAGER_HQ_URL} />
           <Row label="Source" value="github.com/rajdeepchaudhari-work/voxlit" link={REPO_URL} />
           <Row label="Issues" value="Report a bug or request a feature" link={`${REPO_URL}/issues/new`} />
           <Row label="Releases" value="See changelog and downloads" link={`${REPO_URL}/releases`} />

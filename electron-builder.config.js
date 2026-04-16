@@ -2,7 +2,7 @@
 module.exports = {
   appId: 'co.voxlit.app',
   productName: 'Voxlit',
-  copyright: 'Copyright © 2026 Voxlit Contributors',
+  copyright: 'Copyright © 2026 Eager HQ',
   directories: {
     buildResources: 'resources',
     output: 'dist',
