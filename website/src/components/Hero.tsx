@@ -152,128 +152,252 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Right — Realistic app mockup */}
-          <div className="hero-stagger" style={{ alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Right — App window + floating pill mockup */}
+          <div className="hero-stagger" style={{ alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: 16, position: 'relative' }}>
 
-            {/* Step 1: Hotkey trigger */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
-                letterSpacing: '0.12em', textTransform: 'uppercase', color: '#999',
-              }}>01 · Press hotkey</span>
-              <div style={{ height: 1, flex: 1, background: '#DDD' }} />
-            </div>
-
-            {/* Status Pill — LISTENING state */}
+            {/* ── App Window Mockup ── */}
             <div style={{
-              background: '#FFFFFF',
               border: '3px solid #0A0A0A',
-              boxShadow: '4px 4px 0px #0A0A0A',
-              height: 50,
-              padding: '0 14px 0 6px',
+              boxShadow: '8px 8px 0px #0A0A0A',
+              background: '#FFFDF7',
               display: 'flex',
-              alignItems: 'center',
-              gap: 10,
+              overflow: 'hidden',
+              minHeight: 280,
             }}>
-              {/* Logo badge with yellow border */}
-              <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
-                <img src="/logo.png" alt="" width={36} height={36}
-                  style={{ borderRadius: 7, display: 'block', border: '2.5px solid #FFEB3B' }} />
-              </div>
 
-              {/* Waveform bars — LISTENING (yellow, varied heights) */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 3, height: 28 }}>
-                {[8, 14, 22, 28, 18, 24, 12, 20, 26, 10, 16, 22].map((h, i) => (
-                  <div key={i} className="waveform-bar" style={{
-                    width: 3, height: h, borderRadius: 9999,
-                    background: '#FFEB3B',
-                  }} />
-                ))}
-              </div>
-
-              {/* State label */}
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: '0.5625rem', fontWeight: 700,
-                letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0A0A0A',
-                marginLeft: 2,
-              }}>LISTENING</span>
-            </div>
-
-            {/* Step 2: Processing */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
-                letterSpacing: '0.12em', textTransform: 'uppercase', color: '#999',
-              }}>02 · Processing</span>
-              <div style={{ height: 1, flex: 1, background: '#DDD' }} />
-            </div>
-
-            {/* Status Pill — PROCESSING state */}
-            <div style={{
-              background: '#FFFFFF',
-              border: '3px solid #0A0A0A',
-              boxShadow: '4px 4px 0px #0A0A0A',
-              height: 50,
-              padding: '0 14px 0 6px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-            }}>
-              <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
-                <img src="/logo.png" alt="" width={36} height={36}
-                  style={{ borderRadius: 7, display: 'block', border: '2.5px solid #665DF5' }} />
-              </div>
-
-              {/* Waveform bars — PROCESSING (purple, pulse animation) */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 3, height: 28 }}>
-                {[6, 8, 14, 20, 24, 18, 12, 8, 6, 4, 6, 8].map((h, i) => (
-                  <div key={i} className="waveform-bar" style={{
-                    width: 3, height: h, borderRadius: 9999,
-                    background: '#665DF5',
-                  }} />
-                ))}
-              </div>
-
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: '0.5625rem', fontWeight: 700,
-                letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0A0A0A',
-                marginLeft: 2,
-              }}>PROCESSING</span>
-            </div>
-
-            {/* Step 3: Result */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
-                letterSpacing: '0.12em', textTransform: 'uppercase', color: '#999',
-              }}>03 · Text injected</span>
-              <div style={{ height: 1, flex: 1, background: '#DDD' }} />
-            </div>
-
-            {/* Transcript flash popup — matches real app */}
-            <div style={{
-              background: 'rgba(10,10,15,0.97)',
-              border: '1px solid rgba(31,41,64,0.9)',
-              borderRadius: 8,
-              padding: '8px 14px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-              maxWidth: 340,
-            }}>
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: '0.75rem',
-                color: '#F0EEFF', lineHeight: 1.5,
+              {/* Sidebar */}
+              <div style={{
+                width: 140,
+                background: '#FFFFFF',
+                borderRight: '3px solid #0A0A0A',
+                display: 'flex',
+                flexDirection: 'column',
+                flexShrink: 0,
               }}>
-                {displayText}
-                {cursorVisible && (
-                  <span className="animate-terminal-blink" style={{
-                    display: 'inline-block', width: 2, height: '1em',
-                    background: '#665DF5', marginLeft: 2, verticalAlign: 'text-bottom',
+                {/* Sidebar logo row */}
+                <div style={{
+                  padding: '10px 10px',
+                  borderBottom: '3px solid #0A0A0A',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 7,
+                }}>
+                  <div style={{
+                    display: 'flex', gap: 4, marginRight: 4,
+                  }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF5F57' }} />
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FFBD2E' }} />
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#28C840' }} />
+                  </div>
+                  <img src="/logo.png" alt="" width={18} height={18}
+                    style={{ borderRadius: 4, display: 'block' }} />
+                  <span style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '0.5625rem', fontWeight: 700,
+                    letterSpacing: '0.06em', color: '#0A0A0A', textTransform: 'uppercase',
+                  }}>VOXLIT</span>
+                </div>
+
+                {/* Nav items */}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  {[
+                    { label: 'Home', active: true },
+                    { label: 'History', active: false },
+                    { label: 'Settings', active: false },
+                    { label: 'About', active: false },
+                  ].map(item => (
+                    <div key={item.label} style={{
+                      padding: '7px 10px',
+                      borderBottom: '2px solid #0A0A0A',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.5625rem',
+                      fontWeight: 700,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: item.active ? '#FFFFFF' : '#0A0A0A',
+                      background: item.active ? '#665DF5' : 'transparent',
+                    }}>
+                      {item.label}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Spacer */}
+                <div style={{ flex: 1 }} />
+
+                {/* Helper status */}
+                <div style={{
+                  padding: '7px 10px',
+                  borderTop: '2px solid #0A0A0A',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                }}>
+                  <div style={{
+                    width: 6, height: 6, borderRadius: '50%',
+                    background: '#665DF5', border: '1.5px solid #665DF5',
                   }} />
-                )}
-              </span>
+                  <span style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '0.4375rem', fontWeight: 700,
+                    letterSpacing: '0.1em', textTransform: 'uppercase', color: '#665DF5',
+                  }}>VOXLIT CLOUD</span>
+                </div>
+              </div>
+
+              {/* Main content area */}
+              <div style={{ flex: 1, padding: '14px 16px', overflow: 'hidden' }}>
+                {/* Dashboard header */}
+                <div style={{
+                  borderBottom: '3px solid #0A0A0A',
+                  paddingBottom: 8,
+                  marginBottom: 14,
+                }}>
+                  <div style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '1rem', fontWeight: 700,
+                    letterSpacing: '-0.02em', color: '#0A0A0A', textTransform: 'uppercase',
+                  }}>Dashboard</div>
+                  <div style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '0.4375rem', fontWeight: 700,
+                    letterSpacing: '0.04em', color: '#666', textTransform: 'uppercase', marginTop: 2,
+                  }}>PRESS HOTKEY TO START DICTATING</div>
+                </div>
+
+                {/* Stat cards */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+                  {[
+                    { label: 'TIME SAVED', value: '14m', sub: 'TOTAL RECORDED', bg: '#FFEB3B' },
+                    { label: 'SPEED', value: '142', sub: 'WORDS / MIN', bg: '#FFFFFF' },
+                    { label: 'STREAK', value: '3', sub: 'DAYS', bg: 'rgba(102,93,245,0.12)' },
+                  ].map(card => (
+                    <div key={card.label} style={{
+                      flex: 1,
+                      padding: '8px 10px',
+                      border: '2px solid #0A0A0A',
+                      boxShadow: '2px 2px 0px #0A0A0A',
+                      background: card.bg,
+                    }}>
+                      <div style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '0.375rem', fontWeight: 700,
+                        letterSpacing: '0.1em', textTransform: 'uppercase', color: '#666',
+                      }}>{card.label}</div>
+                      <div style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '1.125rem', fontWeight: 700,
+                        letterSpacing: '-0.03em', color: '#0A0A0A', lineHeight: 1.2,
+                      }}>{card.value}</div>
+                      <div style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '0.375rem',
+                        color: '#666', marginTop: 1,
+                      }}>{card.sub}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Recent transcriptions */}
+                <div style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '0.375rem', fontWeight: 700,
+                  letterSpacing: '0.12em', textTransform: 'uppercase', color: '#666',
+                  marginBottom: 6,
+                }}>RECENT TRANSCRIPTIONS</div>
+                <div style={{
+                  border: '2px solid #0A0A0A',
+                  boxShadow: '2px 2px 0px #0A0A0A',
+                  background: '#FFFFFF',
+                }}>
+                  {[
+                    { date: 'Today, 2:14 PM', info: '5 entries · 234 words', engine: 'Cloud', engineBg: '#FFEB3B', engineColor: '#0A0A0A' },
+                    { date: 'Today, 11:30 AM', info: '3 entries · 89 words', engine: 'Local', engineBg: 'rgba(102,93,245,0.1)', engineColor: '#665DF5' },
+                    { date: 'Yesterday', info: '12 entries · 1,204 words', engine: 'Cloud', engineBg: '#FFEB3B', engineColor: '#0A0A0A' },
+                  ].map((row, i, arr) => (
+                    <div key={row.date} style={{
+                      padding: '6px 10px',
+                      borderBottom: i < arr.length - 1 ? '2px solid #0A0A0A' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}>
+                      <div>
+                        <div style={{
+                          fontFamily: 'var(--font-mono)', fontSize: '0.5rem', fontWeight: 700,
+                          color: '#0A0A0A',
+                        }}>{row.date}</div>
+                        <div style={{
+                          fontFamily: 'var(--font-mono)', fontSize: '0.4375rem', color: '#666',
+                        }}>{row.info}</div>
+                      </div>
+                      <span style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '0.375rem', fontWeight: 700,
+                        letterSpacing: '0.08em', textTransform: 'uppercase',
+                        padding: '1px 5px',
+                        border: `1.5px solid ${row.engineColor}`,
+                        background: row.engineBg,
+                        color: row.engineColor,
+                      }}>{row.engine}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+            {/* ── Floating Status Pill (overlaps bottom of app window) ── */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: -20,
+              position: 'relative',
+              zIndex: 2,
+            }}>
+              <div style={{
+                background: '#FFFFFF',
+                border: '3px solid #0A0A0A',
+                boxShadow: '4px 4px 0px #0A0A0A',
+                height: 44,
+                padding: '0 12px 0 5px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                <img src="/logo.png" alt="" width={30} height={30}
+                  style={{ borderRadius: 6, display: 'block', border: '2.5px solid #FFEB3B' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 2.5, height: 24 }}>
+                  {[7, 12, 19, 24, 16, 21, 10, 18, 22, 9, 14, 19].map((h, i) => (
+                    <div key={i} className="waveform-bar" style={{
+                      width: 2.5, height: h, borderRadius: 9999,
+                      background: '#FFEB3B',
+                    }} />
+                  ))}
+                </div>
+                <span style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '0.5rem', fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0A0A0A',
+                }}>LISTENING</span>
+              </div>
+            </div>
+
+            {/* Transcript flash */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{
+                background: 'rgba(10,10,15,0.97)',
+                border: '1px solid rgba(31,41,64,0.9)',
+                borderRadius: 8,
+                padding: '6px 12px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+                maxWidth: 320,
+              }}>
+                <span style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '0.6875rem',
+                  color: '#F0EEFF', lineHeight: 1.5,
+                }}>
+                  {displayText}
+                  {cursorVisible && (
+                    <span className="animate-terminal-blink" style={{
+                      display: 'inline-block', width: 2, height: '1em',
+                      background: '#665DF5', marginLeft: 2, verticalAlign: 'text-bottom',
+                    }} />
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {['v2.1.0', 'arm64', '.dmg', '~135 MB'].map(t => (
                 <span key={t} className="trust-pill">{t}</span>
               ))}
