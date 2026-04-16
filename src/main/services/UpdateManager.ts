@@ -1,26 +1,24 @@
 import { autoUpdater } from 'electron-updater'
-import { BrowserWindow } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import { IPC } from '@shared/ipc-types'
-import type { SocketManager } from './SocketManager'
-
-let socketManagerRef: SocketManager | null = null
 
 const CHECK_INTERVAL_MS = 4 * 60 * 60 * 1000  // 4 hours
 
-export function setSocketManagerForUpdater(sm: SocketManager) {
-  socketManagerRef = sm
-}
-
 export function initAutoUpdater(getMainWindow: () => BrowserWindow | null) {
   autoUpdater.autoDownload = true
+  // This is the key: electron-updater installs the update silently when
+  // the app quits normally. No quitAndInstall, no helper teardown race,
+  // no "Object has been destroyed" crash, no Squirrel.Mac bundle-replace
+  // failures. User just quits and reopens.
   autoUpdater.autoInstallOnAppQuit = true
 
-  // Suppress console noise in production
   autoUpdater.logger = null
 
   function send(channel: string, data?: unknown) {
     const win = getMainWindow()
-    win?.webContents.send(channel, data)
+    if (win && !win.isDestroyed()) {
+      win.webContents.send(channel, data)
+    }
   }
 
   autoUpdater.on('update-available', (info) => {
@@ -41,13 +39,11 @@ export function initAutoUpdater(getMainWindow: () => BrowserWindow | null) {
   })
 
   autoUpdater.on('error', (err) => {
-    // Only surface to renderer if it's not a "no update" network error
     if (!err.message?.includes('net::')) {
       send(IPC.UPDATE_ERROR, err.message)
     }
   })
 
-  // Check once 10s after launch, then on interval
   setTimeout(() => {
     autoUpdater.checkForUpdates().catch(() => {})
     setInterval(() => {
@@ -56,16 +52,13 @@ export function initAutoUpdater(getMainWindow: () => BrowserWindow | null) {
   }, 10_000)
 }
 
-export async function installUpdate() {
-  // Kill the Swift helper FIRST and wait for its real exit. If we skip this,
-  // the helper keeps file descriptors open into the .app bundle, Squirrel.Mac
-  // can't atomically replace the install, and quitAndInstall hangs forever.
-  if (socketManagerRef) {
-    try { await socketManagerRef.stopAndWait(1500) } catch (_) {}
-  }
-  // Silent=true on macOS (no modal dialog that can hide behind the window),
-  // forceRunAfter=true so the new version launches automatically.
-  autoUpdater.quitAndInstall(true, true)
+export function installUpdate() {
+  // Don't use quitAndInstall — it races with helper teardown, window
+  // destruction, and Squirrel.Mac's bundle-replace step, causing crashes.
+  // Instead: just quit. autoInstallOnAppQuit=true means electron-updater
+  // applies the update during the normal quit sequence. User reopens the
+  // app from Dock/Spotlight and gets the new version.
+  app.quit()
 }
 
 export function checkForUpdates() {

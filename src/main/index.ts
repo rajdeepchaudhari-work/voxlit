@@ -9,7 +9,7 @@ import { SessionStore } from './services/SessionStore'
 import { TranscriptManager } from './services/TranscriptManager'
 import { UtteranceChunker, type UtteranceChunk } from './services/UtteranceChunker'
 import { registerHandlers } from './ipc/handlers'
-import { initAutoUpdater, setSocketManagerForUpdater } from './services/UpdateManager'
+import { initAutoUpdater } from './services/UpdateManager'
 import { resetAllUserData, resetAndRelaunch } from './services/DataReset'
 import { detectAgentTrigger, processAgentCommand } from './services/VoxlitAgent'
 
@@ -467,7 +467,6 @@ app.whenReady().then(async () => {
   wireServices()
 
   // Let the updater kill the helper cleanly before quitAndInstall fires
-  setSocketManagerForUpdater(socketManager)
   if (app.isPackaged) initAutoUpdater(() => mainWindow)
 
   // Boot sequence — orchestrates database init, helper spawn, health check.

@@ -53,7 +53,7 @@ export default function UpdateBanner() {
       {stage.kind === 'downloading'
         ? <DownloadingCard version={stage.version} progress={stage.progress} onDismiss={() => setDismissed(true)} />
         : stage.kind === 'ready'
-        ? <ReadyCard version={stage.version} installing={installing} onRestart={async () => { setInstalling(true); await ipc.installUpdate() }} onLater={() => setDismissed(true)} />
+        ? <ReadyCard version={stage.version} installing={installing} onQuit={async () => { setInstalling(true); await ipc.installUpdate() }} onLater={() => setDismissed(true)} />
         : null}
     </div>
   )
@@ -107,7 +107,7 @@ function DownloadingCard({ version, progress, onDismiss }: {
             Downloading Voxlit {version}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-2, #9B96B8)', marginTop: 2 }}>
-            Voxlit will restart to finish the update
+            Update installs when you quit
           </div>
         </div>
       </div>
@@ -156,10 +156,10 @@ function DownloadingCard({ version, progress, onDismiss }: {
   )
 }
 
-function ReadyCard({ version, installing, onRestart, onLater }: {
+function ReadyCard({ version, installing, onQuit, onLater }: {
   version: string
   installing: boolean
-  onRestart: () => void
+  onQuit: () => void
   onLater: () => void
 }) {
   return (
@@ -181,7 +181,7 @@ function ReadyCard({ version, installing, onRestart, onLater }: {
             Voxlit {version} is ready
           </div>
           <div style={{ fontSize: 13, color: 'var(--text-2, #9B96B8)', marginTop: 2 }}>
-            Restart now to install the update
+            Quit and reopen to get the new version
           </div>
         </div>
       </div>
@@ -202,7 +202,7 @@ function ReadyCard({ version, installing, onRestart, onLater }: {
           Later
         </button>
         <button
-          onClick={onRestart}
+          onClick={onQuit}
           disabled={installing}
           style={{
             background: '#7C3AED', border: 'none',
@@ -215,7 +215,7 @@ function ReadyCard({ version, installing, onRestart, onLater }: {
           onMouseEnter={(e) => { if (!installing) e.currentTarget.style.background = '#5B21B6' }}
           onMouseLeave={(e) => { if (!installing) e.currentTarget.style.background = '#7C3AED' }}
         >
-          {installing ? 'Restarting…' : 'Restart & Launch'}
+          {installing ? 'Quitting…' : 'Quit & Update'}
         </button>
       </div>
     </Card>
