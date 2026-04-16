@@ -121,7 +121,7 @@ export default function HowItWorks() {
           background: '#FFFFFF',
           boxShadow: '6px 6px 0px #0A0A0A',
         }}>
-          <div className="overline" style={{ marginBottom: 12 }}>What's new in v2.0.0</div>
+          <div className="overline" style={{ marginBottom: 12 }}>What's new in v2.1</div>
           <h3 style={{
             fontFamily: 'var(--font-display)',
             fontWeight: 700,
@@ -130,7 +130,7 @@ export default function HowItWorks() {
             color: '#0A0A0A',
             marginBottom: 16,
           }}>
-            Faster, more reliable, easier to start.
+            Voice-activated AI agent. 9 built-in skills.
           </h3>
           <div style={{
             display: 'grid',
@@ -138,12 +138,12 @@ export default function HowItWorks() {
             gap: 12,
           }}>
             {[
-              'Voxlit Cloud is the default engine — no setup',
-              'Chunked parallel transcription (faster results)',
-              'Sleep/wake recovery — close lid, reopen, keep going',
-              'Smart device fallback — auto-switches to default mic',
-              'Reset command for when things get stuck',
-              '16 bug fixes across the board',
+              'Voxlit Agent — say "Hey Voxlit" + any command',
+              '9 skills: copywriting, cold email, social, editing, polish, clarify, distill, code, productivity',
+              'Auto-switch mic during calls — no more silence',
+              'Step-by-step permissions on first launch',
+              'Reliable auto-updates that actually work',
+              'Defaults to built-in mic — Bluetooth can\'t hijack it',
             ].map(item => (
               <div key={item} style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                 <span style={{

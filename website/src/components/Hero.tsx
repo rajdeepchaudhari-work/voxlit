@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTerminalAnim } from '../hooks/useTerminalAnim'
 
 const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
-const VERSION = '2.0.0'
+const VERSION = '2.1.4'
 const DOWNLOAD_URL = `https://github.com/rajdeepchaudhari-work/voxlit/releases/download/v${VERSION}/voxlit-${VERSION}-arm64.dmg`
 
 export default function Hero() {

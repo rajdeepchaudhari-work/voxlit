@@ -3,12 +3,14 @@ import { useInView } from '../hooks/useInView'
 const DOWNLOAD_URL = 'https://github.com/rajdeepchaudhari-work/voxlit/releases/latest'
 
 const EXAMPLES = [
-  { trigger: 'Hey Voxlit,', command: 'write a decline email for this meeting', category: 'Email' },
-  { trigger: 'Hey Voxlit,', command: 'explain this error and tell me how to fix it', category: 'Code' },
-  { trigger: 'Hey Voxlit,', command: 'optimize this prompt for better results', category: 'AI' },
-  { trigger: 'Hey Voxlit,', command: 'summarize this into three bullet points', category: 'Writing' },
-  { trigger: 'Hey Voxlit,', command: 'write a commit message for these changes', category: 'Git' },
-  { trigger: 'Hey Voxlit,', command: 'translate this to Spanish', category: 'Language' },
+  { trigger: 'Hey Voxlit,', command: 'write a cold email to this CTO about our dev tool', category: 'Cold Email' },
+  { trigger: 'Hey Voxlit,', command: 'write a headline for our landing page', category: 'Copywriting' },
+  { trigger: 'Hey Voxlit,', command: 'write a LinkedIn post about our v2 launch', category: 'Social' },
+  { trigger: 'Hey Voxlit,', command: 'polish this paragraph and tighten the sentences', category: 'Polish' },
+  { trigger: 'Hey Voxlit,', command: 'summarize this meeting notes into key points', category: 'Distill' },
+  { trigger: 'Hey Voxlit,', command: 'make this copy more compelling and specific', category: 'Copy Edit' },
+  { trigger: 'Hey Voxlit,', command: 'simplify this technical explanation for a non-technical audience', category: 'Clarify' },
+  { trigger: 'Hey Voxlit,', command: 'write a commit message for adding dark mode', category: 'Code' },
 ]
 
 export default function VoxlitCloudPush() {
@@ -99,6 +101,19 @@ export default function VoxlitCloudPush() {
           not just your words. The result lands in your focused app, ready to send or commit.
         </p>
 
+        {/* Skills badges */}
+        <div className={`reveal delay-2${inView ? ' in-view' : ''}`} style={{
+          display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16,
+        }}>
+          {['Copywriting', 'Cold Email', 'Social Content', 'Copy Editing', 'Polish', 'Clarify', 'Distill', 'Code', 'Productivity'].map(skill => (
+            <span key={skill} style={{
+              padding: '4px 10px', border: '1.5px solid rgba(255,255,255,0.15)',
+              fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
+              letterSpacing: '0.08em', textTransform: 'uppercase', color: '#A78BFA',
+            }}>{skill}</span>
+          ))}
+        </div>
+
         <p className={`reveal delay-2${inView ? ' in-view' : ''}`} style={{
           fontFamily: 'var(--font-body)',
           fontSize: '0.9375rem',
@@ -107,7 +122,7 @@ export default function VoxlitCloudPush() {
           maxWidth: 580,
           marginBottom: 40,
         }}>
-          Powered by Voxlit Cloud. No API key needed,
+          9 built-in skills. Powered by Voxlit Cloud. No API key needed,
           no setup, free during beta.
         </p>
 
