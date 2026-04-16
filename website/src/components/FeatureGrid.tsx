@@ -24,14 +24,8 @@ const features: Feature[] = [
   },
   {
     icon: <BoltIcon />,
-    heading: 'Fast enough to forget it is on',
-    body: 'v2 adds chunked parallel transcription — audio is split and processed concurrently, so results come back faster. The VAD waits for you to finish your thought. No clipped sentences.',
-    bg: '#FFFFFF',
-  },
-  {
-    icon: <SleepIcon />,
-    heading: 'Survives sleep/wake',
-    body: 'Close your lid, reopen, keep dictating. v2 recovers the audio pipeline after macOS sleep/wake cycles. If your mic disconnects, Voxlit falls back to the default device automatically.',
+    heading: 'Fast and resilient',
+    body: 'v2 adds chunked parallel transcription — results come back faster on long utterances. Close the lid, reopen, keep dictating. Mic disconnects? Voxlit falls back to the default device automatically.',
     bg: '#FFFFFF',
   },
   {
@@ -70,7 +64,7 @@ export default function FeatureGrid() {
       <div className="page-container">
         <div className={`reveal${inView ? ' in-view' : ''}`} style={{ marginBottom: 56, maxWidth: 680 }}>
           <div className="overline" style={{ marginBottom: 12 }}>What I built, and why</div>
-          <h2 className="section-heading">Seven things I refused<br />to compromise on.</h2>
+          <h2 className="section-heading">Six things I refused<br />to compromise on.</h2>
           <p style={{
             fontFamily: 'var(--font-body)',
             fontSize: '1rem',
@@ -175,16 +169,6 @@ function ShieldIcon() {
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
       <path d="M11 2L3 6v5c0 4.5 3.4 8.7 8 9.9 4.6-1.2 8-5.4 8-9.9V6L11 2z" stroke="currentColor" strokeWidth="2" />
       <path d="M7 11l3 3 5-5" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  )
-}
-
-function SleepIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M17 11a6 6 0 1 1-6-6" stroke="currentColor" strokeWidth="2" />
-      <path d="M13 3h6v6" stroke="currentColor" strokeWidth="2" />
-      <path d="M19 3l-6 6" stroke="currentColor" strokeWidth="2" />
     </svg>
   )
 }
