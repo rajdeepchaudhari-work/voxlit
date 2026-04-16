@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import { randomUUID } from 'crypto'
 import { writeFileSync, unlinkSync, existsSync } from 'fs'
 import { join } from 'path'
-import { tmpdir } from 'os'
+import { tmpdir, homedir } from 'os'
 import { execFile } from 'child_process'
 import * as https from 'https'
 import { app } from 'electron'
@@ -259,7 +259,13 @@ export class TranscriptManager extends EventEmitter {
       c.state = 'done'
       this.maybeEmitUtterance(u.id)
     } catch (err) {
-      console.error(`[TranscriptManager] chunk ${u.id}:${c.seq} failed:`, err)
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[TranscriptManager] chunk ${u.id}:${c.seq} failed:`, msg)
+      // Surface model-missing and binary-missing errors to the renderer so the
+      // user sees an actionable message instead of a silent pill-hide.
+      if (msg.includes('not found') || msg.includes('not installed')) {
+        this.emit('error', msg)
+      }
       const uNow = this.utterances.get(work.utteranceId)
       if (!uNow || uNow.cancelled) {
         void this.processNext()
@@ -472,9 +478,26 @@ export class TranscriptManager extends EventEmitter {
       writeFileSync(wavPath, this.pcmToWav(trimmed))
 
       const modelFile = modelName + '.bin'
-      const modelPath = app.isPackaged
+      // Check both bundled (inside .app) and user-downloaded (~/Library/...)
+      // locations — same two paths HealthCheck.checkWhisperModel() probes.
+      const bundledModel = app.isPackaged
         ? join(process.resourcesPath, 'models', modelFile)
         : join(app.getAppPath(), 'resources/models', modelFile)
+      const downloadedModel = join(
+        homedir(), 'Library', 'Application Support', 'Voxlit', 'models', modelFile
+      )
+      const modelPath = existsSync(bundledModel)
+        ? bundledModel
+        : existsSync(downloadedModel)
+          ? downloadedModel
+          : null
+      if (!modelPath) {
+        throw new Error(
+          `Whisper model "${modelFile}" not found. Download it in Settings → Transcription, or run: ` +
+          `curl -L -o ~/Library/Application\\ Support/Voxlit/models/${modelFile} ` +
+          `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${modelFile}`
+        )
+      }
 
       const isLarge = modelName.includes('large')
       const cpuCount = require('os').cpus().length

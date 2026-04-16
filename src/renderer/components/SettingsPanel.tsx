@@ -3,8 +3,10 @@ import { ipc } from '../lib/ipc'
 import type { VoxlitSettings, ModelDownloadProgress } from '@shared/ipc-types'
 
 const DOWNLOADABLE_MODELS = [
-  { name: 'ggml-base.en',  label: 'Base EN',  size: '142 MB' },
-  { name: 'ggml-small.en', label: 'Small EN', size: '466 MB' },
+  { name: 'ggml-base.en',    label: 'Base EN',    size: '142 MB',  spec: 'Any Mac · ~1s latency' },
+  { name: 'ggml-small.en',   label: 'Small EN',   size: '466 MB',  spec: '8 GB RAM · ~2s latency' },
+  { name: 'ggml-medium.en',  label: 'Medium EN',  size: '1.5 GB',  spec: '8 GB RAM · ~5s latency' },
+  { name: 'ggml-large-v3',   label: 'Large v3',   size: '3.1 GB',  spec: '16 GB RAM · ~10s latency' },
 ]
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
@@ -205,7 +207,7 @@ function CheckForUpdatesRow() {
   )
 }
 
-export default function SettingsPanel() {
+export default function SettingsPanel({ onEngineChange }: { onEngineChange?: (engine: string) => void } = {}) {
   const [settings, setSettings] = useState<VoxlitSettings | null>(null)
   const [openaiKeyInput, setOpenaiKeyInput] = useState('')
   const [keyVisible, setKeyVisible] = useState(false)
@@ -367,12 +369,12 @@ export default function SettingsPanel() {
 
       <SectionHeader label="Transcription" index="02" />
 
-      <Row label="Engine" hint="Voxlit Server is recommended — Whisper + AI cleanup for dictation-grade output.">
+      <Row label="Engine" hint="Voxlit Cloud is recommended — Whisper + AI cleanup for dictation-grade output.">
         <Select
           value={settings.transcriptionEngine}
-          onChange={(v) => set('transcriptionEngine', v as VoxlitSettings['transcriptionEngine'])}
+          onChange={(v) => { set('transcriptionEngine', v as VoxlitSettings['transcriptionEngine']); onEngineChange?.(v) }}
           options={[
-            { value: 'voxlit', label: 'Voxlit Server ★' },
+            { value: 'voxlit', label: 'Voxlit Cloud ★' },
             { value: 'local',  label: 'Local (offline)' },
             { value: 'cloud',  label: 'OpenAI (BYOK)' },
           ]}
@@ -401,7 +403,7 @@ export default function SettingsPanel() {
               Downloaded Models
             </span>
           </div>
-          {DOWNLOADABLE_MODELS.map(({ name, label, size }) => {
+          {DOWNLOADABLE_MODELS.map(({ name, label, size, spec }) => {
             const exists = modelStatuses[name]
             const isDl = downloading === name
             const pct = isDl && dlProgress && dlProgress.totalBytes > 0
@@ -412,6 +414,7 @@ export default function SettingsPanel() {
                 <div>
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: 'var(--font-mono)' }}>{label}</span>
                   <span style={{ fontSize: 10, color: '#666', marginLeft: 8, fontFamily: 'var(--font-mono)' }}>{size}</span>
+                  <div style={{ fontSize: 9, color: '#999', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{spec}</div>
                 </div>
                 {exists ? (
                   <span style={{ fontSize: 9, fontWeight: 700, color: '#00C853', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', border: '2px solid #00C853', padding: '2px 6px' }}>✓ READY</span>
