@@ -3,7 +3,7 @@ import { useDownloadCount } from '../hooks/useDownloadCount'
 const items = [
   { icon: <LockIcon />, label: 'MIT License' },
   { icon: <UserOffIcon />, label: 'Zero Account' },
-  { icon: <WifiOffIcon />, label: 'Offline Available' },
+  { icon: <CloudCheckIcon />, label: 'Cloud + Offline' },
 ]
 
 function formatCount(n: number): string {
@@ -99,13 +99,11 @@ function UserOffIcon() {
   )
 }
 
-function WifiOffIcon() {
+function CloudCheckIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M10 15a1 1 0 110 2 1 1 0 010-2z" fill="currentColor" />
-      <path d="M7 12.5A4.5 4.5 0 0110 11.5m3 1a4.5 4.5 0 00-3-1" stroke="currentColor" strokeWidth="2" />
-      <path d="M4.5 9.5A7.5 7.5 0 0110 8m5.5 1.5A7.5 7.5 0 0010 8" stroke="currentColor" strokeWidth="2" />
-      <line x1="2" y1="2" x2="18" y2="18" stroke="currentColor" strokeWidth="2" />
+      <path d="M6 15h8a3.5 3.5 0 0 0 .6-6.95A5 5 0 0 0 5.2 7.5 3.5 3.5 0 0 0 6 15z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M7.5 11l2 2 3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

@@ -38,7 +38,7 @@ const faqs = [
   },
   {
     q: 'Does cloud mode compromise my privacy?',
-    a: "Cloud mode sends audio to Voxlit Cloud for transcription and Agent processing. If you bring your own OpenAI key, audio goes directly from your Mac to OpenAI's API, skipping Voxlit entirely. Local mode keeps everything on-device. Your API key is encrypted on disk with macOS Keychain.",
+    a: "Cloud mode sends audio to Voxlit Cloud for transcription and Agent processing. Local mode keeps everything on-device. You choose which mode to use in Settings, and you can switch anytime.",
   },
   {
     q: 'Why does macOS ask for permissions?',

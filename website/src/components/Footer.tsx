@@ -252,10 +252,10 @@ export default function Footer() {
                 lineHeight: 1.65,
                 color: '#555',
               }}>
-                Global hotkey activation, Silero VAD voice detection, Apple Silicon Metal
-                acceleration, universal text injection via the macOS Accessibility API, optional
-                OpenAI cloud mode with bring-your-own API key, downloadable whisper model tiers
-                (base, small, medium, large), and a local SQLite transcript history.
+                Global hotkey activation, Voxlit Agent (voice-to-action AI), Silero VAD
+                voice detection, Apple Silicon Metal acceleration, universal text injection
+                via the macOS Accessibility API, Voxlit Cloud transcription, downloadable
+                whisper model tiers for offline use, and a local SQLite transcript history.
               </p>
             </div>
             <div>

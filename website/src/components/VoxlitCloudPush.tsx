@@ -107,8 +107,8 @@ export default function VoxlitCloudPush() {
           maxWidth: 580,
           marginBottom: 40,
         }}>
-          Powered by GPT-4o-mini through Voxlit Cloud. No API key needed,
-          no setup, free during beta. Bring your own OpenAI key if you want.
+          Powered by Voxlit Cloud. No API key needed,
+          no setup, free during beta.
         </p>
 
         {/* Example commands */}
