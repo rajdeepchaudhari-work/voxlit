@@ -532,16 +532,12 @@ export class TranscriptManager extends EventEmitter {
         '--no-timestamps',
         '--language', 'en',
         '-t', threads,
-        // --no-context: CRITICAL for push-to-talk dictation. Without this, whisper conditions
-        // on previous audio context and hallucinates continuations from earlier sessions.
-        '--no-context',
-        // beam-size 5 on all models — meaningfully more accurate than greedy (beam=1),
-        // adds ~100ms on base/small which is acceptable for dictation quality.
+        // --max-context 0: CRITICAL for push-to-talk dictation. Without this, whisper
+        // conditions on previous audio context and hallucinates continuations.
+        // Note: older docs say --no-context but the actual binary uses --max-context.
+        '--max-context', '0',
         '--beam-size', '5',
-        // Initial prompt primes the model to expect natural spoken sentences, not subtitles.
         '--prompt', 'Voxlit. Hey Voxlit. Voxlit Agent. Dictation of spoken words using the Voxlit app.',
-        // Suppress blank outputs and single-token noise from silence.
-        '--suppress-blank',
         ...(!isLarge ? ['--best-of', '5'] : []),
       ]
 
