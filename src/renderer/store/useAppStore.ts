@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { RecordingState, TranscriptSegment, HelperStatus, Session, AudioErrorEvent } from '@shared/ipc-types'
 import { ipc } from '../lib/ipc'
 
-type OnboardingStep = 'welcome' | 'microphone' | 'accessibility' | 'automation' | 'engine' | 'apikey' | 'localsetup' | 'test' | 'done' | null
+type OnboardingStep = 'welcome' | 'microphone' | 'accessibility' | 'automation' | 'engine' | 'apikey' | 'localsetup' | 'agent' | 'test' | 'done' | null
 
 interface Stats {
   totalMinutes: number

@@ -794,6 +794,77 @@ const HOTKEY_OPTIONS = [
   { value: 'Ctrl+Shift+F', label: '⌃ ⇧ F',        desc: 'Control + Shift + F' },
 ]
 
+// ─── Step: Voxlit Agent intro ─────────────────────────────────────────────────
+
+function AgentIntroStep({ onNext }: { onNext: () => void }) {
+  return (
+    <div className="animate-onboarding-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 0 }}>
+      {/* Icon */}
+      <div style={{
+        width: 56, height: 56, borderRadius: 14,
+        background: 'var(--color-accent-muted)', border: '1px solid var(--color-border-active)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L4 7v10l8 5 8-5V7l-8-5z" stroke="#4F6BFF" strokeWidth="1.8" strokeLinejoin="round"/>
+          <circle cx="12" cy="12" r="3" stroke="#4F6BFF" strokeWidth="1.8"/>
+          <path d="M12 9v-3M12 18v-3M15 12h3M6 12h3" stroke="#4F6BFF" strokeWidth="1.2" strokeLinecap="round"/>
+        </svg>
+      </div>
+
+      {/* Title */}
+      <h2 style={{ marginTop: 20, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
+        Voxlit Agent
+      </h2>
+      <p style={{ marginTop: 8, fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.65, maxWidth: 300 }}>
+        Say <strong style={{ color: 'var(--color-text-primary)' }}>"Hey Voxlit"</strong> before
+        any command. The AI executes your intent — not just transcription.
+      </p>
+
+      {/* Examples */}
+      <div style={{
+        marginTop: 20, width: '100%', textAlign: 'left',
+        border: '2px solid var(--color-border)', background: '#FAFAF7',
+      }}>
+        <div style={{
+          padding: '8px 14px',
+          borderBottom: '2px solid var(--color-border)',
+          background: '#F5F0E8',
+        }}>
+          <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#665DF5' }}>
+            Try saying
+          </span>
+        </div>
+        {[
+          'Hey Voxlit, optimize this prompt',
+          'Hey Voxlit, write a decline email',
+          'Hey Voxlit, explain this error',
+        ].map((ex, i) => (
+          <div key={i} style={{
+            padding: '10px 14px',
+            borderBottom: i < 2 ? '1px solid rgba(10,10,10,0.08)' : 'none',
+            fontSize: 11, fontFamily: 'var(--font-mono)', color: '#333', lineHeight: 1.5,
+          }}>
+            <span style={{ color: '#665DF5', marginRight: 6 }}>$</span>{ex}
+          </div>
+        ))}
+      </div>
+
+      {/* Cloud info */}
+      <p style={{ marginTop: 16, fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.6, maxWidth: 300 }}>
+        Powered by Voxlit Cloud. Free during beta. No setup needed.
+      </p>
+
+      {/* Offline note */}
+      <p style={{ marginTop: 8, fontSize: 10, color: '#999', lineHeight: 1.5, fontFamily: 'var(--font-mono)' }}>
+        Offline mode available in Settings. Currently in optimization.
+      </p>
+
+      <PrimaryButton onClick={onNext}>Try it out →</PrimaryButton>
+    </div>
+  )
+}
+
 // ─── Step: Test ───────────────────────────────────────────────────────────────
 
 function TestStep({ settings, onNext, onSkip }: {
@@ -1044,7 +1115,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
 
 // ─── Wizard root ──────────────────────────────────────────────────────────────
 
-const STEPS = ['welcome', 'microphone', 'accessibility', 'automation', 'engine', 'apikey', 'localsetup', 'test', 'done'] as const
+const STEPS = ['welcome', 'microphone', 'accessibility', 'automation', 'agent', 'test', 'done'] as const
 type Step = typeof STEPS[number]
 
 export default function OnboardingWizard() {
@@ -1098,9 +1169,8 @@ export default function OnboardingWizard() {
         <ProgressDots total={STEPS.length} current={stepIndex} />
       </div>
 
-      {/* Content card. Engine step is wider so the 3 engine cards fit horizontally. */}
       <div style={{
-        width: '100%', maxWidth: step === 'engine' ? 720 : 380,
+        width: '100%', maxWidth: 380,
         padding: '0 24px',
         WebkitAppRegion: 'no-drag',
         transition: 'max-width 0.2s ease',
@@ -1121,9 +1191,7 @@ export default function OnboardingWizard() {
           {step === 'automation' && (
             <AutomationStep perms={perms} onRefresh={refreshPerms} onNext={goNext} onSkip={goNext} />
           )}
-          {step === 'engine' && <EngineStep onNext={() => setOnboardingStep('test')} onApiKey={() => setOnboardingStep('apikey')} onLocalSetup={() => setOnboardingStep('localsetup')} />}
-          {step === 'apikey' && <ApiKeyStep onNext={() => setOnboardingStep('test')} onSkip={() => setOnboardingStep('test')} />}
-          {step === 'localsetup' && <LocalSetupStep onNext={() => setOnboardingStep('test')} />}
+          {step === 'agent' && <AgentIntroStep onNext={goNext} />}
           {step === 'test' && <TestStep settings={settings} onNext={() => setOnboardingStep('done')} onSkip={() => setOnboardingStep('done')} />}
           {step === 'done' && <DoneStep settings={settings} onFinish={completeOnboarding} />}
         </div>

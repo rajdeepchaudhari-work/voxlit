@@ -1,8 +1,11 @@
-# Voxlit Transcription API
+# Voxlit Cloud API
 
-FastAPI server that proxies audio to OpenAI Whisper + GPT-4o-mini for
-dictation-quality output. Deployed behind a Cloudflare tunnel at
-`https://api.voxlit.co/v1/transcribe`.
+FastAPI server powering Voxlit Cloud. Two endpoints:
+
+- `POST /v1/transcribe` — audio-to-text (Whisper + cleanup)
+- `POST /v1/agent` — Voxlit Agent (voice commands → GPT-4o-mini)
+
+Deployed behind a Cloudflare tunnel at `https://api.voxlit.co`.
 
 ## Architecture
 
