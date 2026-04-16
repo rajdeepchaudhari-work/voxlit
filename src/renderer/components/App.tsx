@@ -151,10 +151,15 @@ export default function App() {
       // so the first record/stop sound doesn't play choppy while the HAL
       // is still warming up under the recording path.
       warmupChimes()
-      // Try to silently grant any not-determined permissions. Only triggers
-      // OS prompts (mic, automation) — never auto-opens System Settings.
-      // Won't re-prompt if user previously denied. Runs once per launch.
-      void autoFixHealthIssues()
+      // Only auto-fix permissions on subsequent launches — NOT on first launch.
+      // First launch goes through the onboarding wizard which grants permissions
+      // step by step. Running autoFixHealthIssues here too would bombard the user
+      // with all macOS permission dialogs at once.
+      ipc.getSettings().then(s => {
+        if (s.hasCompletedOnboarding) {
+          void autoFixHealthIssues()
+        }
+      }).catch(() => {})
       setBooted(true)
     }} />
   }

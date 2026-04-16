@@ -282,10 +282,13 @@ function wireServices() {
 
   socketManager.on('status', (status, error) => {
     broadcastToAll(IPC.HELPER_STATUS, { status, error })
-    // When helper connects, push saved mic preference + gain
+    // When helper connects, push saved mic preference + gain.
+    // Default to the built-in MacBook mic if no preference is saved — this
+    // prevents Bluetooth connections from hijacking the audio device.
+    // "BuiltInMicrophoneDevice" is the standard CoreAudio UID on all Macs.
     if (status === 'connected') {
-      const uid = store.get('micDeviceUid') ?? ''
-      if (uid) socketManager.setMicDevice(uid)
+      const uid = store.get('micDeviceUid') || 'BuiltInMicrophoneDevice'
+      socketManager.setMicDevice(uid)
       const mode = store.get('micGainMode') ?? 'off'
       socketManager.setMicGainMode(mode)
       socketManager.setMicGain(store.get('micGain') ?? 2.5)
