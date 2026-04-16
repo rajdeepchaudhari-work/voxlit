@@ -6,13 +6,14 @@ import HistoryPanel from './HistoryPanel'
 import SettingsPanel from './SettingsPanel'
 import HomePanel from './HomePanel'
 import AboutPanel from './AboutPanel'
+import AgentPanel from './AgentPanel'
 import OnboardingWizard from './OnboardingWizard'
 import UpdateBanner from './UpdateBanner'
 import HealthIndicator, { autoFixHealthIssues } from './HealthIndicator'
 import SplashScreen from './SplashScreen'
 import { warmupChimes } from './StatusPill'
 
-type View = 'home' | 'history' | 'settings' | 'about'
+type View = 'home' | 'history' | 'agent' | 'settings' | 'about'
 
 // ─── Brand mark ───────────────────────────────────────────────────────────────
 
@@ -206,6 +207,7 @@ export default function App() {
         <nav style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <NavItem active={view === 'home'}     onClick={() => setView('home')}     label="Home" />
           <NavItem active={view === 'history'}  onClick={() => setView('history')}  label="History" />
+          <NavItem active={view === 'agent'}    onClick={() => setView('agent')}    label="Agent" />
           <NavItem active={view === 'settings'} onClick={() => setView('settings')} label="Settings" />
           <NavItem active={view === 'about'}    onClick={() => setView('about')}    label="About" />
         </nav>
@@ -221,6 +223,7 @@ export default function App() {
         </div>
         {view === 'home'     && <HomePanel onNavigateHistory={() => setView('history')} />}
         {view === 'history'  && <HistoryPanel />}
+        {view === 'agent'    && <AgentPanel />}
         {view === 'settings' && <SettingsPanel onEngineChange={setEngine} />}
         {view === 'about'    && <AboutPanel />}
       </div>
