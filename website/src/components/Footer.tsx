@@ -230,7 +230,7 @@ export default function Footer() {
                 color: '#555',
               }}>
                 Voxlit is a free, open-source voice dictation app for macOS. Built on
-                whisper.cpp, it runs 100% offline on your Mac — no cloud, no account, no
+                whisper.cpp, it runs 100% offline on your Mac. No cloud, no account, no
                 subscription. Dictate into Slack, Notion, Cursor, VS Code, Terminal, Gmail,
                 iMessage, Discord, or any macOS app that accepts keyboard input. MIT licensed
                 and auditable on GitHub.
