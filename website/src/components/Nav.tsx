@@ -4,7 +4,7 @@ import { useScrollSpy, useNavScrolled } from '../hooks/useScrollSpy'
 const GITHUB_URL = 'https://github.com/rajdeepchaudhari-work/voxlit'
 
 export default function Nav() {
-  const activeSection = useScrollSpy(['use-cases', 'features', 'agent', 'how-it-works', 'compare'])
+  const activeSection = useScrollSpy(['agent', 'features', 'how-it-works', 'compare', 'faq', 'install-guide'])
   const isScrolled = useNavScrolled()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -41,10 +41,10 @@ export default function Nav() {
         {/* Desktop Nav */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 2 }} className="desktop-nav">
           {[
-            { label: 'Use Cases', href: '#use-cases', id: 'use-cases' },
-            { label: 'Features', href: '#features', id: 'features' },
             { label: 'Agent', href: '#agent', id: 'agent' },
+            { label: 'Features', href: '#features', id: 'features' },
             { label: 'How It Works', href: '#how-it-works', id: 'how-it-works' },
+            { label: 'Install', href: '#install-guide', id: 'install-guide' },
             { label: 'GitHub', href: GITHUB_URL, id: '' },
           ].map(link => {
             const isActive = activeSection === link.id && link.id !== ''
@@ -121,10 +121,10 @@ export default function Nav() {
           gap: 2,
         }}>
           {[
-            { label: 'Use Cases', href: '#use-cases' },
-            { label: 'Features', href: '#features' },
             { label: 'Agent', href: '#agent' },
+            { label: 'Features', href: '#features' },
             { label: 'How It Works', href: '#how-it-works' },
+            { label: 'Install', href: '#install-guide' },
             { label: 'GitHub', href: GITHUB_URL },
           ].map(link => (
             <a
