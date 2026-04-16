@@ -390,6 +390,16 @@ function wireServices() {
     pillWindow?.hide()
   })
 
+  // Surface transcription errors (missing model, missing binary) to the
+  // renderer via the existing audio_error channel so the user sees an
+  // actionable message instead of a silent pill-hide.
+  transcriptManager.on('error', (message: string) => {
+    broadcastToAll(IPC.AUDIO_ERROR, {
+      kind: 'transcription_error',
+      message,
+    })
+  })
+
   // Helper failed to open the mic (device gone, HAL stale, or bind error).
   // Surface to the renderer so the UI can stop showing 'listening' and, when
   // it's a device fallback, tell the user which device is now active.

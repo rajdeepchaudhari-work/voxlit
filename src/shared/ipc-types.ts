@@ -57,7 +57,7 @@ export interface RecordingStateChange {
 // Bluetooth mic, stale HAL state after sleep/wake, etc. `kind` is machine-
 // readable; `message` is human-readable.
 export interface AudioErrorEvent {
-  kind: 'device_fallback' | 'inject_failed' | 'unknown'
+  kind: 'device_fallback' | 'inject_failed' | 'transcription_error' | 'unknown'
   message: string
   preferredUid?: string
 }

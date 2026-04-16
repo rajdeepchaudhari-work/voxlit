@@ -221,7 +221,7 @@ export default function App() {
         </div>
         {view === 'home'     && <HomePanel onNavigateHistory={() => setView('history')} />}
         {view === 'history'  && <HistoryPanel />}
-        {view === 'settings' && <SettingsPanel />}
+        {view === 'settings' && <SettingsPanel onEngineChange={setEngine} />}
         {view === 'about'    && <AboutPanel />}
       </div>
     </div>
