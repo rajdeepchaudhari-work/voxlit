@@ -144,6 +144,89 @@ async def health():
     return {'status': 'ok'}
 
 
+# ─── Voxlit Agent ────────────────────────────────────────────────────────────
+# Voice-activated AI assistant. The client detects "Hey Voxlit" trigger phrases,
+# transcribes the rest, and POSTs the command text here. We route it through
+# GPT-4o-mini and return the result for injection into the user's focused app.
+
+AGENT_SYSTEM_PROMPT = """You are Voxlit Agent — a voice-activated AI assistant for developers. The user dictated a command via voice. Your job is to execute their intent and return the result they want to paste into their current app.
+
+Rules:
+- Return ONLY the output the user wants. No explanations, no preamble, no "Here's your..." wrapper.
+- If they say "optimize this prompt" or "improve this prompt", rewrite it to be clearer, more specific, with acceptance criteria, scope boundaries, and verification steps. Detect the intent (new feature / bug fix / refactor / research) and structure accordingly.
+- If they say "write an email", return just the email body ready to send.
+- If they say "explain this", return a concise explanation.
+- If they say "fix this" or "debug this", analyze and return the fix or diagnosis.
+- If they ask for code, return only the code with no markdown fences.
+- If they ask to summarize, return a tight summary.
+- Keep output concise and actionable — it gets pasted into whatever app the user is working in.
+- For prompt optimization specifically:
+  - Detect intent: new feature / bug fix / refactor / testing / research / documentation
+  - Identify missing context: tech stack, acceptance criteria, error handling, testing expectations, scope boundaries
+  - Rewrite with: clear task description, requirements, verification steps, and "do not" boundaries
+- Default to developer-focused output since Voxlit targets developers.
+- Match the user's language (if they speak in a non-English language, respond in that language)."""
+
+
+from pydantic import BaseModel
+
+class AgentRequest(BaseModel):
+    command: str
+
+@app.post('/v1/agent')
+async def agent(
+    body: AgentRequest,
+    request: Request,
+    authorization: str = Header(default=''),
+):
+    if authorization != f'Bearer {SHARED_SECRET}':
+        raise HTTPException(status_code=401, detail='Unauthorized')
+
+    ip = request.headers.get('x-forwarded-for', request.client.host).split(',')[0].strip()
+    if not check_rate_limit(ip):
+        raise HTTPException(status_code=429, detail=f'Rate limit: {RATE_LIMIT_RPM} req/min')
+
+    command = body.command.strip()
+    if not command:
+        return {'text': ''}
+
+    if len(command) > 10_000:
+        raise HTTPException(status_code=413, detail='Command too long (max 10,000 chars)')
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        t0 = time.time()
+        resp = await client.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {OPENAI_API_KEY}',
+                'Content-Type': 'application/json',
+            },
+            json={
+                'model': 'gpt-4o-mini',
+                'messages': [
+                    {'role': 'system', 'content': AGENT_SYSTEM_PROMPT},
+                    {'role': 'user', 'content': command},
+                ],
+                'max_tokens': 2048,
+                'temperature': 0.3,
+            },
+        )
+        agent_ms = int((time.time() - t0) * 1000)
+
+        if resp.status_code == 401:
+            log.error('OpenAI auth failed for agent call')
+            raise HTTPException(status_code=502, detail='Upstream auth error')
+        if resp.status_code == 429:
+            raise HTTPException(status_code=503, detail='Upstream rate limit')
+        if resp.status_code >= 400:
+            log.error('Agent GPT error %s: %s', resp.status_code, resp.text[:200])
+            raise HTTPException(status_code=502, detail=f'Agent error: {resp.status_code}')
+
+        result = resp.json().get('choices', [{}])[0].get('message', {}).get('content', '').strip()
+        log.info('agent ip=%s ms=%d cmd_len=%d result_len=%d', ip, agent_ms, len(command), len(result))
+        return {'text': result, 'agent_ms': agent_ms}
+
+
 @app.post('/v1/transcribe')
 async def transcribe(
     request: Request,
