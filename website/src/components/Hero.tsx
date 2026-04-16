@@ -152,62 +152,129 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Right — Terminal */}
-          <div className="hero-stagger" style={{ alignSelf: 'center' }}>
-            <div className="terminal-window" style={{ boxShadow: '8px 8px 0px #0A0A0A' }}>
-              <div className="terminal-titlebar">
-                <div className="terminal-dot" style={{ background: '#FF5F57' }} />
-                <div className="terminal-dot" style={{ background: '#FFBD2E' }} />
-                <div className="terminal-dot" style={{ background: '#28C840' }} />
-                <span style={{ marginLeft: 8, fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#999' }}>
-                  voxlit · transcription
-                </span>
-              </div>
+          {/* Right — Realistic app mockup */}
+          <div className="hero-stagger" style={{ alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-              <div className="terminal-content">
-                <div style={{ marginBottom: 16 }}>
-                  <span style={{ color: '#666', fontSize: '0.8125rem' }}>$ </span>
-                  <span style={{ color: '#AAA', fontSize: '0.8125rem' }}>voxlit --hotkey "⌃Space" --model base.en</span>
-                </div>
-
-                <div style={{ marginBottom: 20 }}>
-                  <span className="badge badge-green" style={{ marginRight: 8 }}>READY</span>
-                  <span style={{ color: '#999', fontSize: '0.8125rem' }}>Model loaded in 1.2s · Metal GPU</span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00C853' }} className="animate-pulse-rec" />
-                  <span style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.6875rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    color: '#00C853',
-                  }}>TRANSCRIBING</span>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 16, marginLeft: 8 }}>
-                    {[16, 24, 20, 28, 18].map((h, i) => (
-                      <div key={i} className="waveform-bar" style={{ height: h, background: '#665DF5' }} />
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ borderLeft: '3px solid #665DF5', paddingLeft: 12, minHeight: 64 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.875rem', color: '#EEEEEE', lineHeight: 1.6 }}>
-                    {displayText}
-                    {cursorVisible && (
-                      <span className="animate-terminal-blink" style={{
-                        display: 'inline-block', width: 2, height: '1em',
-                        background: '#665DF5', marginLeft: 2, verticalAlign: 'text-bottom',
-                      }} />
-                    )}
-                  </span>
-                </div>
-              </div>
+            {/* Step 1: Hotkey trigger */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
+                letterSpacing: '0.12em', textTransform: 'uppercase', color: '#999',
+              }}>01 · Press hotkey</span>
+              <div style={{ height: 1, flex: 1, background: '#DDD' }} />
             </div>
 
-            <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {['v2.0.0', 'arm64', '.dmg', '~135 MB'].map(t => (
+            {/* Status Pill — LISTENING state */}
+            <div style={{
+              background: '#FFFFFF',
+              border: '3px solid #0A0A0A',
+              boxShadow: '4px 4px 0px #0A0A0A',
+              height: 50,
+              padding: '0 14px 0 6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}>
+              {/* Logo badge with yellow border */}
+              <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
+                <img src="/logo.png" alt="" width={36} height={36}
+                  style={{ borderRadius: 7, display: 'block', border: '2.5px solid #FFEB3B' }} />
+              </div>
+
+              {/* Waveform bars — LISTENING (yellow, varied heights) */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3, height: 28 }}>
+                {[8, 14, 22, 28, 18, 24, 12, 20, 26, 10, 16, 22].map((h, i) => (
+                  <div key={i} className="waveform-bar" style={{
+                    width: 3, height: h, borderRadius: 9999,
+                    background: '#FFEB3B',
+                  }} />
+                ))}
+              </div>
+
+              {/* State label */}
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: '0.5625rem', fontWeight: 700,
+                letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0A0A0A',
+                marginLeft: 2,
+              }}>LISTENING</span>
+            </div>
+
+            {/* Step 2: Processing */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
+                letterSpacing: '0.12em', textTransform: 'uppercase', color: '#999',
+              }}>02 · Processing</span>
+              <div style={{ height: 1, flex: 1, background: '#DDD' }} />
+            </div>
+
+            {/* Status Pill — PROCESSING state */}
+            <div style={{
+              background: '#FFFFFF',
+              border: '3px solid #0A0A0A',
+              boxShadow: '4px 4px 0px #0A0A0A',
+              height: 50,
+              padding: '0 14px 0 6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}>
+              <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
+                <img src="/logo.png" alt="" width={36} height={36}
+                  style={{ borderRadius: 7, display: 'block', border: '2.5px solid #665DF5' }} />
+              </div>
+
+              {/* Waveform bars — PROCESSING (purple, pulse animation) */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3, height: 28 }}>
+                {[6, 8, 14, 20, 24, 18, 12, 8, 6, 4, 6, 8].map((h, i) => (
+                  <div key={i} className="waveform-bar" style={{
+                    width: 3, height: h, borderRadius: 9999,
+                    background: '#665DF5',
+                  }} />
+                ))}
+              </div>
+
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: '0.5625rem', fontWeight: 700,
+                letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0A0A0A',
+                marginLeft: 2,
+              }}>PROCESSING</span>
+            </div>
+
+            {/* Step 3: Result */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: '0.625rem', fontWeight: 700,
+                letterSpacing: '0.12em', textTransform: 'uppercase', color: '#999',
+              }}>03 · Text injected</span>
+              <div style={{ height: 1, flex: 1, background: '#DDD' }} />
+            </div>
+
+            {/* Transcript flash popup — matches real app */}
+            <div style={{
+              background: 'rgba(10,10,15,0.97)',
+              border: '1px solid rgba(31,41,64,0.9)',
+              borderRadius: 8,
+              padding: '8px 14px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+              maxWidth: 340,
+            }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: '0.75rem',
+                color: '#F0EEFF', lineHeight: 1.5,
+              }}>
+                {displayText}
+                {cursorVisible && (
+                  <span className="animate-terminal-blink" style={{
+                    display: 'inline-block', width: 2, height: '1em',
+                    background: '#665DF5', marginLeft: 2, verticalAlign: 'text-bottom',
+                  }} />
+                )}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+              {['v2.1.0', 'arm64', '.dmg', '~135 MB'].map(t => (
                 <span key={t} className="trust-pill">{t}</span>
               ))}
             </div>
